@@ -1,0 +1,64 @@
+{
+  "@@locale": "zh",
+  "appName": "AiSuPass",
+  "@appName": {
+    "description": "应用名称"
+  },
+  "homeTitle": "首页",
+  "@homeTitle": {
+    "description": "移动端首页"
+  },
+  "desktopHomeTitle": "首页（桌面端）",
+  "@desktopHomeTitle": {
+    "description": "桌面端首页"
+  },
+  "settingsTitle": "设置",
+  "@settingsTitle": {
+    "description": "移动端设置"
+  },
+  "desktopSettingsTitle": "设置（桌面端）",
+  "@desktopSettingsTitle": {
+    "description": "桌面端设置"
+  },
+  "aiSettingTitle": "AI 设置",
+  "@aiSettingTitle": {
+    "description": "AI 配置页标题"
+  },
+  "chatTitle": "对话",
+  "@chatTitle": {
+    "description": "AI 对话页标题"
+  },
+  "languageTitle": "语言",
+  "@languageTitle": {
+    "description": "设置项-语言"
+  },
+  "languageChinese": "中文",
+  "@languageChinese": {
+    "description": "语言选项-中文"
+  },
+  "languageEnglish": "英文",
+  "@languageEnglish": {
+    "description": "语言选项-英文"
+  },
+  "errorTitle": "页面不存在",
+  "@errorTitle": {
+    "description": "错误页标题"
+  },
+  "errorNotFound": "没有找到页面：{location}",
+  "@errorNotFound": {
+    "description": "路由未匹配时的提示",
+    "placeholders": {
+      "location": {
+        "type": "String"
+      }
+    }
+  },
+  "errorBuildFailed": "路由构建失败",
+  "@errorBuildFailed": {
+    "description": "路由构建异常时的提示"
+  },
+  "backToHome": "返回首页",
+  "@backToHome": {
+    "description": "错误页返回首页按钮"
+  }
+}

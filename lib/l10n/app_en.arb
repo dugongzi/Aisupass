@@ -1,0 +1,17 @@
+{
+  "@@locale": "en",
+  "appName": "AiSuPass",
+  "homeTitle": "Home",
+  "desktopHomeTitle": "Home (Desktop)",
+  "settingsTitle": "Settings",
+  "desktopSettingsTitle": "Settings (Desktop)",
+  "aiSettingTitle": "AI Settings",
+  "chatTitle": "Chat",
+  "languageTitle": "Language",
+  "languageChinese": "Chinese",
+  "languageEnglish": "English",
+  "errorTitle": "Page Not Found",
+  "errorNotFound": "No page found for: {location}",
+  "errorBuildFailed": "Failed to build route",
+  "backToHome": "Back to Home"
+}
