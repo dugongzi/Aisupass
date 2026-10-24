@@ -1,4 +1,4 @@
-name: ai_su_pass
+name: Aisupass
 description: "AiSuPass​ is an intelligent Android privilege escalation assistant that leverages AI-driven vulnerability analysis and exploit chaining to streamline the root acquisition process. Designed for security researchers and advanced developers, it automates exploit discovery, compatibility matching, and post-exploitation configuration through a conversational interface."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -35,6 +35,29 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
+  # 状态管理
+  flutter_riverpod: ^3.0.0
+  riverpod_annotation: ^3.0.0
+
+  # 路由
+  go_router: ^16.0.0
+
+  # 网络
+  dio: ^5.7.0
+
+  # 不可变模型与序列化
+  freezed_annotation: ^3.0.0
+  json_annotation: ^4.9.0
+
+  # 本地存储
+  shared_preferences: ^2.5.0
+  flutter_secure_storage: ^9.2.0
+  path_provider: ^2.1.0
+
+  # 工具
+  uuid: ^4.5.0
+  permission_handler: ^11.3.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -45,6 +68,12 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+
+  # 代码生成
+  build_runner: ^2.4.0
+  riverpod_generator: ^3.0.0
+  freezed: ^3.0.0
+  json_serializable: ^6.8.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
