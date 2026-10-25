@@ -18,8 +18,8 @@ class DesktopPage extends HookConsumerWidget {
     final ValueNotifier<int> currentIndex = useState<int>(0);
 
     final List<String> titles = <String>[
-      context.l10n.desktopHomeTitle,
-      context.l10n.desktopSettingsTitle,
+      context.l10n.homeTitle,
+      context.l10n.settingsTitle,
     ];
     final List<NavigationRailDestination> destinations =
         <NavigationRailDestination>[

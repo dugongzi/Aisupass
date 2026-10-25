@@ -104,29 +104,23 @@ abstract class AppLocalizations {
   /// **'AiSuPass'**
   String get appName;
 
-  /// 移动端首页
+  /// 首页
   ///
   /// In zh, this message translates to:
   /// **'首页'**
   String get homeTitle;
 
-  /// 桌面端首页
-  ///
-  /// In zh, this message translates to:
-  /// **'首页（桌面端）'**
-  String get desktopHomeTitle;
-
-  /// 移动端设置
+  /// 设置
   ///
   /// In zh, this message translates to:
   /// **'设置'**
   String get settingsTitle;
 
-  /// 桌面端设置
+  /// 设置页分组标题-通用
   ///
   /// In zh, this message translates to:
-  /// **'设置（桌面端）'**
-  String get desktopSettingsTitle;
+  /// **'通用'**
+  String get settingsGeneralSection;
 
   /// AI 配置页标题
   ///
@@ -140,23 +134,11 @@ abstract class AppLocalizations {
   /// **'对话'**
   String get chatTitle;
 
-  /// 设置项-语言
+  /// 设置项-语言（语言名称本身在组件内硬编码，不走 l10n）
   ///
   /// In zh, this message translates to:
   /// **'语言'**
   String get languageTitle;
-
-  /// 语言选项-中文
-  ///
-  /// In zh, this message translates to:
-  /// **'中文'**
-  String get languageChinese;
-
-  /// 语言选项-英文
-  ///
-  /// In zh, this message translates to:
-  /// **'英文'**
-  String get languageEnglish;
 
   /// 错误页标题
   ///

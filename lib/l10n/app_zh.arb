@@ -6,19 +6,15 @@
   },
   "homeTitle": "首页",
   "@homeTitle": {
-    "description": "移动端首页"
-  },
-  "desktopHomeTitle": "首页（桌面端）",
-  "@desktopHomeTitle": {
-    "description": "桌面端首页"
+    "description": "首页"
   },
   "settingsTitle": "设置",
   "@settingsTitle": {
-    "description": "移动端设置"
+    "description": "设置"
   },
-  "desktopSettingsTitle": "设置（桌面端）",
-  "@desktopSettingsTitle": {
-    "description": "桌面端设置"
+  "settingsGeneralSection": "通用",
+  "@settingsGeneralSection": {
+    "description": "设置页分组标题-通用"
   },
   "aiSettingTitle": "AI 设置",
   "@aiSettingTitle": {
@@ -30,15 +26,7 @@
   },
   "languageTitle": "语言",
   "@languageTitle": {
-    "description": "设置项-语言"
-  },
-  "languageChinese": "中文",
-  "@languageChinese": {
-    "description": "语言选项-中文"
-  },
-  "languageEnglish": "英文",
-  "@languageEnglish": {
-    "description": "语言选项-英文"
+    "description": "设置项-语言（语言名称本身在组件内硬编码，不走 l10n）"
   },
   "errorTitle": "页面不存在",
   "@errorTitle": {

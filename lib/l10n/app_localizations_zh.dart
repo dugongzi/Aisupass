@@ -16,13 +16,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeTitle => '首页';
 
   @override
-  String get desktopHomeTitle => '首页（桌面端）';
-
-  @override
   String get settingsTitle => '设置';
 
   @override
-  String get desktopSettingsTitle => '设置（桌面端）';
+  String get settingsGeneralSection => '通用';
 
   @override
   String get aiSettingTitle => 'AI 设置';
@@ -32,12 +29,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get languageTitle => '语言';
-
-  @override
-  String get languageChinese => '中文';
-
-  @override
-  String get languageEnglish => '英文';
 
   @override
   String get errorTitle => '页面不存在';

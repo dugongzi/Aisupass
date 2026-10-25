@@ -10,6 +10,6 @@ class PcHomeTab extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(child: Text(context.l10n.desktopHomeTitle));
+    return Center(child: Text(context.l10n.homeTitle));
   }
 }

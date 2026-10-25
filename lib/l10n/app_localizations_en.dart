@@ -16,13 +16,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeTitle => 'Home';
 
   @override
-  String get desktopHomeTitle => 'Home (Desktop)';
-
-  @override
   String get settingsTitle => 'Settings';
 
   @override
-  String get desktopSettingsTitle => 'Settings (Desktop)';
+  String get settingsGeneralSection => 'General';
 
   @override
   String get aiSettingTitle => 'AI Settings';
@@ -32,12 +29,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get languageTitle => 'Language';
-
-  @override
-  String get languageChinese => 'Chinese';
-
-  @override
-  String get languageEnglish => 'English';
 
   @override
   String get errorTitle => 'Page Not Found';
