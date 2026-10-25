@@ -16,6 +16,30 @@
   "@settingsGeneralSection": {
     "description": "设置页分组标题-通用"
   },
+  "settingsAppearanceSection": "外观",
+  "@settingsAppearanceSection": {
+    "description": "设置页分组标题-外观"
+  },
+  "themeModeTitle": "主题模式",
+  "@themeModeTitle": {
+    "description": "设置项-主题模式"
+  },
+  "themeModeSystem": "跟随系统",
+  "@themeModeSystem": {
+    "description": "主题模式-跟随系统"
+  },
+  "themeModeLight": "浅色",
+  "@themeModeLight": {
+    "description": "主题模式-浅色"
+  },
+  "themeModeDark": "深色",
+  "@themeModeDark": {
+    "description": "主题模式-深色"
+  },
+  "themeColorTitle": "主题色",
+  "@themeColorTitle": {
+    "description": "设置项-主题色"
+  },
   "aiSettingTitle": "AI 设置",
   "@aiSettingTitle": {
     "description": "AI 配置页标题"

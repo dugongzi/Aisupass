@@ -22,6 +22,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsGeneralSection => '通用';
 
   @override
+  String get settingsAppearanceSection => '外观';
+
+  @override
+  String get themeModeTitle => '主题模式';
+
+  @override
+  String get themeModeSystem => '跟随系统';
+
+  @override
+  String get themeModeLight => '浅色';
+
+  @override
+  String get themeModeDark => '深色';
+
+  @override
+  String get themeColorTitle => '主题色';
+
+  @override
   String get aiSettingTitle => 'AI 设置';
 
   @override

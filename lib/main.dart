@@ -1,7 +1,8 @@
 import 'package:Aisupass/common/widgets/app_bootstrap.dart';
 import 'package:Aisupass/core/providers/locale_provider.dart';
+import 'package:Aisupass/core/providers/theme_provider.dart';
 import 'package:Aisupass/core/routes/app_router.dart';
-import 'package:Aisupass/core/themes/app_fonts.dart';
+import 'package:Aisupass/core/themes/app_theme.dart';
 import 'package:Aisupass/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -18,6 +19,7 @@ class AiSuPassApp extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final Locale locale = ref.watch(localeProvider);
+    final AppThemeSettings themeSettings = ref.watch(themeSettingsProvider);
 
     return AppBootstrap(
       builder: (context) => MaterialApp.router(
@@ -34,11 +36,9 @@ class AiSuPassApp extends HookConsumerWidget {
         // 语言由 localeProvider 决定，不再跟随系统。
         localeResolutionCallback: (deviceLocale, supportedLocales) => locale,
         routerConfig: ref.watch(appRouterProvider),
-        theme: ThemeData(
-          colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-          // 全局字体：阿里妈妈方圆体。
-          fontFamily: AppFonts.primary,
-        ),
+        theme: AppTheme.light(themeSettings.seedColor),
+        darkTheme: AppTheme.dark(themeSettings.seedColor),
+        themeMode: themeSettings.themeMode,
         // 挂载 SmartDialog，ToastMessage 依赖它。
         builder: FlutterSmartDialog.init(),
       ),

@@ -122,6 +122,42 @@ abstract class AppLocalizations {
   /// **'通用'**
   String get settingsGeneralSection;
 
+  /// 设置页分组标题-外观
+  ///
+  /// In zh, this message translates to:
+  /// **'外观'**
+  String get settingsAppearanceSection;
+
+  /// 设置项-主题模式
+  ///
+  /// In zh, this message translates to:
+  /// **'主题模式'**
+  String get themeModeTitle;
+
+  /// 主题模式-跟随系统
+  ///
+  /// In zh, this message translates to:
+  /// **'跟随系统'**
+  String get themeModeSystem;
+
+  /// 主题模式-浅色
+  ///
+  /// In zh, this message translates to:
+  /// **'浅色'**
+  String get themeModeLight;
+
+  /// 主题模式-深色
+  ///
+  /// In zh, this message translates to:
+  /// **'深色'**
+  String get themeModeDark;
+
+  /// 设置项-主题色
+  ///
+  /// In zh, this message translates to:
+  /// **'主题色'**
+  String get themeColorTitle;
+
   /// AI 配置页标题
   ///
   /// In zh, this message translates to:

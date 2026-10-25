@@ -1,7 +1,9 @@
+import 'package:Aisupass/common/widgets/app_select.dart';
+import 'package:Aisupass/common/widgets/app_setting_icon.dart';
 import 'package:Aisupass/core/extensions/context_extensions.dart';
 import 'package:Aisupass/core/providers/locale_provider.dart';
+import 'package:Aisupass/core/utils/platform.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -13,7 +15,8 @@ const String _enLabel = 'English';
 
 /// 语言设置项，供移动端与桌面端设置页共用。
 ///
-/// 左侧图标胶囊 + 标题，右侧紧凑分段控件，整体作为 [AppSettingsSection] 的一行。
+/// 左侧图标胶囊 + 标题；移动端右侧用分段按钮，桌面端换成下拉框，
+/// 与桌面应用的控件习惯保持一致。
 class AppLanguageSwitch extends HookConsumerWidget {
   const AppLanguageSwitch({super.key});
 
@@ -21,34 +24,20 @@ class AppLanguageSwitch extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final Locale locale = ref.watch(localeProvider);
 
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-      child: Row(
-        children: <Widget>[
-          _SettingIcon(icon: Icons.translate_rounded),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Text(
-              context.l10n.languageTitle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: context.textTheme.titleSmall?.copyWith(
-                fontSize: 15.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          SizedBox(width: 8.w),
-          SegmentedButton<String>(
+    final Widget control = isDesktopPlatform
+        ? AppSelect<String>(
+            value: locale.languageCode,
+            items: const <AppSelectItem<String>>[
+              AppSelectItem<String>(value: 'zh', label: _zhLabel),
+              AppSelectItem<String>(value: 'en', label: _enLabel),
+            ],
+            onChanged: (String value) =>
+                ref.read(localeProvider.notifier).setLanguage(value),
+          )
+        : SegmentedButton<String>(
             segments: <ButtonSegment<String>>[
-              ButtonSegment<String>(
-                value: 'zh',
-                label: const Text(_zhLabel),
-              ),
-              ButtonSegment<String>(
-                value: 'en',
-                label: const Text(_enLabel),
-              ),
+              ButtonSegment<String>(value: 'zh', label: const Text(_zhLabel)),
+              ButtonSegment<String>(value: 'en', label: const Text(_enLabel)),
             ],
             selected: <String>{locale.languageCode},
             showSelectedIcon: false,
@@ -63,31 +52,29 @@ class AppLanguageSwitch extends HookConsumerWidget {
             ),
             onSelectionChanged: (Set<String> selection) =>
                 ref.read(localeProvider.notifier).setLanguage(selection.first),
+          );
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+      child: Row(
+        children: <Widget>[
+          const AppSettingIcon(icon: Icons.translate_rounded),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Text(
+              context.l10n.languageTitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: context.textTheme.titleSmall?.copyWith(
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
+          SizedBox(width: 8.w),
+          control,
         ],
       ),
-    );
-  }
-}
-
-/// 设置项左侧图标胶囊。
-class _SettingIcon extends HookWidget {
-  const _SettingIcon({required this.icon});
-
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    final ColorScheme colorScheme = context.colorScheme;
-
-    return Container(
-      width: 34.w,
-      height: 34.w,
-      decoration: BoxDecoration(
-        color: colorScheme.primary.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(11.r),
-      ),
-      child: Icon(icon, size: 18.sp, color: colorScheme.primary),
     );
   }
 }

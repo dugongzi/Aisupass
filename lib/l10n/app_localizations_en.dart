@@ -22,6 +22,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsGeneralSection => 'General';
 
   @override
+  String get settingsAppearanceSection => 'Appearance';
+
+  @override
+  String get themeModeTitle => 'Theme Mode';
+
+  @override
+  String get themeModeSystem => 'System';
+
+  @override
+  String get themeModeLight => 'Light';
+
+  @override
+  String get themeModeDark => 'Dark';
+
+  @override
+  String get themeColorTitle => 'Accent Color';
+
+  @override
   String get aiSettingTitle => 'AI Settings';
 
   @override
