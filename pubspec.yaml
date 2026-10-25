@@ -67,6 +67,10 @@ dependencies:
   uuid: ^4.5.0
   permission_handler: ^11.3.0
 
+  # 设备信息（系统版本、机型、ABI 等）
+  device_info_plus: ^12.3.0
+  package_info_plus: ^9.0.0
+
   # 尺寸自适应（.w/.h/.sp/.r/.sw/.sh）
   flutter_screenutil: ^5.9.3
 
@@ -89,6 +93,9 @@ dev_dependencies:
   riverpod_generator: ^3.0.0
   freezed: ^3.0.0
   json_serializable: ^6.8.0
+
+  # 原生通信代码生成（Dart <-> Kotlin 契约）
+  pigeon: ^26.1.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

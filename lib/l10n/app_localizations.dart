@@ -176,6 +176,132 @@ abstract class AppLocalizations {
   /// **'未激活'**
   String get notActivated;
 
+  /// 首页-ROOT 状态卡片标题
+  ///
+  /// In zh, this message translates to:
+  /// **'ROOT'**
+  String get rootTitle;
+
+  /// 首页-ADB 状态卡片标题
+  ///
+  /// In zh, this message translates to:
+  /// **'ADB'**
+  String get adbTitle;
+
+  /// 状态卡片-正在检测
+  ///
+  /// In zh, this message translates to:
+  /// **'检测中'**
+  String get statusDetecting;
+
+  /// ADB 状态-无线与有线调试均已开启
+  ///
+  /// In zh, this message translates to:
+  /// **'已激活（无线、有线）'**
+  String get adbActivatedBoth;
+
+  /// ADB 状态-仅无线调试开启
+  ///
+  /// In zh, this message translates to:
+  /// **'已激活（无线）'**
+  String get adbActivatedWifi;
+
+  /// ADB 状态-仅有线调试开启
+  ///
+  /// In zh, this message translates to:
+  /// **'已激活（有线）'**
+  String get adbActivatedUsb;
+
+  /// 首页-设备信息卡片标题
+  ///
+  /// In zh, this message translates to:
+  /// **'设备信息'**
+  String get deviceInfoTitle;
+
+  /// 设备信息卡片-复制按钮提示
+  ///
+  /// In zh, this message translates to:
+  /// **'复制'**
+  String get deviceInfoCopy;
+
+  /// 设备信息卡片-复制成功提示
+  ///
+  /// In zh, this message translates to:
+  /// **'已复制到剪贴板'**
+  String get deviceInfoCopied;
+
+  /// 设备信息卡片-读取失败提示
+  ///
+  /// In zh, this message translates to:
+  /// **'设备信息读取失败'**
+  String get deviceInfoUnavailable;
+
+  /// 设备信息-系统版本
+  ///
+  /// In zh, this message translates to:
+  /// **'系统版本'**
+  String get deviceOsVersion;
+
+  /// 设备信息-API 级别
+  ///
+  /// In zh, this message translates to:
+  /// **'API Level'**
+  String get deviceApiLevel;
+
+  /// 设备信息-设备型号
+  ///
+  /// In zh, this message translates to:
+  /// **'设备型号'**
+  String get deviceModel;
+
+  /// 设备信息-CPU 架构
+  ///
+  /// In zh, this message translates to:
+  /// **'CPU 架构'**
+  String get deviceCpuAbi;
+
+  /// 设备信息-内核版本
+  ///
+  /// In zh, this message translates to:
+  /// **'内核版本'**
+  String get deviceKernelVersion;
+
+  /// 设备信息-Android 安全补丁日期
+  ///
+  /// In zh, this message translates to:
+  /// **'Android 安全更新'**
+  String get deviceSecurityPatch;
+
+  /// 设备信息-基带版本
+  ///
+  /// In zh, this message translates to:
+  /// **'基带版本'**
+  String get deviceBaseband;
+
+  /// 设备信息-系统版本号
+  ///
+  /// In zh, this message translates to:
+  /// **'版本号'**
+  String get deviceBuildNumber;
+
+  /// 设备信息-SOTA 版本
+  ///
+  /// In zh, this message translates to:
+  /// **'SOTA 版本'**
+  String get deviceSotaVersion;
+
+  /// 设备信息-SELinux 状态
+  ///
+  /// In zh, this message translates to:
+  /// **'SELinux'**
+  String get deviceSelinux;
+
+  /// 设备信息-应用版本
+  ///
+  /// In zh, this message translates to:
+  /// **'应用版本'**
+  String get deviceAppVersion;
+
   /// AI 配置页标题
   ///
   /// In zh, this message translates to:

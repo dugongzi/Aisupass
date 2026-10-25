@@ -49,6 +49,69 @@ class AppLocalizationsZh extends AppLocalizations {
   String get notActivated => '未激活';
 
   @override
+  String get rootTitle => 'ROOT';
+
+  @override
+  String get adbTitle => 'ADB';
+
+  @override
+  String get statusDetecting => '检测中';
+
+  @override
+  String get adbActivatedBoth => '已激活（无线、有线）';
+
+  @override
+  String get adbActivatedWifi => '已激活（无线）';
+
+  @override
+  String get adbActivatedUsb => '已激活（有线）';
+
+  @override
+  String get deviceInfoTitle => '设备信息';
+
+  @override
+  String get deviceInfoCopy => '复制';
+
+  @override
+  String get deviceInfoCopied => '已复制到剪贴板';
+
+  @override
+  String get deviceInfoUnavailable => '设备信息读取失败';
+
+  @override
+  String get deviceOsVersion => '系统版本';
+
+  @override
+  String get deviceApiLevel => 'API Level';
+
+  @override
+  String get deviceModel => '设备型号';
+
+  @override
+  String get deviceCpuAbi => 'CPU 架构';
+
+  @override
+  String get deviceKernelVersion => '内核版本';
+
+  @override
+  String get deviceSecurityPatch => 'Android 安全更新';
+
+  @override
+  String get deviceBaseband => '基带版本';
+
+  @override
+  String get deviceBuildNumber => '版本号';
+
+  @override
+  String get deviceSotaVersion => 'SOTA 版本';
+
+  @override
+  String get deviceSelinux => 'SELinux';
+
+  @override
+  String get deviceAppVersion => '应用版本';
+
+  @override
   String get aiSettingTitle => 'AI 设置';
 
   @override

@@ -49,6 +49,69 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notActivated => 'Not Activated';
 
   @override
+  String get rootTitle => 'ROOT';
+
+  @override
+  String get adbTitle => 'ADB';
+
+  @override
+  String get statusDetecting => 'Detecting';
+
+  @override
+  String get adbActivatedBoth => 'Activated (Wi-Fi, USB)';
+
+  @override
+  String get adbActivatedWifi => 'Activated (Wi-Fi)';
+
+  @override
+  String get adbActivatedUsb => 'Activated (USB)';
+
+  @override
+  String get deviceInfoTitle => 'Device Info';
+
+  @override
+  String get deviceInfoCopy => 'Copy';
+
+  @override
+  String get deviceInfoCopied => 'Copied to clipboard';
+
+  @override
+  String get deviceInfoUnavailable => 'Failed to read device info';
+
+  @override
+  String get deviceOsVersion => 'OS Version';
+
+  @override
+  String get deviceApiLevel => 'API Level';
+
+  @override
+  String get deviceModel => 'Device Model';
+
+  @override
+  String get deviceCpuAbi => 'CPU Architecture';
+
+  @override
+  String get deviceKernelVersion => 'Kernel Version';
+
+  @override
+  String get deviceSecurityPatch => 'Android Security Update';
+
+  @override
+  String get deviceBaseband => 'Baseband Version';
+
+  @override
+  String get deviceBuildNumber => 'Build Number';
+
+  @override
+  String get deviceSotaVersion => 'SOTA Version';
+
+  @override
+  String get deviceSelinux => 'SELinux';
+
+  @override
+  String get deviceAppVersion => 'App Version';
+
+  @override
   String get aiSettingTitle => 'AI Settings';
 
   @override

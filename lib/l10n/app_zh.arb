@@ -52,6 +52,90 @@
   "@notActivated": {
     "description": "未激活状态"
   },
+  "rootTitle": "ROOT",
+  "@rootTitle": {
+    "description": "首页-ROOT 状态卡片标题"
+  },
+  "adbTitle": "ADB",
+  "@adbTitle": {
+    "description": "首页-ADB 状态卡片标题"
+  },
+  "statusDetecting": "检测中",
+  "@statusDetecting": {
+    "description": "状态卡片-正在检测"
+  },
+  "adbActivatedBoth": "已激活（无线、有线）",
+  "@adbActivatedBoth": {
+    "description": "ADB 状态-无线与有线调试均已开启"
+  },
+  "adbActivatedWifi": "已激活（无线）",
+  "@adbActivatedWifi": {
+    "description": "ADB 状态-仅无线调试开启"
+  },
+  "adbActivatedUsb": "已激活（有线）",
+  "@adbActivatedUsb": {
+    "description": "ADB 状态-仅有线调试开启"
+  },
+  "deviceInfoTitle": "设备信息",
+  "@deviceInfoTitle": {
+    "description": "首页-设备信息卡片标题"
+  },
+  "deviceInfoCopy": "复制",
+  "@deviceInfoCopy": {
+    "description": "设备信息卡片-复制按钮提示"
+  },
+  "deviceInfoCopied": "已复制到剪贴板",
+  "@deviceInfoCopied": {
+    "description": "设备信息卡片-复制成功提示"
+  },
+  "deviceInfoUnavailable": "设备信息读取失败",
+  "@deviceInfoUnavailable": {
+    "description": "设备信息卡片-读取失败提示"
+  },
+  "deviceOsVersion": "系统版本",
+  "@deviceOsVersion": {
+    "description": "设备信息-系统版本"
+  },
+  "deviceApiLevel": "API Level",
+  "@deviceApiLevel": {
+    "description": "设备信息-API 级别"
+  },
+  "deviceModel": "设备型号",
+  "@deviceModel": {
+    "description": "设备信息-设备型号"
+  },
+  "deviceCpuAbi": "CPU 架构",
+  "@deviceCpuAbi": {
+    "description": "设备信息-CPU 架构"
+  },
+  "deviceKernelVersion": "内核版本",
+  "@deviceKernelVersion": {
+    "description": "设备信息-内核版本"
+  },
+  "deviceSecurityPatch": "Android 安全更新",
+  "@deviceSecurityPatch": {
+    "description": "设备信息-Android 安全补丁日期"
+  },
+  "deviceBaseband": "基带版本",
+  "@deviceBaseband": {
+    "description": "设备信息-基带版本"
+  },
+  "deviceBuildNumber": "版本号",
+  "@deviceBuildNumber": {
+    "description": "设备信息-系统版本号"
+  },
+  "deviceSotaVersion": "SOTA 版本",
+  "@deviceSotaVersion": {
+    "description": "设备信息-SOTA 版本"
+  },
+  "deviceSelinux": "SELinux",
+  "@deviceSelinux": {
+    "description": "设备信息-SELinux 状态"
+  },
+  "deviceAppVersion": "应用版本",
+  "@deviceAppVersion": {
+    "description": "设备信息-应用版本"
+  },
   "aiSettingTitle": "AI 设置",
   "@aiSettingTitle": {
     "description": "AI 配置页标题"
