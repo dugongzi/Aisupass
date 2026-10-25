@@ -120,7 +120,185 @@ class AppLocalizationsZh extends AppLocalizations {
   String get deviceAppVersion => '应用版本';
 
   @override
-  String get aiSettingTitle => 'AI 设置';
+  String get settingsAiSection => 'AI';
+
+  @override
+  String get aiConfigEntrySubtitle => '管理模型服务与 API Key';
+
+  @override
+  String get aiConfigTitle => 'AI 配置';
+
+  @override
+  String get aiConfigNew => '新建配置';
+
+  @override
+  String get aiConfigCurrent => '当前';
+
+  @override
+  String get aiConfigList => '配置列表';
+
+  @override
+  String get aiConfigEmpty => '还没有 AI 配置，点击下方按钮新建一个';
+
+  @override
+  String get aiConfigUse => '切换';
+
+  @override
+  String get aiConfigSwitched => '已切换配置';
+
+  @override
+  String get aiConfigDelete => '删除';
+
+  @override
+  String aiConfigDeleteConfirm(String name) {
+    return '确定删除配置「$name」吗？';
+  }
+
+  @override
+  String get aiConfigDeleted => '配置已删除';
+
+  @override
+  String get aiConfigEdit => '编辑';
+
+  @override
+  String get aiConfigEditTitle => '编辑配置';
+
+  @override
+  String get aiDelete => '删除';
+
+  @override
+  String get aiCancel => '取消';
+
+  @override
+  String get aiApiKeyMissing => '未配置 API Key';
+
+  @override
+  String get aiModelUnset => '未选择模型';
+
+  @override
+  String get aiQuickStart => '快速开始';
+
+  @override
+  String get aiQuickStartHint => '选择服务商可自动填写地址与接口类型';
+
+  @override
+  String get aiConnectionSection => '连接服务';
+
+  @override
+  String get aiConfigName => '配置名称';
+
+  @override
+  String get aiConfigNameHint => '例如：DeepSeek 主力';
+
+  @override
+  String get aiBaseUrl => 'API 地址';
+
+  @override
+  String get aiBaseUrlHint => 'https://api.deepseek.com/v1';
+
+  @override
+  String get aiApiKey => 'API Key';
+
+  @override
+  String get aiApiKeyHint => 'sk-...';
+
+  @override
+  String get aiApiType => '接口类型';
+
+  @override
+  String get aiModelName => '模型';
+
+  @override
+  String get aiModelHint => '先获取模型列表';
+
+  @override
+  String get aiModelRequired => '请先获取模型列表';
+
+  @override
+  String get aiModelSelect => '选择模型';
+
+  @override
+  String get aiModelSearch => '搜索模型';
+
+  @override
+  String get aiModelEmpty => '没有匹配的模型';
+
+  @override
+  String get aiModelLoad => '获取模型';
+
+  @override
+  String aiModelLoadFailed(String message) {
+    return '获取模型失败：$message';
+  }
+
+  @override
+  String get aiAdvancedSection => '高级设置';
+
+  @override
+  String get aiAdvancedHint => '最大输出 Token 与温度；留空沿用服务端默认值';
+
+  @override
+  String get aiMaxTokens => '最大输出 Token';
+
+  @override
+  String get aiMaxTokensHint => '留空使用默认值';
+
+  @override
+  String get aiTemperature => '温度';
+
+  @override
+  String get aiTemperatureHint => '0 - 2，留空使用默认值';
+
+  @override
+  String get aiConnIdle => '保存前会自动验证连通性';
+
+  @override
+  String get aiConnTesting => '正在验证连通性…';
+
+  @override
+  String aiConnOk(int count) {
+    return '连接正常，可用模型 $count 个';
+  }
+
+  @override
+  String aiConnFailed(String message) {
+    return '连接失败：$message';
+  }
+
+  @override
+  String get aiSave => '保存';
+
+  @override
+  String get aiSaveSuccess => '配置已保存';
+
+  @override
+  String aiSaveFailed(String message) {
+    return '保存失败：$message';
+  }
+
+  @override
+  String get aiFieldRequired => '此项不能为空';
+
+  @override
+  String get aiInvalidUrl => '请输入以 http:// 或 https:// 开头的地址';
+
+  @override
+  String aiErrorAuth(int code) {
+    return 'API Key 无效或无权限（HTTP $code）';
+  }
+
+  @override
+  String get aiErrorNotFound => '接口地址不存在，请检查 API 地址（HTTP 404）';
+
+  @override
+  String aiErrorHttp(int code, String message) {
+    return '请求失败（HTTP $code）：$message';
+  }
+
+  @override
+  String aiErrorNetwork(String message) {
+    return '网络请求失败：$message';
+  }
 
   @override
   String get chatTitle => '对话';
@@ -141,4 +319,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get backToHome => '返回首页';
+
+  @override
+  String get commonLoadFailed => '加载失败，请稍后重试';
+
+  @override
+  String get commonRetry => '重试';
 }

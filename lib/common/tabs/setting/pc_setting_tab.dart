@@ -3,6 +3,7 @@ import 'package:Aisupass/common/widgets/app_settings_section.dart';
 import 'package:Aisupass/common/widgets/app_theme_color_picker.dart';
 import 'package:Aisupass/common/widgets/app_theme_mode_switch.dart';
 import 'package:Aisupass/core/extensions/context_extensions.dart';
+import 'package:Aisupass/features/ai/presentation/widgets/ai_config_entry.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -22,6 +23,12 @@ class PcSettingTab extends HookWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(28, 6, 28, 28),
           children: <Widget>[
+            AppSettingsSection(
+              title: context.l10n.settingsAiSection,
+
+              children: const <Widget>[AiConfigEntry()],
+            ),
+            SizedBox(height: 20.h),
             AppSettingsSection(
               title: context.l10n.settingsGeneralSection,
               children: const <Widget>[AppLanguageSwitch()],

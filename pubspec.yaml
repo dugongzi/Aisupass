@@ -82,6 +82,10 @@ dependencies:
   # 否则分析器会报 depend_on_referenced_packages。
   pigeon: ^26.1.0
 
+  # Pigeon 生成的 lib/generated/*.g.dart 会直接 import package:meta/meta.dart，
+  # 属于生产代码引用，必须显式声明依赖，否则触发 depend_on_referenced_packages。
+  meta: ^1.18.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

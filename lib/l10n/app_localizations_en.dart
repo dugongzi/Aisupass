@@ -120,7 +120,190 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deviceAppVersion => 'App Version';
 
   @override
-  String get aiSettingTitle => 'AI Settings';
+  String get settingsAiSection => 'AI';
+
+  @override
+  String get aiConfigEntrySubtitle => 'Manage model providers and API keys';
+
+  @override
+  String get aiConfigTitle => 'AI Configurations';
+
+  @override
+  String get aiConfigNew => 'New Configuration';
+
+  @override
+  String get aiConfigCurrent => 'Active';
+
+  @override
+  String get aiConfigList => 'Configurations';
+
+  @override
+  String get aiConfigEmpty =>
+      'No AI configuration yet. Tap the button below to create one.';
+
+  @override
+  String get aiConfigUse => 'Use';
+
+  @override
+  String get aiConfigSwitched => 'Configuration switched';
+
+  @override
+  String get aiConfigDelete => 'Delete';
+
+  @override
+  String aiConfigDeleteConfirm(String name) {
+    return 'Delete configuration \"$name\"?';
+  }
+
+  @override
+  String get aiConfigDeleted => 'Configuration deleted';
+
+  @override
+  String get aiConfigEdit => 'Edit';
+
+  @override
+  String get aiConfigEditTitle => 'Edit Configuration';
+
+  @override
+  String get aiDelete => 'Delete';
+
+  @override
+  String get aiCancel => 'Cancel';
+
+  @override
+  String get aiApiKeyMissing => 'API key not set';
+
+  @override
+  String get aiModelUnset => 'No model selected';
+
+  @override
+  String get aiQuickStart => 'Quick Start';
+
+  @override
+  String get aiQuickStartHint =>
+      'Pick a provider to fill in the endpoint and protocol';
+
+  @override
+  String get aiConnectionSection => 'Connection';
+
+  @override
+  String get aiConfigName => 'Configuration Name';
+
+  @override
+  String get aiConfigNameHint => 'e.g. DeepSeek Main';
+
+  @override
+  String get aiBaseUrl => 'API Base URL';
+
+  @override
+  String get aiBaseUrlHint => 'https://api.deepseek.com/v1';
+
+  @override
+  String get aiApiKey => 'API Key';
+
+  @override
+  String get aiApiKeyHint => 'sk-...';
+
+  @override
+  String get aiApiType => 'Protocol';
+
+  @override
+  String get aiModelName => 'Model';
+
+  @override
+  String get aiModelHint => 'Fetch the model list first';
+
+  @override
+  String get aiModelRequired => 'Fetch the model list first';
+
+  @override
+  String get aiModelSelect => 'Select Model';
+
+  @override
+  String get aiModelSearch => 'Search models';
+
+  @override
+  String get aiModelEmpty => 'No matching models';
+
+  @override
+  String get aiModelLoad => 'Fetch Models';
+
+  @override
+  String aiModelLoadFailed(String message) {
+    return 'Failed to fetch models: $message';
+  }
+
+  @override
+  String get aiAdvancedSection => 'Advanced';
+
+  @override
+  String get aiAdvancedHint =>
+      'Max output tokens and temperature; leave blank for server defaults';
+
+  @override
+  String get aiMaxTokens => 'Max Output Tokens';
+
+  @override
+  String get aiMaxTokensHint => 'Leave blank for default';
+
+  @override
+  String get aiTemperature => 'Temperature';
+
+  @override
+  String get aiTemperatureHint => '0 - 2, leave blank for default';
+
+  @override
+  String get aiConnIdle => 'Connectivity is verified before saving';
+
+  @override
+  String get aiConnTesting => 'Verifying connection…';
+
+  @override
+  String aiConnOk(int count) {
+    return 'Connected, $count models available';
+  }
+
+  @override
+  String aiConnFailed(String message) {
+    return 'Connection failed: $message';
+  }
+
+  @override
+  String get aiSave => 'Save';
+
+  @override
+  String get aiSaveSuccess => 'Configuration saved';
+
+  @override
+  String aiSaveFailed(String message) {
+    return 'Failed to save: $message';
+  }
+
+  @override
+  String get aiFieldRequired => 'This field is required';
+
+  @override
+  String get aiInvalidUrl =>
+      'Enter an address starting with http:// or https://';
+
+  @override
+  String aiErrorAuth(int code) {
+    return 'Invalid API key or insufficient permission (HTTP $code)';
+  }
+
+  @override
+  String get aiErrorNotFound =>
+      'Endpoint not found, check the API URL (HTTP 404)';
+
+  @override
+  String aiErrorHttp(int code, String message) {
+    return 'Request failed (HTTP $code): $message';
+  }
+
+  @override
+  String aiErrorNetwork(String message) {
+    return 'Network request failed: $message';
+  }
 
   @override
   String get chatTitle => 'Chat';
@@ -141,4 +324,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get backToHome => 'Back to Home';
+
+  @override
+  String get commonLoadFailed => 'Failed to load, please try again';
+
+  @override
+  String get commonRetry => 'Retry';
 }

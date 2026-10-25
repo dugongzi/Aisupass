@@ -43,11 +43,132 @@
   "deviceSotaVersion": "SOTA Version",
   "deviceSelinux": "SELinux",
   "deviceAppVersion": "App Version",
-  "aiSettingTitle": "AI Settings",
+  "settingsAiSection": "AI",
+  "aiConfigEntrySubtitle": "Manage model providers and API keys",
+  "aiConfigTitle": "AI Configurations",
+  "aiConfigNew": "New Configuration",
+  "aiConfigCurrent": "Active",
+  "aiConfigList": "Configurations",
+  "aiConfigEmpty": "No AI configuration yet. Tap the button below to create one.",
+  "aiConfigUse": "Use",
+  "aiConfigSwitched": "Configuration switched",
+  "aiConfigDelete": "Delete",
+  "aiConfigDeleteConfirm": "Delete configuration \"{name}\"?",
+  "@aiConfigDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiConfigDeleted": "Configuration deleted",
+  "aiConfigEdit": "Edit",
+  "aiConfigEditTitle": "Edit Configuration",
+  "aiDelete": "Delete",
+  "aiCancel": "Cancel",
+  "aiApiKeyMissing": "API key not set",
+  "aiModelUnset": "No model selected",
+  "aiQuickStart": "Quick Start",
+  "aiQuickStartHint": "Pick a provider to fill in the endpoint and protocol",
+  "aiConnectionSection": "Connection",
+  "aiConfigName": "Configuration Name",
+  "aiConfigNameHint": "e.g. DeepSeek Main",
+  "aiBaseUrl": "API Base URL",
+  "aiBaseUrlHint": "https://api.deepseek.com/v1",
+  "aiApiKey": "API Key",
+  "aiApiKeyHint": "sk-...",
+  "aiApiType": "Protocol",
+  "aiModelName": "Model",
+  "aiModelHint": "Fetch the model list first",
+  "aiModelRequired": "Fetch the model list first",
+  "aiModelSelect": "Select Model",
+  "aiModelSearch": "Search models",
+  "aiModelEmpty": "No matching models",
+  "aiModelLoad": "Fetch Models",
+  "aiModelLoadFailed": "Failed to fetch models: {message}",
+  "@aiModelLoadFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "aiAdvancedSection": "Advanced",
+  "aiAdvancedHint": "Max output tokens and temperature; leave blank for server defaults",
+  "aiMaxTokens": "Max Output Tokens",
+  "aiMaxTokensHint": "Leave blank for default",
+  "aiTemperature": "Temperature",
+  "aiTemperatureHint": "0 - 2, leave blank for default",
+  "aiConnIdle": "Connectivity is verified before saving",
+  "aiConnTesting": "Verifying connection…",
+  "aiConnOk": "Connected, {count} models available",
+  "@aiConnOk": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiConnFailed": "Connection failed: {message}",
+  "@aiConnFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "aiSave": "Save",
+  "aiSaveSuccess": "Configuration saved",
+  "aiSaveFailed": "Failed to save: {message}",
+  "@aiSaveFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "aiFieldRequired": "This field is required",
+  "aiInvalidUrl": "Enter an address starting with http:// or https://",
+  "aiErrorAuth": "Invalid API key or insufficient permission (HTTP {code})",
+  "@aiErrorAuth": {
+    "placeholders": {
+      "code": {
+        "type": "int"
+      }
+    }
+  },
+  "aiErrorNotFound": "Endpoint not found, check the API URL (HTTP 404)",
+  "aiErrorHttp": "Request failed (HTTP {code}): {message}",
+  "@aiErrorHttp": {
+    "placeholders": {
+      "code": {
+        "type": "int"
+      },
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "aiErrorNetwork": "Network request failed: {message}",
+  "@aiErrorNetwork": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "chatTitle": "Chat",
   "languageTitle": "Language",
   "errorTitle": "Page Not Found",
   "errorNotFound": "No page found for: {location}",
   "errorBuildFailed": "Failed to build route",
-  "backToHome": "Back to Home"
+  "backToHome": "Back to Home",
+  "commonLoadFailed": "Failed to load, please try again",
+  "@commonLoadFailed": {
+    "description": "Generic load failure message"
+  },
+  "commonRetry": "Retry",
+  "@commonRetry": {
+    "description": "Generic retry button"
+  }
 }

@@ -150,9 +150,268 @@
   "@deviceAppVersion": {
     "description": "设备信息-应用版本"
   },
-  "aiSettingTitle": "AI 设置",
-  "@aiSettingTitle": {
-    "description": "AI 配置页标题"
+  "settingsAiSection": "AI",
+  "@settingsAiSection": {
+    "description": "设置页分组标题-AI"
+  },
+  "aiConfigEntrySubtitle": "管理模型服务与 API Key",
+  "@aiConfigEntrySubtitle": {
+    "description": "设置页-AI 配置入口副标题"
+  },
+  "aiConfigTitle": "AI 配置",
+  "@aiConfigTitle": {
+    "description": "AI 配置列表页标题"
+  },
+  "aiConfigNew": "新建配置",
+  "@aiConfigNew": {
+    "description": "新建 AI 配置"
+  },
+  "aiConfigCurrent": "当前",
+  "@aiConfigCurrent": {
+    "description": "当前启用中的配置标记"
+  },
+  "aiConfigList": "配置列表",
+  "@aiConfigList": {
+    "description": "AI 配置列表分组标题"
+  },
+  "aiConfigEmpty": "还没有 AI 配置，点击下方按钮新建一个",
+  "@aiConfigEmpty": {
+    "description": "AI 配置列表为空时的提示"
+  },
+  "aiConfigUse": "切换",
+  "@aiConfigUse": {
+    "description": "切换到该 AI 配置"
+  },
+  "aiConfigSwitched": "已切换配置",
+  "@aiConfigSwitched": {
+    "description": "切换 AI 配置成功提示"
+  },
+  "aiConfigDelete": "删除",
+  "@aiConfigDelete": {
+    "description": "删除 AI 配置"
+  },
+  "aiConfigDeleteConfirm": "确定删除配置「{name}」吗？",
+  "@aiConfigDeleteConfirm": {
+    "description": "删除 AI 配置的确认文案",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiConfigDeleted": "配置已删除",
+  "@aiConfigDeleted": {
+    "description": "AI 配置删除成功"
+  },
+  "aiConfigEdit": "编辑",
+  "@aiConfigEdit": {
+    "description": "编辑 AI 配置"
+  },
+  "aiConfigEditTitle": "编辑配置",
+  "@aiConfigEditTitle": {
+    "description": "AI 配置编辑页标题"
+  },
+  "aiDelete": "删除",
+  "@aiDelete": {
+    "description": "通用删除按钮"
+  },
+  "aiCancel": "取消",
+  "@aiCancel": {
+    "description": "通用取消按钮"
+  },
+  "aiApiKeyMissing": "未配置 API Key",
+  "@aiApiKeyMissing": {
+    "description": "AI 配置缺少 API Key 的提示"
+  },
+  "aiModelUnset": "未选择模型",
+  "@aiModelUnset": {
+    "description": "AI 配置尚未选择模型"
+  },
+  "aiQuickStart": "快速开始",
+  "@aiQuickStart": {
+    "description": "AI 配置编辑页-服务商预设"
+  },
+  "aiQuickStartHint": "选择服务商可自动填写地址与接口类型",
+  "@aiQuickStartHint": {
+    "description": "AI 配置编辑页-服务商预设说明"
+  },
+  "aiConnectionSection": "连接服务",
+  "@aiConnectionSection": {
+    "description": "AI 配置编辑页-连接服务分组"
+  },
+  "aiConfigName": "配置名称",
+  "@aiConfigName": {
+    "description": "AI 配置名称"
+  },
+  "aiConfigNameHint": "例如：DeepSeek 主力",
+  "@aiConfigNameHint": {
+    "description": "AI 配置名称示例"
+  },
+  "aiBaseUrl": "API 地址",
+  "@aiBaseUrl": {
+    "description": "AI 服务地址"
+  },
+  "aiBaseUrlHint": "https://api.deepseek.com/v1",
+  "@aiBaseUrlHint": {
+    "description": "AI 服务地址示例"
+  },
+  "aiApiKey": "API Key",
+  "@aiApiKey": {
+    "description": "AI 服务密钥"
+  },
+  "aiApiKeyHint": "sk-...",
+  "@aiApiKeyHint": {
+    "description": "AI 服务密钥示例"
+  },
+  "aiApiType": "接口类型",
+  "@aiApiType": {
+    "description": "AI 接口协议类型"
+  },
+  "aiModelName": "模型",
+  "@aiModelName": {
+    "description": "AI 模型"
+  },
+  "aiModelHint": "先获取模型列表",
+  "@aiModelHint": {
+    "description": "尚未获取模型时的占位文案"
+  },
+  "aiModelRequired": "请先获取模型列表",
+  "@aiModelRequired": {
+    "description": "未获取模型就点击选择器时的提示"
+  },
+  "aiModelSelect": "选择模型",
+  "@aiModelSelect": {
+    "description": "模型选择弹层标题"
+  },
+  "aiModelSearch": "搜索模型",
+  "@aiModelSearch": {
+    "description": "模型搜索框提示"
+  },
+  "aiModelEmpty": "没有匹配的模型",
+  "@aiModelEmpty": {
+    "description": "模型搜索结果为空"
+  },
+  "aiModelLoad": "获取模型",
+  "@aiModelLoad": {
+    "description": "拉取模型列表按钮"
+  },
+  "aiModelLoadFailed": "获取模型失败：{message}",
+  "@aiModelLoadFailed": {
+    "description": "拉取模型列表失败",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "aiAdvancedSection": "高级设置",
+  "@aiAdvancedSection": {
+    "description": "AI 配置编辑页-高级设置"
+  },
+  "aiAdvancedHint": "最大输出 Token 与温度；留空沿用服务端默认值",
+  "@aiAdvancedHint": {
+    "description": "高级设置折叠时的说明"
+  },
+  "aiMaxTokens": "最大输出 Token",
+  "@aiMaxTokens": {
+    "description": "最大输出 Token"
+  },
+  "aiMaxTokensHint": "留空使用默认值",
+  "@aiMaxTokensHint": {
+    "description": "最大输出 Token 占位"
+  },
+  "aiTemperature": "温度",
+  "@aiTemperature": {
+    "description": "采样温度"
+  },
+  "aiTemperatureHint": "0 - 2，留空使用默认值",
+  "@aiTemperatureHint": {
+    "description": "采样温度占位"
+  },
+  "aiConnIdle": "保存前会自动验证连通性",
+  "@aiConnIdle": {
+    "description": "编辑页底部-未检测状态"
+  },
+  "aiConnTesting": "正在验证连通性…",
+  "@aiConnTesting": {
+    "description": "编辑页底部-检测中"
+  },
+  "aiConnOk": "连接正常，可用模型 {count} 个",
+  "@aiConnOk": {
+    "description": "编辑页底部-检测成功",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiConnFailed": "连接失败：{message}",
+  "@aiConnFailed": {
+    "description": "编辑页底部-检测失败",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "aiSave": "保存",
+  "@aiSave": {
+    "description": "保存 AI 配置"
+  },
+  "aiSaveSuccess": "配置已保存",
+  "@aiSaveSuccess": {
+    "description": "AI 配置保存成功"
+  },
+  "aiSaveFailed": "保存失败：{message}",
+  "@aiSaveFailed": {
+    "description": "AI 配置保存失败",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "aiFieldRequired": "此项不能为空",
+  "@aiFieldRequired": {
+    "description": "表单必填校验"
+  },
+  "aiInvalidUrl": "请输入以 http:// 或 https:// 开头的地址",
+  "@aiInvalidUrl": {
+    "description": "API 地址格式校验"
+  },
+  "aiErrorAuth": "API Key 无效或无权限（HTTP {code}）",
+  "@aiErrorAuth": {
+    "description": "模型目录请求-鉴权失败",
+    "placeholders": {
+      "code": {
+        "type": "int"
+      }
+    }
+  },
+  "aiErrorNotFound": "接口地址不存在，请检查 API 地址（HTTP 404）",
+  "@aiErrorNotFound": {
+    "description": "模型目录请求-地址不存在"
+  },
+  "aiErrorHttp": "请求失败（HTTP {code}）：{message}",
+  "@aiErrorHttp": {
+    "description": "模型目录请求-其他 HTTP 错误",
+    "placeholders": {
+      "code": {
+        "type": "int"
+      },
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "aiErrorNetwork": "网络请求失败：{message}",
+  "@aiErrorNetwork": {
+    "description": "模型目录请求-网络异常",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "chatTitle": "对话",
   "@chatTitle": {
@@ -182,5 +441,13 @@
   "backToHome": "返回首页",
   "@backToHome": {
     "description": "错误页返回首页按钮"
+  },
+  "commonLoadFailed": "加载失败，请稍后重试",
+  "@commonLoadFailed": {
+    "description": "通用加载失败提示"
+  },
+  "commonRetry": "重试",
+  "@commonRetry": {
+    "description": "通用重试按钮"
   }
 }

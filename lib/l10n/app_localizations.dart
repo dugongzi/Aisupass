@@ -314,11 +314,335 @@ abstract class AppLocalizations {
   /// **'应用版本'**
   String get deviceAppVersion;
 
-  /// AI 配置页标题
+  /// 设置页分组标题-AI
   ///
   /// In zh, this message translates to:
-  /// **'AI 设置'**
-  String get aiSettingTitle;
+  /// **'AI'**
+  String get settingsAiSection;
+
+  /// 设置页-AI 配置入口副标题
+  ///
+  /// In zh, this message translates to:
+  /// **'管理模型服务与 API Key'**
+  String get aiConfigEntrySubtitle;
+
+  /// AI 配置列表页标题
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 配置'**
+  String get aiConfigTitle;
+
+  /// 新建 AI 配置
+  ///
+  /// In zh, this message translates to:
+  /// **'新建配置'**
+  String get aiConfigNew;
+
+  /// 当前启用中的配置标记
+  ///
+  /// In zh, this message translates to:
+  /// **'当前'**
+  String get aiConfigCurrent;
+
+  /// AI 配置列表分组标题
+  ///
+  /// In zh, this message translates to:
+  /// **'配置列表'**
+  String get aiConfigList;
+
+  /// AI 配置列表为空时的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有 AI 配置，点击下方按钮新建一个'**
+  String get aiConfigEmpty;
+
+  /// 切换到该 AI 配置
+  ///
+  /// In zh, this message translates to:
+  /// **'切换'**
+  String get aiConfigUse;
+
+  /// 切换 AI 配置成功提示
+  ///
+  /// In zh, this message translates to:
+  /// **'已切换配置'**
+  String get aiConfigSwitched;
+
+  /// 删除 AI 配置
+  ///
+  /// In zh, this message translates to:
+  /// **'删除'**
+  String get aiConfigDelete;
+
+  /// 删除 AI 配置的确认文案
+  ///
+  /// In zh, this message translates to:
+  /// **'确定删除配置「{name}」吗？'**
+  String aiConfigDeleteConfirm(String name);
+
+  /// AI 配置删除成功
+  ///
+  /// In zh, this message translates to:
+  /// **'配置已删除'**
+  String get aiConfigDeleted;
+
+  /// 编辑 AI 配置
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑'**
+  String get aiConfigEdit;
+
+  /// AI 配置编辑页标题
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑配置'**
+  String get aiConfigEditTitle;
+
+  /// 通用删除按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'删除'**
+  String get aiDelete;
+
+  /// 通用取消按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'取消'**
+  String get aiCancel;
+
+  /// AI 配置缺少 API Key 的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'未配置 API Key'**
+  String get aiApiKeyMissing;
+
+  /// AI 配置尚未选择模型
+  ///
+  /// In zh, this message translates to:
+  /// **'未选择模型'**
+  String get aiModelUnset;
+
+  /// AI 配置编辑页-服务商预设
+  ///
+  /// In zh, this message translates to:
+  /// **'快速开始'**
+  String get aiQuickStart;
+
+  /// AI 配置编辑页-服务商预设说明
+  ///
+  /// In zh, this message translates to:
+  /// **'选择服务商可自动填写地址与接口类型'**
+  String get aiQuickStartHint;
+
+  /// AI 配置编辑页-连接服务分组
+  ///
+  /// In zh, this message translates to:
+  /// **'连接服务'**
+  String get aiConnectionSection;
+
+  /// AI 配置名称
+  ///
+  /// In zh, this message translates to:
+  /// **'配置名称'**
+  String get aiConfigName;
+
+  /// AI 配置名称示例
+  ///
+  /// In zh, this message translates to:
+  /// **'例如：DeepSeek 主力'**
+  String get aiConfigNameHint;
+
+  /// AI 服务地址
+  ///
+  /// In zh, this message translates to:
+  /// **'API 地址'**
+  String get aiBaseUrl;
+
+  /// AI 服务地址示例
+  ///
+  /// In zh, this message translates to:
+  /// **'https://api.deepseek.com/v1'**
+  String get aiBaseUrlHint;
+
+  /// AI 服务密钥
+  ///
+  /// In zh, this message translates to:
+  /// **'API Key'**
+  String get aiApiKey;
+
+  /// AI 服务密钥示例
+  ///
+  /// In zh, this message translates to:
+  /// **'sk-...'**
+  String get aiApiKeyHint;
+
+  /// AI 接口协议类型
+  ///
+  /// In zh, this message translates to:
+  /// **'接口类型'**
+  String get aiApiType;
+
+  /// AI 模型
+  ///
+  /// In zh, this message translates to:
+  /// **'模型'**
+  String get aiModelName;
+
+  /// 尚未获取模型时的占位文案
+  ///
+  /// In zh, this message translates to:
+  /// **'先获取模型列表'**
+  String get aiModelHint;
+
+  /// 未获取模型就点击选择器时的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'请先获取模型列表'**
+  String get aiModelRequired;
+
+  /// 模型选择弹层标题
+  ///
+  /// In zh, this message translates to:
+  /// **'选择模型'**
+  String get aiModelSelect;
+
+  /// 模型搜索框提示
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索模型'**
+  String get aiModelSearch;
+
+  /// 模型搜索结果为空
+  ///
+  /// In zh, this message translates to:
+  /// **'没有匹配的模型'**
+  String get aiModelEmpty;
+
+  /// 拉取模型列表按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'获取模型'**
+  String get aiModelLoad;
+
+  /// 拉取模型列表失败
+  ///
+  /// In zh, this message translates to:
+  /// **'获取模型失败：{message}'**
+  String aiModelLoadFailed(String message);
+
+  /// AI 配置编辑页-高级设置
+  ///
+  /// In zh, this message translates to:
+  /// **'高级设置'**
+  String get aiAdvancedSection;
+
+  /// 高级设置折叠时的说明
+  ///
+  /// In zh, this message translates to:
+  /// **'最大输出 Token 与温度；留空沿用服务端默认值'**
+  String get aiAdvancedHint;
+
+  /// 最大输出 Token
+  ///
+  /// In zh, this message translates to:
+  /// **'最大输出 Token'**
+  String get aiMaxTokens;
+
+  /// 最大输出 Token 占位
+  ///
+  /// In zh, this message translates to:
+  /// **'留空使用默认值'**
+  String get aiMaxTokensHint;
+
+  /// 采样温度
+  ///
+  /// In zh, this message translates to:
+  /// **'温度'**
+  String get aiTemperature;
+
+  /// 采样温度占位
+  ///
+  /// In zh, this message translates to:
+  /// **'0 - 2，留空使用默认值'**
+  String get aiTemperatureHint;
+
+  /// 编辑页底部-未检测状态
+  ///
+  /// In zh, this message translates to:
+  /// **'保存前会自动验证连通性'**
+  String get aiConnIdle;
+
+  /// 编辑页底部-检测中
+  ///
+  /// In zh, this message translates to:
+  /// **'正在验证连通性…'**
+  String get aiConnTesting;
+
+  /// 编辑页底部-检测成功
+  ///
+  /// In zh, this message translates to:
+  /// **'连接正常，可用模型 {count} 个'**
+  String aiConnOk(int count);
+
+  /// 编辑页底部-检测失败
+  ///
+  /// In zh, this message translates to:
+  /// **'连接失败：{message}'**
+  String aiConnFailed(String message);
+
+  /// 保存 AI 配置
+  ///
+  /// In zh, this message translates to:
+  /// **'保存'**
+  String get aiSave;
+
+  /// AI 配置保存成功
+  ///
+  /// In zh, this message translates to:
+  /// **'配置已保存'**
+  String get aiSaveSuccess;
+
+  /// AI 配置保存失败
+  ///
+  /// In zh, this message translates to:
+  /// **'保存失败：{message}'**
+  String aiSaveFailed(String message);
+
+  /// 表单必填校验
+  ///
+  /// In zh, this message translates to:
+  /// **'此项不能为空'**
+  String get aiFieldRequired;
+
+  /// API 地址格式校验
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入以 http:// 或 https:// 开头的地址'**
+  String get aiInvalidUrl;
+
+  /// 模型目录请求-鉴权失败
+  ///
+  /// In zh, this message translates to:
+  /// **'API Key 无效或无权限（HTTP {code}）'**
+  String aiErrorAuth(int code);
+
+  /// 模型目录请求-地址不存在
+  ///
+  /// In zh, this message translates to:
+  /// **'接口地址不存在，请检查 API 地址（HTTP 404）'**
+  String get aiErrorNotFound;
+
+  /// 模型目录请求-其他 HTTP 错误
+  ///
+  /// In zh, this message translates to:
+  /// **'请求失败（HTTP {code}）：{message}'**
+  String aiErrorHttp(int code, String message);
+
+  /// 模型目录请求-网络异常
+  ///
+  /// In zh, this message translates to:
+  /// **'网络请求失败：{message}'**
+  String aiErrorNetwork(String message);
 
   /// AI 对话页标题
   ///
@@ -355,6 +679,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'返回首页'**
   String get backToHome;
+
+  /// 通用加载失败提示
+  ///
+  /// In zh, this message translates to:
+  /// **'加载失败，请稍后重试'**
+  String get commonLoadFailed;
+
+  /// 通用重试按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'重试'**
+  String get commonRetry;
 }
 
 class _AppLocalizationsDelegate

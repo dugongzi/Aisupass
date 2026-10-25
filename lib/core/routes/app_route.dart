@@ -1,6 +1,7 @@
 import 'package:Aisupass/common/pages/desktop_page.dart';
 import 'package:Aisupass/common/pages/main_page.dart';
-import 'package:Aisupass/features/ai/presentation/pages/ai_setting_page.dart';
+import 'package:Aisupass/features/ai/presentation/pages/ai_config_edit_page.dart';
+import 'package:Aisupass/features/ai/presentation/pages/ai_config_page.dart';
 import 'package:Aisupass/features/chat/presentation/pages/chat_page.dart';
 import 'package:go_router/go_router.dart';
 
@@ -13,7 +14,16 @@ class AppRoute {
   // 移动端
   static const home = '/';
   static const chat = '/chat';
-  static const aiSetting = '/aiSetting';
+
+  // AI 配置
+  static const aiConfig = '/aiConfig';
+  static const aiConfigEdit = '/aiConfig/edit/:id';
+
+  /// 新建 AI 配置时使用的占位 id。
+  static const newConfigId = 'new';
+
+  /// 拼接编辑页路径，[id] 传 [newConfigId] 表示新建。
+  static String aiConfigEditPath(String id) => '/aiConfig/edit/$id';
 
   // 桌面端
   static const desktopHome = '/desktop';
@@ -35,8 +45,16 @@ final List<GoRoute> appRoutes = [
     builder: (context, state) => const ChatPage(),
   ),
   GoRoute(
-    path: AppRoute.aiSetting,
-    builder: (context, state) => const AiSettingPage(),
+    path: AppRoute.aiConfig,
+    builder: (context, state) => const AiConfigPage(),
+    routes: <RouteBase>[
+      GoRoute(
+        path: 'edit/:id',
+        builder: (context, state) => AiConfigEditPage(
+          configId: state.pathParameters['id'] ?? AppRoute.newConfigId,
+        ),
+      ),
+    ],
   ),
   GoRoute(
     path: AppRoute.desktopHome,
