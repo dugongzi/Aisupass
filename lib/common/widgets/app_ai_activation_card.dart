@@ -107,6 +107,8 @@ class AppAiActivationCard extends HookWidget {
     if (!isActivated) {
       return Text(
         text,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: style.copyWith(
           color: context.colorScheme.onSurface.withValues(
             alpha: fontWeight == FontWeight.w800 ? 0.86 : 0.58,
@@ -118,7 +120,12 @@ class AppAiActivationCard extends HookWidget {
     return ShaderMask(
       blendMode: BlendMode.srcIn,
       shaderCallback: (Rect bounds) => aiActivationGradient.createShader(bounds),
-      child: Text(text, style: style.copyWith(color: Colors.white)),
+      child: Text(
+        text,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: style.copyWith(color: Colors.white),
+      ),
     );
   }
 }
