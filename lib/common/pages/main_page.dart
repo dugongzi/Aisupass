@@ -54,7 +54,8 @@ class MainPage extends HookConsumerWidget {
         // 点击事件暂未接入。
       ),
       appBar: AppBar(
-        title: Text(titles[currentIndex.value]),
+        // 首页内容里已有品牌标题，标题栏不再重复显示，仅保留高度占位。
+        title: currentIndex.value == 0 ? null : Text(titles[currentIndex.value]),
         centerTitle: true,
       ),
       body: PageView(
@@ -68,6 +69,8 @@ class MainPage extends HookConsumerWidget {
         onTap: (int index) => _changeTab(currentIndex, pageController, index),
         fabSize: _centerBallSize,
         fabOffsetY: _centerBallOffsetY,
+        // TODO: 接入 AI 激活状态后改为读取真实状态，当前先固定为已激活。
+        isAiActivated: true,
       ),
     );
   }

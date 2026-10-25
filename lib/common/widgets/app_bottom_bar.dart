@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:Aisupass/core/extensions/context_extensions.dart';
+import 'package:Aisupass/core/themes/ai_activation_theme.dart';
 import 'package:Aisupass/core/themes/app_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -26,6 +27,9 @@ class AppBottomBarItem {
 ///
 /// 正中留出一个半圆缺口，供 [AppBottomCenterBall] 嵌入；缺口尺寸必须与
 /// 圆球保持一致，因此 [fabSize] / [fabOffsetY] 由根页面统一传入。
+///
+/// [isAiActivated] 为 true 时描边换成 AI 渐变并外发光，与圆球、AI 激活卡片
+/// 使用同一套视觉语言。
 class AppBottomBar extends HookWidget {
   const AppBottomBar({
     super.key,
@@ -35,6 +39,7 @@ class AppBottomBar extends HookWidget {
     this.height = 60,
     this.fabSize = 58,
     this.fabOffsetY = 9,
+    this.isAiActivated = false,
   });
 
   final List<AppBottomBarItem> items;
@@ -49,6 +54,9 @@ class AppBottomBar extends HookWidget {
 
   /// 圆球圆心相对底栏顶边的下移距离（设计稿值）。
   final double fabOffsetY;
+
+  /// AI 是否已激活：激活后描边走渐变并加外发光。
+  final bool isAiActivated;
 
   @override
   Widget build(BuildContext context) {
@@ -66,43 +74,53 @@ class AppBottomBar extends HookWidget {
       top: false,
       minimum: EdgeInsets.fromLTRB(12.w, 0, 12.w, 10.h),
       child: CustomPaint(
+        // 投影与发光画在底栏下方，形状本身由 ClipPath 裁出来。
+        painter: _BottomBarBackdropPainter(
+          shape: shape,
+          guestDiameter: fabDiameter,
+          guestCenterY: fabCenterY,
+          shadowColor: Colors.black.withValues(alpha: isDark ? 0.50 : 0.20),
+          elevation: 12,
+          isGlowing: isAiActivated,
+          isDark: isDark,
+        ),
         // 前景描边，沿缺口曲线走一圈，缺口边缘才不会缺线。
         foregroundPainter: _BottomBarBorderPainter(
           shape: shape,
           guestDiameter: fabDiameter,
           guestCenterY: fabCenterY,
+          gradient: isAiActivated ? aiActivationGradient : null,
           color: colorScheme.outline.withValues(alpha: isDark ? 0.34 : 0.18),
           strokeWidth: 1.1,
         ),
-        child: PhysicalShape(
+        child: ClipPath(
           clipper: _BottomBarClipper(
             shape: shape,
             guestDiameter: fabDiameter,
             guestCenterY: fabCenterY,
           ),
-          color: colorScheme.surface,
-          elevation: 12,
-          shadowColor: Colors.black.withValues(alpha: isDark ? 0.50 : 0.20),
-          clipBehavior: Clip.antiAlias,
-          child: SizedBox(
-            height: height.h,
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10.w),
-              child: Row(
-                children: <Widget>[
-                  for (int i = 0; i < items.length; i++) ...<Widget>[
-                    // 在正中间留出圆球占位，圆球本身由根页面的浮动按钮绘制。
-                    if (i == items.length ~/ 2)
-                      SizedBox(width: fabDiameter + 18.w),
-                    Expanded(
-                      child: _BottomBarItem(
-                        item: items[i],
-                        selected: currentIndex == i,
-                        onTap: () => onTap(i),
+          child: ColoredBox(
+            color: colorScheme.surface,
+            child: SizedBox(
+              height: height.h,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10.w),
+                child: Row(
+                  children: <Widget>[
+                    for (int i = 0; i < items.length; i++) ...<Widget>[
+                      // 在正中间留出圆球占位，圆球本身由根页面的浮动按钮绘制。
+                      if (i == items.length ~/ 2)
+                        SizedBox(width: fabDiameter + 18.w),
+                      Expanded(
+                        child: _BottomBarItem(
+                          item: items[i],
+                          selected: currentIndex == i,
+                          onTap: () => onTap(i),
+                        ),
                       ),
-                    ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ),
@@ -249,11 +267,80 @@ class _BottomBarClipper extends CustomClipper<Path> {
   }
 }
 
+/// 底栏投影与激活态外发光。
+///
+/// 形状带缺口，`BoxShadow` 套不上，只能沿路径绘制：先用 `drawShadow`
+/// 铺投影，再把同一条路径加粗描边并做高斯模糊，形成沿边缘的彩色光晕。
+class _BottomBarBackdropPainter extends CustomPainter {
+  const _BottomBarBackdropPainter({
+    required this.shape,
+    required this.guestDiameter,
+    required this.guestCenterY,
+    required this.shadowColor,
+    required this.elevation,
+    required this.isGlowing,
+    required this.isDark,
+  });
+
+  final _HalfCircleNotchedShape shape;
+  final double guestDiameter;
+  final double guestCenterY;
+  final Color shadowColor;
+  final double elevation;
+
+  /// 是否绘制 AI 渐变光晕。
+  final bool isGlowing;
+  final bool isDark;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Rect rect = Offset.zero & size;
+    final Path path = shape.getOuterPathWithGuestMetrics(
+      rect,
+      guestDiameter: guestDiameter,
+      guestCenterY: guestCenterY,
+    );
+
+    canvas.drawShadow(path, shadowColor, elevation, true);
+
+    if (!isGlowing) return;
+
+    // 深色模式下压低透明度，避免光晕在暗背景上过曝。
+    final double factor = isDark ? 0.55 : 1;
+    final LinearGradient glowGradient = LinearGradient(
+      colors: <Color>[
+        for (final Color color in aiActivationGradientColors)
+          color.withValues(alpha: 0.42 * factor),
+      ],
+    );
+
+    final Paint glowPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 9
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 9)
+      ..shader = glowGradient.createShader(rect);
+
+    canvas.drawPath(path, glowPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _BottomBarBackdropPainter oldDelegate) {
+    return oldDelegate.shape != shape ||
+        oldDelegate.guestDiameter != guestDiameter ||
+        oldDelegate.guestCenterY != guestCenterY ||
+        oldDelegate.shadowColor != shadowColor ||
+        oldDelegate.elevation != elevation ||
+        oldDelegate.isGlowing != isGlowing ||
+        oldDelegate.isDark != isDark;
+  }
+}
+
 class _BottomBarBorderPainter extends CustomPainter {
   const _BottomBarBorderPainter({
     required this.shape,
     required this.guestDiameter,
     required this.guestCenterY,
+    required this.gradient,
     required this.color,
     required this.strokeWidth,
   });
@@ -261,21 +348,31 @@ class _BottomBarBorderPainter extends CustomPainter {
   final _HalfCircleNotchedShape shape;
   final double guestDiameter;
   final double guestCenterY;
+
+  /// 非空时用渐变描边，否则用 [color] 单色。
+  final LinearGradient? gradient;
   final Color color;
   final double strokeWidth;
 
   @override
   void paint(Canvas canvas, Size size) {
+    final Rect rect = Offset.zero & size;
     final Path path = shape.getOuterPathWithGuestMetrics(
-      Offset.zero & size,
+      rect,
       guestDiameter: guestDiameter,
       guestCenterY: guestCenterY,
     );
 
     final Paint paint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..color = color;
+      ..strokeWidth = strokeWidth;
+
+    final LinearGradient? gradient = this.gradient;
+    if (gradient != null) {
+      paint.shader = gradient.createShader(rect);
+    } else {
+      paint.color = color;
+    }
 
     canvas.drawPath(path, paint);
   }
@@ -285,6 +382,7 @@ class _BottomBarBorderPainter extends CustomPainter {
     return oldDelegate.shape != shape ||
         oldDelegate.guestDiameter != guestDiameter ||
         oldDelegate.guestCenterY != guestCenterY ||
+        oldDelegate.gradient != gradient ||
         oldDelegate.color != color ||
         oldDelegate.strokeWidth != strokeWidth;
   }
