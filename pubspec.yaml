@@ -63,6 +63,12 @@ dependencies:
   uuid: ^4.5.0
   permission_handler: ^11.3.0
 
+  # 尺寸自适应（.w/.h/.sp/.r/.sw/.sh）
+  flutter_screenutil: ^5.9.3
+
+  # 轻提示 / 弹窗
+  flutter_smart_dialog: ^4.9.8+9
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
