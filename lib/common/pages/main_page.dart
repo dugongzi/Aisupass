@@ -1,10 +1,18 @@
 import 'package:Aisupass/common/tabs/home/home_tab.dart';
 import 'package:Aisupass/common/tabs/setting/setting_tab.dart';
 import 'package:Aisupass/common/widgets/app_bottom_bar.dart';
+import 'package:Aisupass/common/widgets/app_bottom_center_ball.dart';
 import 'package:Aisupass/core/extensions/context_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
+/// 底栏正中圆球的直径与下移距离（设计稿值）。
+///
+/// 圆球与底栏缺口必须同尺寸，两处都从这里取值。
+const double _centerBallSize = 58;
+const double _centerBallOffsetY = 9;
 
 /// 移动端根页面：持有标题栏、底部导航与各 tab 内容。
 ///
@@ -36,6 +44,15 @@ class MainPage extends HookConsumerWidget {
 
     return Scaffold(
       extendBody: true,
+      // 圆球位置固定在缺口中心，切换 tab 时不做位移动画。
+      floatingActionButtonAnimator: FloatingActionButtonAnimator.noAnimation,
+      floatingActionButtonLocation: AppBottomCenterBallLocation(
+        offsetY: _centerBallOffsetY.h,
+      ),
+      floatingActionButton: AppBottomCenterBall(
+        size: _centerBallSize.w,
+        // 点击事件暂未接入。
+      ),
       appBar: AppBar(
         title: Text(titles[currentIndex.value]),
         centerTitle: true,
@@ -49,6 +66,8 @@ class MainPage extends HookConsumerWidget {
         items: navItems,
         currentIndex: currentIndex.value,
         onTap: (int index) => _changeTab(currentIndex, pageController, index),
+        fabSize: _centerBallSize,
+        fabOffsetY: _centerBallOffsetY,
       ),
     );
   }
