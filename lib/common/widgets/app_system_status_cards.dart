@@ -1,12 +1,11 @@
 import 'package:Aisupass/common/widgets/app_status_card.dart';
 import 'package:Aisupass/core/extensions/context_extensions.dart';
 import 'package:Aisupass/core/providers/system_status_provider.dart';
+import 'package:Aisupass/generated/system_status.g.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-/// ROOT 与 ADB 两张状态卡片。
+/// ROOT 与 ADB 两张状态卡片，各自独立检测、独立刷新。
 class AppSystemStatusCards extends HookConsumerWidget {
   const AppSystemStatusCards({super.key, this.spacing = 12});
 
@@ -15,53 +14,55 @@ class AppSystemStatusCards extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<SystemStatus> status = ref.watch(systemStatusProvider);
-    final SystemStatus? data = status.value;
-    final bool isLoading = status.isLoading;
+    final AsyncValue<bool> rootAsync = ref.watch(rootStatusProvider);
+    final AsyncValue<AdbStatus> adbAsync = ref.watch(adbStatusProvider);
 
     return Column(
       children: <Widget>[
         AppStatusCard(
           title: context.l10n.rootTitle,
-          subtitle: _rootSubtitle(context, data, isLoading),
+          subtitle: _rootSubtitle(context, rootAsync),
           icon: Icons.admin_panel_settings_outlined,
-          isActivated: data?.isRooted ?? false,
-          isLoading: isLoading,
+          isActivated: rootAsync.value ?? false,
+          // 首次没有结果才降级为检测中，刷新时保留上一次的状态。
+          isLoading: !rootAsync.hasValue,
+          isRefreshing: rootAsync.isLoading,
+          onRefresh: () => ref.invalidate(rootStatusProvider),
         ),
         SizedBox(height: spacing),
         AppStatusCard(
           title: context.l10n.adbTitle,
-          subtitle: _adbSubtitle(context, data, isLoading),
+          subtitle: _adbSubtitle(context, adbAsync),
           icon: Icons.developer_mode_rounded,
-          isActivated: data?.isAdbEnabled ?? false,
-          isLoading: isLoading,
+          isActivated: _isAdbEnabled(adbAsync.value),
+          isLoading: !adbAsync.hasValue,
+          isRefreshing: adbAsync.isLoading,
+          onRefresh: () => ref.invalidate(adbStatusProvider),
         ),
       ],
     );
   }
 
-  String _rootSubtitle(
-    BuildContext context,
-    SystemStatus? data,
-    bool isLoading,
-  ) {
-    if (isLoading || data == null) return context.l10n.statusDetecting;
-    return data.isRooted ? context.l10n.activated : context.l10n.notActivated;
+  bool _isAdbEnabled(AdbStatus? adb) => adb != null && (adb.usb || adb.wifi);
+
+  String _rootSubtitle(BuildContext context, AsyncValue<bool> rootAsync) {
+    final bool? rooted = rootAsync.value;
+    if (rooted == null) return context.l10n.statusDetecting;
+    return rooted ? context.l10n.activated : context.l10n.notActivated;
   }
 
-  /// ADB 副标题区分无线与有线，两者同时开启时合并展示。
-  String _adbSubtitle(
-    BuildContext context,
-    SystemStatus? data,
-    bool isLoading,
-  ) {
-    if (isLoading || data == null) return context.l10n.statusDetecting;
-    if (!data.isAdbEnabled) return context.l10n.notActivated;
-    if (data.adbUsbEnabled && data.adbWifiEnabled) {
-      return context.l10n.adbActivatedBoth;
-    }
-    return data.adbWifiEnabled
-        ? context.l10n.adbActivatedWifi
-        : context.l10n.adbActivatedUsb;
+  /// ADB 副标题按实际开启的调试类型拼接，顺序为无线在前、有线在后。
+  String _adbSubtitle(BuildContext context, AsyncValue<AdbStatus> adbAsync) {
+    final AdbStatus? adb = adbAsync.value;
+    if (adb == null) return context.l10n.statusDetecting;
+    if (!_isAdbEnabled(adb)) return context.l10n.notActivated;
+
+    final List<String> types = <String>[
+      if (adb.wifi) context.l10n.adbTypeWifi,
+      if (adb.usb) context.l10n.adbTypeUsb,
+    ];
+    return context.l10n.adbActivatedWithType(
+      types.join(context.l10n.listSeparator),
+    );
   }
 }

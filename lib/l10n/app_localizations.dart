@@ -194,23 +194,35 @@ abstract class AppLocalizations {
   /// **'检测中'**
   String get statusDetecting;
 
-  /// ADB 状态-无线与有线调试均已开启
+  /// ADB 状态-已激活，括号内为实际开启的调试类型
   ///
   /// In zh, this message translates to:
-  /// **'已激活（无线、有线）'**
-  String get adbActivatedBoth;
+  /// **'已激活（{types}）'**
+  String adbActivatedWithType(String types);
 
-  /// ADB 状态-仅无线调试开启
+  /// ADB 调试类型-无线调试
   ///
   /// In zh, this message translates to:
-  /// **'已激活（无线）'**
-  String get adbActivatedWifi;
+  /// **'无线'**
+  String get adbTypeWifi;
 
-  /// ADB 状态-仅有线调试开启
+  /// ADB 调试类型-有线（USB）调试
   ///
   /// In zh, this message translates to:
-  /// **'已激活（有线）'**
-  String get adbActivatedUsb;
+  /// **'有线'**
+  String get adbTypeUsb;
+
+  /// 多个并列项之间的分隔符
+  ///
+  /// In zh, this message translates to:
+  /// **'、'**
+  String get listSeparator;
+
+  /// 状态卡片刷新按钮的提示文案
+  ///
+  /// In zh, this message translates to:
+  /// **'重新检测'**
+  String get refreshTooltip;
 
   /// 首页-设备信息卡片标题
   ///

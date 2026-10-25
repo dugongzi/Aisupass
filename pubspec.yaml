@@ -77,6 +77,11 @@ dependencies:
   # 轻提示 / 弹窗
   flutter_smart_dialog: ^4.9.8+9
 
+  # 原生通信代码生成（Dart <-> Kotlin 契约）
+  # 契约文件放在 lib/pigeons 下属于生产代码，必须在 dependencies 里，
+  # 否则分析器会报 depend_on_referenced_packages。
+  pigeon: ^26.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -93,9 +98,6 @@ dev_dependencies:
   riverpod_generator: ^3.0.0
   freezed: ^3.0.0
   json_serializable: ^6.8.0
-
-  # 原生通信代码生成（Dart <-> Kotlin 契约）
-  pigeon: ^26.1.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

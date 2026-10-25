@@ -58,13 +58,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statusDetecting => 'Detecting';
 
   @override
-  String get adbActivatedBoth => 'Activated (Wi-Fi, USB)';
+  String adbActivatedWithType(String types) {
+    return 'Activated ($types)';
+  }
 
   @override
-  String get adbActivatedWifi => 'Activated (Wi-Fi)';
+  String get adbTypeWifi => 'Wi-Fi';
 
   @override
-  String get adbActivatedUsb => 'Activated (USB)';
+  String get adbTypeUsb => 'USB';
+
+  @override
+  String get listSeparator => ', ';
+
+  @override
+  String get refreshTooltip => 'Refresh';
 
   @override
   String get deviceInfoTitle => 'Device Info';

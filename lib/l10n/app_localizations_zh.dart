@@ -58,13 +58,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get statusDetecting => '检测中';
 
   @override
-  String get adbActivatedBoth => '已激活（无线、有线）';
+  String adbActivatedWithType(String types) {
+    return '已激活（$types）';
+  }
 
   @override
-  String get adbActivatedWifi => '已激活（无线）';
+  String get adbTypeWifi => '无线';
 
   @override
-  String get adbActivatedUsb => '已激活（有线）';
+  String get adbTypeUsb => '有线';
+
+  @override
+  String get listSeparator => '、';
+
+  @override
+  String get refreshTooltip => '重新检测';
 
   @override
   String get deviceInfoTitle => '设备信息';

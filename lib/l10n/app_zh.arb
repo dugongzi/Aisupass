@@ -64,17 +64,31 @@
   "@statusDetecting": {
     "description": "状态卡片-正在检测"
   },
-  "adbActivatedBoth": "已激活（无线、有线）",
-  "@adbActivatedBoth": {
-    "description": "ADB 状态-无线与有线调试均已开启"
+  "adbActivatedWithType": "已激活（{types}）",
+  "@adbActivatedWithType": {
+    "description": "ADB 状态-已激活，括号内为实际开启的调试类型",
+    "placeholders": {
+      "types": {
+        "type": "String",
+        "example": "无线、有线"
+      }
+    }
   },
-  "adbActivatedWifi": "已激活（无线）",
-  "@adbActivatedWifi": {
-    "description": "ADB 状态-仅无线调试开启"
+  "adbTypeWifi": "无线",
+  "@adbTypeWifi": {
+    "description": "ADB 调试类型-无线调试"
   },
-  "adbActivatedUsb": "已激活（有线）",
-  "@adbActivatedUsb": {
-    "description": "ADB 状态-仅有线调试开启"
+  "adbTypeUsb": "有线",
+  "@adbTypeUsb": {
+    "description": "ADB 调试类型-有线（USB）调试"
+  },
+  "listSeparator": "、",
+  "@listSeparator": {
+    "description": "多个并列项之间的分隔符"
+  },
+  "refreshTooltip": "重新检测",
+  "@refreshTooltip": {
+    "description": "状态卡片刷新按钮的提示文案"
   },
   "deviceInfoTitle": "设备信息",
   "@deviceInfoTitle": {

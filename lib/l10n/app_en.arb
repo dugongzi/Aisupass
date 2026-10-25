@@ -16,9 +16,18 @@
   "rootTitle": "ROOT",
   "adbTitle": "ADB",
   "statusDetecting": "Detecting",
-  "adbActivatedBoth": "Activated (Wi-Fi, USB)",
-  "adbActivatedWifi": "Activated (Wi-Fi)",
-  "adbActivatedUsb": "Activated (USB)",
+  "adbActivatedWithType": "Activated ({types})",
+  "@adbActivatedWithType": {
+    "placeholders": {
+      "types": {
+        "type": "String"
+      }
+    }
+  },
+  "adbTypeWifi": "Wi-Fi",
+  "adbTypeUsb": "USB",
+  "listSeparator": ", ",
+  "refreshTooltip": "Refresh",
   "deviceInfoTitle": "Device Info",
   "deviceInfoCopy": "Copy",
   "deviceInfoCopied": "Copied to clipboard",
