@@ -40,6 +40,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get themeColorTitle => 'Accent Color';
 
   @override
+  String get aiTitle => 'AI';
+
+  @override
+  String get activated => 'Activated';
+
+  @override
+  String get notActivated => 'Not Activated';
+
+  @override
   String get aiSettingTitle => 'AI Settings';
 
   @override

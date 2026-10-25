@@ -158,6 +158,24 @@ abstract class AppLocalizations {
   /// **'主题色'**
   String get themeColorTitle;
 
+  /// AI 激活卡片标题
+  ///
+  /// In zh, this message translates to:
+  /// **'AI'**
+  String get aiTitle;
+
+  /// 激活状态
+  ///
+  /// In zh, this message translates to:
+  /// **'已激活'**
+  String get activated;
+
+  /// 未激活状态
+  ///
+  /// In zh, this message translates to:
+  /// **'未激活'**
+  String get notActivated;
+
   /// AI 配置页标题
   ///
   /// In zh, this message translates to:

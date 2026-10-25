@@ -40,6 +40,18 @@
   "@themeColorTitle": {
     "description": "设置项-主题色"
   },
+  "aiTitle": "AI",
+  "@aiTitle": {
+    "description": "AI 激活卡片标题"
+  },
+  "activated": "已激活",
+  "@activated": {
+    "description": "激活状态"
+  },
+  "notActivated": "未激活",
+  "@notActivated": {
+    "description": "未激活状态"
+  },
   "aiSettingTitle": "AI 设置",
   "@aiSettingTitle": {
     "description": "AI 配置页标题"

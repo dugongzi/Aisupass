@@ -40,6 +40,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get themeColorTitle => '主题色';
 
   @override
+  String get aiTitle => 'AI';
+
+  @override
+  String get activated => '已激活';
+
+  @override
+  String get notActivated => '未激活';
+
+  @override
   String get aiSettingTitle => 'AI 设置';
 
   @override
