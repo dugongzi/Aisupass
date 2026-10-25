@@ -8,7 +8,8 @@ void main() {
     await tester.pumpWidget(const ProviderScope(child: AiSuPassApp()));
     await tester.pumpAndSettle();
 
-    expect(find.text('首页'), findsOneWidget);
+    // 标题栏、底栏、首页内容都会出现「首页」。
+    expect(find.text('首页'), findsWidgets);
   });
 
   testWidgets('未知路径显示错误页', (WidgetTester tester) async {

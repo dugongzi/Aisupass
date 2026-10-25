@@ -1,7 +1,6 @@
-import 'package:Aisupass/common/tabs/home/home_tab.dart';
+import 'package:Aisupass/common/pages/main_page.dart';
 import 'package:Aisupass/common/tabs/home/pc_home_tab.dart';
 import 'package:Aisupass/common/tabs/setting/pc_setting_tab.dart';
-import 'package:Aisupass/common/tabs/setting/setting_tab.dart';
 import 'package:Aisupass/features/ai/presentation/pages/ai_setting_page.dart';
 import 'package:Aisupass/features/chat/presentation/pages/chat_page.dart';
 import 'package:go_router/go_router.dart';
@@ -14,7 +13,6 @@ class AppRoute {
 
   // 移动端
   static const home = '/';
-  static const settings = '/settings';
   static const chat = '/chat';
   static const aiSetting = '/aiSetting';
 
@@ -32,11 +30,7 @@ class AppRoute {
 final List<GoRoute> appRoutes = [
   GoRoute(
     path: AppRoute.home,
-    builder: (context, state) => const HomeTab(),
-  ),
-  GoRoute(
-    path: AppRoute.settings,
-    builder: (context, state) => const SettingTab(),
+    builder: (context, state) => const MainPage(),
   ),
   GoRoute(
     path: AppRoute.chat,

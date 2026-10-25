@@ -1,3 +1,4 @@
+import 'package:Aisupass/core/themes/app_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -69,6 +70,7 @@ class ToastMessage {
                   maxLines: 15,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
+                    fontFamily: AppFonts.primary,
                     color: Colors.white,
                     fontSize: 14.sp,
                     height: 1.4,

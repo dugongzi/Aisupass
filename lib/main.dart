@@ -1,6 +1,7 @@
 import 'package:Aisupass/common/widgets/app_bootstrap.dart';
 import 'package:Aisupass/core/providers/locale_provider.dart';
 import 'package:Aisupass/core/routes/app_router.dart';
+import 'package:Aisupass/core/themes/app_fonts.dart';
 import 'package:Aisupass/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -35,6 +36,8 @@ class AiSuPassApp extends ConsumerWidget {
         routerConfig: ref.watch(appRouterProvider),
         theme: ThemeData(
           colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+          // 全局字体：阿里妈妈方圆体。
+          fontFamily: AppFonts.primary,
         ),
         // 挂载 SmartDialog，ToastMessage 依赖它。
         builder: FlutterSmartDialog.init(),
