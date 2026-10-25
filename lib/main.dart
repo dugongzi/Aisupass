@@ -5,14 +5,14 @@ import 'package:Aisupass/core/themes/app_fonts.dart';
 import 'package:Aisupass/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 void main() {
   runApp(const ProviderScope(child: AiSuPassApp()));
 }
 
-class AiSuPassApp extends ConsumerWidget {
+class AiSuPassApp extends HookConsumerWidget {
   const AiSuPassApp({super.key});
 
   @override

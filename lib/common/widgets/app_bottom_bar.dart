@@ -1,5 +1,7 @@
+import 'package:Aisupass/core/extensions/context_extensions.dart';
 import 'package:Aisupass/core/themes/app_fonts.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 底栏单项数据。
@@ -19,7 +21,7 @@ class AppBottomBarItem {
 ///
 /// 圆角矩形 + 阴影，左右各留 [12.w] 边距，底部留出安全区，
 /// 由根页面通过 `Scaffold.bottomNavigationBar` 挂载。
-class AppBottomBar extends StatelessWidget {
+class AppBottomBar extends HookWidget {
   const AppBottomBar({
     super.key,
     required this.items,
@@ -37,8 +39,8 @@ class AppBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ColorScheme colorScheme = Theme.of(context).colorScheme;
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final ColorScheme colorScheme = context.colorScheme;
+    final bool isDark = context.isDark;
 
     return SafeArea(
       top: false,
@@ -80,7 +82,7 @@ class AppBottomBar extends StatelessWidget {
   }
 }
 
-class _BottomBarItem extends StatelessWidget {
+class _BottomBarItem extends HookWidget {
   const _BottomBarItem({
     required this.item,
     required this.selected,
@@ -93,8 +95,8 @@ class _BottomBarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ColorScheme colorScheme = Theme.of(context).colorScheme;
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final ColorScheme colorScheme = context.colorScheme;
+    final bool isDark = context.isDark;
     final Color iconColor = selected
         ? colorScheme.primary
         : colorScheme.onSurface.withValues(alpha: 0.50);

@@ -1,43 +1,19 @@
-import 'package:Aisupass/core/extensions/context_extensions.dart';
-import 'package:Aisupass/core/providers/locale_provider.dart';
+import 'package:Aisupass/common/widgets/app_language_switch.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-/// 桌面端设置。当前只有语言切换，其余设置项等待业务内容接入。
-class PcSettingTab extends ConsumerWidget {
+/// 桌面端设置内容。当前只有语言切换，其余设置项等待业务接入。
+///
+/// 标题栏与左侧导航由 `DesktopPage` 提供，这里不要自带 Scaffold。
+class PcSettingTab extends HookConsumerWidget {
   const PcSettingTab({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final Locale locale = ref.watch(localeProvider);
-
-    return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.desktopSettingsTitle)),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text(
-            context.l10n.languageTitle,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 8),
-          SegmentedButton<String>(
-            segments: [
-              ButtonSegment(
-                value: 'zh',
-                label: Text(context.l10n.languageChinese),
-              ),
-              ButtonSegment(
-                value: 'en',
-                label: Text(context.l10n.languageEnglish),
-              ),
-            ],
-            selected: {locale.languageCode},
-            onSelectionChanged: (selection) =>
-                ref.read(localeProvider.notifier).setLanguage(selection.first),
-          ),
-        ],
-      ),
+    return ListView(
+      padding: EdgeInsets.all(16.w),
+      children: const <Widget>[AppLanguageSwitch()],
     );
   }
 }

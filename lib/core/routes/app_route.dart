@@ -1,6 +1,5 @@
+import 'package:Aisupass/common/pages/desktop_page.dart';
 import 'package:Aisupass/common/pages/main_page.dart';
-import 'package:Aisupass/common/tabs/home/pc_home_tab.dart';
-import 'package:Aisupass/common/tabs/setting/pc_setting_tab.dart';
 import 'package:Aisupass/features/ai/presentation/pages/ai_setting_page.dart';
 import 'package:Aisupass/features/chat/presentation/pages/chat_page.dart';
 import 'package:go_router/go_router.dart';
@@ -18,7 +17,6 @@ class AppRoute {
 
   // 桌面端
   static const desktopHome = '/desktop';
-  static const desktopSettings = '/desktop/settings';
 
   /// 未匹配路径的兜底规则，放在路由表最后。
   static const notFound = '/:notFound(.*)';
@@ -42,10 +40,6 @@ final List<GoRoute> appRoutes = [
   ),
   GoRoute(
     path: AppRoute.desktopHome,
-    builder: (context, state) => const PcHomeTab(),
-  ),
-  GoRoute(
-    path: AppRoute.desktopSettings,
-    builder: (context, state) => const PcSettingTab(),
+    builder: (context, state) => const DesktopPage(),
   ),
 ];
