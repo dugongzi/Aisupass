@@ -41,6 +41,9 @@ class AiModelQueryDatasource {
   /// 失败时展示的原始流内容上限，避免超长回复撑爆界面。
   static const int _maxRawLength = 8000;
 
+  /// 单个 SSE 事件的字节上限，超过视为协议异常，避免恶意/异常数据撑爆内存。
+  static const int _maxSseEventBytes = 1024 * 1024;
+
   /// 测试对话只取很短回复，便于快速看到返回。
   static const int _probeMaxTokens = 10;
 
@@ -90,6 +93,8 @@ class AiModelQueryDatasource {
 
   /// 以流式方式发送一条测试消息，逐段吐出服务端返回的文本。
   ///
+  /// 请求体与事件解析对齐 JSXPOSEDX 的三套协议适配器：
+  /// `openai.chat.v1`、`openai.responses.v1`、`anthropic.messages.v1`。
   /// 失败不抛异常，而是以 [AiChatProbeFailed] 结束，附带原始返回，
   /// 让用户能在测试窗口里看到真实报错。
   Stream<AiChatProbeEvent> streamTestMessage(
@@ -119,14 +124,7 @@ class AiModelQueryDatasource {
         url,
         data: requestBody,
         options: Options(
-          headers: <String, String>{
-            ..._headers(config),
-            // 明确声明接受事件流，否则部分网关会把整段回复缓存后一次性下发。
-            'Accept': 'text/event-stream',
-            'Cache-Control': 'no-cache',
-            // 禁止压缩：gzip 会把 SSE 攒成块，配合 nginx 缓冲会等到结束才吐。
-            'Accept-Encoding': 'identity',
-          },
+          headers: _streamHeaders(config),
           responseType: ResponseType.stream,
           // 状态码自己判断，避免 4xx/5xx 时拿不到正文。
           validateStatus: (int? status) => status != null,
@@ -138,8 +136,7 @@ class AiModelQueryDatasource {
           'msg=${error.message} status=${error.response?.statusCode} '
           'at ${watch.elapsedMilliseconds}ms');
       yield AiChatProbeFailed(
-        message:
-            error.message ?? error.type.name,
+        message: error.message ?? error.type.name,
         requestUrl: url,
         statusCode: error.response?.statusCode,
         duration: watch.elapsed,
@@ -161,7 +158,7 @@ class AiModelQueryDatasource {
       watch.stop();
       _log('✗ HTTP $status raw=${_preview(raw, 300)}');
       yield AiChatProbeFailed(
-        message: _serverMessage(_tryDecode(raw)) ?? 'HTTP $status',
+        message: _errorDetail(_tryDecode(raw)) ?? 'HTTP $status',
         rawBody: raw,
         requestUrl: url,
         statusCode: status,
@@ -172,83 +169,108 @@ class AiModelQueryDatasource {
 
     yield AiChatProbeStarted(requestUrl: url, statusCode: status);
 
-    // 服务端若忽略 stream 参数，会直接返回整段 JSON，这里做兜底。
+    // 服务端若忽略 stream 参数，会直接返回整段 JSON，这里收集起来兜底。
     final StringBuffer plain = StringBuffer();
     final StringBuffer rawSse = StringBuffer();
     final StringBuffer answer = StringBuffer();
     bool sawSse = false;
+    bool terminal = false;
     int chunkIndex = 0;
-    int rawBytes = 0;
 
-    final Stream<String> lines = const Utf8Decoder(allowMalformed: true)
-        .bind(body.stream)
-        .transform(const LineSplitter());
+    try {
+      await for (final _SseEvent event in _decodeSse(
+        body.stream,
+        plain: plain,
+      )) {
+        sawSse = true;
+        if (rawSse.length < _maxRawLength) {
+          if (event.event != null) rawSse.writeln('event: ${event.event}');
+          rawSse.writeln('data: ${event.data}');
+        }
 
-    await for (final String line in lines) {
-      final String trimmed = line.trim();
-      if (trimmed.isEmpty || trimmed.startsWith(':')) continue;
+        final String data = event.data.trim();
+        if (data.isEmpty) continue;
+        if (data == '[DONE]') {
+          terminal = true;
+          _log('  [${watch.elapsedMilliseconds}ms] [DONE]');
+          break;
+        }
 
-      // SSE 的 event / id / retry 字段与正文无关，Anthropic 会大量发送。
-      if (trimmed.startsWith('event:') ||
-          trimmed.startsWith('id:') ||
-          trimmed.startsWith('retry:')) {
-        _log('  [${watch.elapsedMilliseconds}ms] sse-meta ${_preview(trimmed)}');
-        continue;
+        final Object? decoded = _tryDecode(data);
+        final Map<String, Object?>? payload = decoded is Map
+            ? Map<String, Object?>.from(decoded)
+            : null;
+
+        // 流内报错（额度不足、模型不存在、网关业务错误信封）立即中断。
+        if (_payloadIsError(payload, event.event)) {
+          watch.stop();
+          _log('✗ stream error at ${watch.elapsedMilliseconds}ms '
+              '${_preview(rawSse.toString(), 300)}');
+          yield AiChatProbeFailed(
+            message: _errorDetail(payload) ?? 'Stream error',
+            rawBody: _pretty(rawSse.toString()),
+            requestUrl: url,
+            statusCode: status,
+            duration: watch.elapsed,
+          );
+          return;
+        }
+
+        final _ProbeFrame frame = _readFrame(
+          config.apiType,
+          payload,
+          event.event,
+        );
+        if (frame.terminal) terminal = true;
+        if (frame.text.isEmpty) {
+          _log('  [${watch.elapsedMilliseconds}ms] skip ${_preview(data)}');
+          continue;
+        }
+
+        chunkIndex += 1;
+        _log('  [${watch.elapsedMilliseconds}ms] chunk#$chunkIndex '
+            '${frame.text.length} chars: ${_preview(frame.text)}');
+        answer.write(frame.text);
+        yield AiChatProbeDelta(frame.text);
       }
+    } on FormatException catch (error) {
+      // 事件结构损坏或单事件超出上限，按协议错误处理。
+      watch.stop();
+      _log('✗ protocol malformed: ${error.message}');
+      yield AiChatProbeFailed(
+        message: 'Protocol malformed: ${error.message}',
+        rawBody: _pretty(rawSse.toString()),
+        requestUrl: url,
+        statusCode: status,
+        duration: watch.elapsed,
+      );
+      return;
+    }
 
-      if (!trimmed.startsWith('data:')) {
-        plain.write(line);
-        continue;
-      }
-
-      sawSse = true;
-      if (rawSse.length < _maxRawLength) rawSse.writeln(trimmed);
-      final String payload = trimmed.substring(5).trim();
-      if (payload.isEmpty) continue;
-      if (payload == '[DONE]') {
-        _log('  [${watch.elapsedMilliseconds}ms] [DONE]');
-        break;
-      }
-
-      final Object? decoded = _tryDecode(payload);
-      // 流内报错（如额度不足、模型不存在）应立即中断并交给 UI 展示。
-      if (decoded is Map && decoded['error'] != null) {
+    if (!sawSse && plain.isNotEmpty) {
+      // 整段 JSON：先看是不是错误信封，再按协议取正文。
+      final Object? decoded = _tryDecode(plain.toString());
+      _log('  non-stream body ${plain.length} chars: '
+          '${_preview(plain.toString(), 200)}');
+      if (_payloadIsError(
+        decoded is Map ? Map<String, Object?>.from(decoded) : null,
+        null,
+      )) {
         watch.stop();
-        _log('✗ stream error at ${watch.elapsedMilliseconds}ms '
-            '${_preview(rawSse.toString(), 300)}');
         yield AiChatProbeFailed(
-          message: _serverMessage(decoded) ?? 'Stream error',
-          rawBody: _pretty(rawSse.toString()),
+          message: _errorDetail(decoded) ?? 'Request failed',
+          rawBody: _pretty(plain.toString()),
           requestUrl: url,
           statusCode: status,
           duration: watch.elapsed,
         );
         return;
       }
-
-      final String delta = _deltaText(decoded, config.apiType);
-      if (delta.isEmpty) {
-        // 只有 role、usage 之类的非正文事件，记下来便于排查。
-        _log('  [${watch.elapsedMilliseconds}ms] skip ${_preview(payload)}');
-        continue;
-      }
-      chunkIndex += 1;
-      rawBytes += payload.length;
-      _log('  [${watch.elapsedMilliseconds}ms] chunk#$chunkIndex '
-          '${delta.length} chars: ${_preview(delta)}');
-      answer.write(delta);
-      yield AiChatProbeDelta(delta);
-    }
-
-    if (!sawSse && plain.isNotEmpty) {
-      final Object? decoded = _tryDecode(plain.toString());
       final String reply = _parseReply(decoded, config.apiType);
-      _log('  non-stream body ${plain.length} chars: '
-          '${_preview(plain.toString(), 200)}');
       if (reply.isEmpty) {
         watch.stop();
         yield AiChatProbeFailed(
-          message: _serverMessage(decoded) ?? 'Unexpected response',
+          message: 'Unexpected response',
           rawBody: _pretty(plain.toString()),
           requestUrl: url,
           statusCode: status,
@@ -262,19 +284,25 @@ class AiModelQueryDatasource {
 
     watch.stop();
     _log('✓ done in ${watch.elapsedMilliseconds}ms, sse=$sawSse, '
-        'chunks=$chunkIndex, answer=${answer.length} chars, '
-        'payload=$rawBytes chars');
+        'terminal=$terminal, chunks=$chunkIndex, '
+        'answer=${answer.length} chars');
+
     if (answer.isEmpty) {
       final String raw = sawSse ? rawSse.toString() : plain.toString();
       _log('✗ empty answer, raw=${_preview(raw, 300)}');
       yield AiChatProbeFailed(
-        message: 'Empty response',
+        message: terminal ? 'Empty response' : 'Protocol truncated',
         rawBody: raw.isEmpty ? '' : _pretty(raw),
         requestUrl: url,
         statusCode: status,
         duration: watch.elapsed,
       );
       return;
+    }
+
+    if (!terminal) {
+      // 部分网关直接断连而不发终止事件，正文已完整时不判失败，只记日志。
+      _log('! stream ended without terminal event');
     }
 
     yield AiChatProbeFinished(
@@ -303,6 +331,7 @@ class AiModelQueryDatasource {
     if (base.isEmpty) return '';
     final String endpoint = switch (apiType) {
       AiApiType.openai => '/chat/completions',
+      AiApiType.openaiResponses => '/responses',
       AiApiType.anthropic => '/messages',
     };
     if (base.endsWith(endpoint)) return base;
@@ -331,7 +360,7 @@ class AiModelQueryDatasource {
     return base;
   }
 
-  /// 组装测试消息的请求体，两种协议的字段略有差异。
+  /// 组装测试消息的请求体，各协议的字段略有差异。
   Map<String, dynamic> _chatBody(AiConfigDto config, String message) {
     const int maxTokens = _probeMaxTokens;
     final List<Map<String, String>> messages = <Map<String, String>>[
@@ -343,7 +372,24 @@ class AiModelQueryDatasource {
         'model': config.modelName,
         'messages': messages,
         'max_tokens': maxTokens,
-        'temperature': config.temperature,
+        // temperature 未配置时是 -1，直接下发会被服务端判为非法值。
+        if (config.temperature >= 0) 'temperature': config.temperature,
+        'stream': true,
+      },
+      // Responses 协议用 input 输入项数组取代 messages，
+      // 文本片段要包成 input_text，max_tokens 改为 max_output_tokens。
+      AiApiType.openaiResponses => <String, dynamic>{
+        'model': config.modelName,
+        'input': <Map<String, dynamic>>[
+          <String, dynamic>{
+            'role': 'user',
+            'content': <Map<String, String>>[
+              <String, String>{'type': 'input_text', 'text': message},
+            ],
+          },
+        ],
+        'max_output_tokens': maxTokens,
+        if (config.temperature >= 0) 'temperature': config.temperature,
         'stream': true,
       },
       // Anthropic 的 max_tokens 为必填项。
@@ -351,7 +397,7 @@ class AiModelQueryDatasource {
         'model': config.modelName,
         'messages': messages,
         'max_tokens': maxTokens,
-        'temperature': config.temperature,
+        if (config.temperature >= 0) 'temperature': config.temperature,
         'stream': true,
       },
     };
@@ -377,29 +423,208 @@ class AiModelQueryDatasource {
     }
   }
 
-  /// 从单个 SSE 事件里取出增量文本。
-  String _deltaText(Object? data, AiApiType apiType) {
-    if (data is! Map) return data is String ? data : '';
+  /// 增量解析 SSE：按空行切分事件，`:` 开头为注释，
+  /// `field: value` 去掉一个前导空格，多行 `data` 用 `\n` 拼接。
+  ///
+  /// 与服务端「忽略 stream 直接返回整段 JSON」的情况兼容：
+  /// 若整条流没有出现任何 SSE 字段，则把原始正文写进 [plain] 交由调用方兜底解析。
+  Stream<_SseEvent> _decodeSse(
+    Stream<List<int>> bytes, {
+    StringBuffer? plain,
+  }) async* {
+    String? event;
+    String? id;
+    int? retry;
+    final List<String> dataLines = <String>[];
+    int eventBytes = 0;
+    final StringBuffer raw = StringBuffer();
+    bool looksLikeSse = false;
+    bool dispatched = false;
+
+    void reset() {
+      event = null;
+      id = null;
+      retry = null;
+      dataLines.clear();
+      eventBytes = 0;
+    }
+
+    _SseEvent? dispatch() {
+      if (dataLines.isEmpty) {
+        reset();
+        return null;
+      }
+      final _SseEvent result = _SseEvent(
+        data: dataLines.join('\n'),
+        event: event,
+        id: id,
+        retry: retry,
+      );
+      reset();
+      return result;
+    }
+
+    await for (final String line
+        in utf8.decoder.bind(bytes).transform(const LineSplitter())) {
+      if (!looksLikeSse) raw.writeln(line);
+
+      if (line.isEmpty) {
+        final _SseEvent? result = dispatch();
+        if (result != null) {
+          dispatched = true;
+          yield result;
+        }
+        continue;
+      }
+      if (line.startsWith(':')) continue;
+
+      final int separator = line.indexOf(':');
+      final String field = separator < 0 ? line : line.substring(0, separator);
+      String value = separator < 0 ? '' : line.substring(separator + 1);
+      if (value.startsWith(' ')) value = value.substring(1);
+
+      switch (field) {
+        case 'event':
+          looksLikeSse = true;
+          event = value;
+        case 'id':
+          looksLikeSse = true;
+          id = value;
+        case 'retry':
+          looksLikeSse = true;
+          retry = int.tryParse(value);
+        case 'data':
+          looksLikeSse = true;
+          eventBytes += utf8.encode(value).length + 1;
+          if (eventBytes > _maxSseEventBytes) {
+            throw const FormatException('SSE event exceeds configured limit');
+          }
+          dataLines.add(value);
+      }
+      if (looksLikeSse) raw.clear();
+    }
+
+    final _SseEvent? last = dispatch();
+    if (last != null) {
+      dispatched = true;
+      yield last;
+    }
+    if (!dispatched && plain != null && raw.isNotEmpty) {
+      plain.write(raw.toString());
+    }
+  }
+
+  /// 按协议读取单个事件：返回正文增量与是否已到终止态。
+  _ProbeFrame _readFrame(
+    AiApiType apiType,
+    Map<String, Object?>? payload,
+    String? event,
+  ) {
+    if (payload == null) return const _ProbeFrame();
 
     switch (apiType) {
       case AiApiType.openai:
-        final Object? choices = data['choices'];
-        if (choices is! List || choices.isEmpty) return '';
-        final Object? first = choices.first;
-        if (first is! Map) return '';
-        final Object? delta = first['delta'];
-        if (delta is Map) return (delta['content'] ?? '').toString();
-        // 少数实现会忽略 stream，直接给 message。
-        final Object? message = first['message'];
-        if (message is Map) return (message['content'] ?? '').toString();
-        return '';
+        final Object? choices = payload['choices'];
+        if (choices is! List || choices.isEmpty || choices.first is! Map) {
+          return const _ProbeFrame();
+        }
+        final Map<String, Object?> choice = Map<String, Object?>.from(
+          choices.first as Map,
+        );
+        final Object? delta = choice['delta'];
+        final String text = delta is Map
+            ? (delta['content']?.toString() ?? '')
+            : '';
+        return _ProbeFrame(
+          text: text,
+          terminal: _isFinishReason(choice['finish_reason']),
+        );
+
+      case AiApiType.openaiResponses:
+        // 正文只在 output_text.delta 里，reasoning_* 属于思考过程不计入。
+        final String type = payload['type']?.toString() ?? event ?? '';
+        return switch (type) {
+          'response.output_text.delta' => _ProbeFrame(
+            text: payload['delta']?.toString() ?? '',
+          ),
+          'response.completed' || 'response.incomplete' =>
+            const _ProbeFrame(terminal: true),
+          _ => const _ProbeFrame(),
+        };
 
       case AiApiType.anthropic:
-        if (data['type'] != 'content_block_delta') return '';
-        final Object? delta = data['delta'];
-        if (delta is Map) return (delta['text'] ?? '').toString();
-        return '';
+        final String type = payload['type']?.toString() ?? event ?? '';
+        switch (type) {
+          case 'content_block_delta':
+            final Object? delta = payload['delta'];
+            if (delta is! Map || delta['type'] != 'text_delta') {
+              return const _ProbeFrame();
+            }
+            return _ProbeFrame(text: delta['text']?.toString() ?? '');
+          case 'message_delta':
+            final Object? delta = payload['delta'];
+            return _ProbeFrame(
+              terminal: delta is Map && delta['stop_reason'] != null,
+            );
+          case 'message_stop':
+            return const _ProbeFrame(terminal: true);
+          default:
+            return const _ProbeFrame();
+        }
     }
+  }
+
+  /// OpenAI 的 finish_reason 只有已知取值才代表正常终止。
+  bool _isFinishReason(Object? value) => switch (value?.toString()) {
+    'stop' || 'length' || 'tool_calls' || 'content_filter' => true,
+    _ => false,
+  };
+
+  /// 识别错误信封：`error` 键、`status` 值、以及 `code + message` 的网关业务错误。
+  ///
+  /// 部分网关在 HTTP 200 的流内直接下发业务错误（如
+  /// `{"code":30001,"message":"..."}`），既无 `error` 也无 `status`，
+  /// 正常 chunk 不会同时带 code+message 且缺少 `choices`，以此区分。
+  bool _payloadIsError(Map<String, Object?>? payload, String? event) {
+    if (payload == null) return event == 'error';
+
+    if (payload['error'] != null) return true;
+    final String status = payload['status']?.toString().toLowerCase() ?? '';
+    if (status == 'error' || status == 'failed' || status == 'failure') {
+      return true;
+    }
+    final String type = payload['type']?.toString().toLowerCase() ?? '';
+    if (type == 'error' || type == 'response.failed') return true;
+
+    final Object? code = payload['code'];
+    final Object? message = payload['message'];
+    return code != null &&
+        message is String &&
+        message.trim().isNotEmpty &&
+        !payload.containsKey('choices');
+  }
+
+  /// 从错误信封里取出可读文案，依次尝试 error.* → 顶层字段 → 嵌套 response。
+  String? _errorDetail(Object? data) {
+    if (data is Map) {
+      final Map<String, Object?> payload = Map<String, Object?>.from(data);
+      final Object? error = payload['error'];
+      if (error is Map) {
+        final Map<String, Object?> nested = Map<String, Object?>.from(error);
+        for (final String key in const ['message', 'detail', 'error']) {
+          final String value = nested[key]?.toString().trim() ?? '';
+          if (value.isNotEmpty) return value;
+        }
+      }
+      for (final String key in const ['detail', 'message', 'error']) {
+        final String value = payload[key]?.toString().trim() ?? '';
+        if (value.isNotEmpty) return value;
+      }
+      final Object? response = payload['response'];
+      if (response is Map) return _errorDetail(response);
+    }
+    if (data is String && data.trim().isNotEmpty) return data.trim();
+    return null;
   }
 
   /// 把返回体格式化成带缩进的 JSON，便于阅读。
@@ -437,14 +662,37 @@ class AiModelQueryDatasource {
             : first['text'];
         return _contentToText(content);
 
+      case AiApiType.openaiResponses:
+        // 部分实现会直接给出聚合好的 output_text。
+        final Object? aggregated = data['output_text'];
+        if (aggregated is String && aggregated.trim().isNotEmpty) {
+          return aggregated.trim();
+        }
+        final Object? output = data['output'];
+        if (output is! List) return '';
+        final List<String> parts = <String>[];
+        for (final Object? item in output) {
+          if (item is! Map) continue;
+          final Object? content = item['content'];
+          if (content is! List) continue;
+          for (final Object? part in content) {
+            // reasoning_text / summary_text 是思考过程，只取正文片段。
+            if (part is! Map || part['type'] != 'output_text') continue;
+            final String text = (part['text'] ?? '').toString();
+            if (text.isNotEmpty) parts.add(text);
+          }
+        }
+        return parts.join('\n').trim();
+
       case AiApiType.anthropic:
         final Object? content = data['content'];
         if (content is! List) return '';
         final List<String> parts = <String>[];
         for (final Object? item in content) {
-          if (item is Map && item['text'] != null) {
-            parts.add(item['text'].toString());
-          }
+          // thinking / tool_use 条目也带字段，只取 text 类型的正文。
+          if (item is! Map || item['type'] != 'text') continue;
+          final String text = (item['text'] ?? '').toString();
+          if (text.isNotEmpty) parts.add(text);
         }
         return parts.join('\n').trim();
     }
@@ -469,7 +717,7 @@ class AiModelQueryDatasource {
 
   Map<String, String> _headers(AiConfigDto config) =>
       switch (config.apiType) {
-        AiApiType.openai => <String, String>{
+        AiApiType.openai || AiApiType.openaiResponses => <String, String>{
           'Authorization': 'Bearer ${config.apiKey.trim()}',
           'Content-Type': 'application/json',
         },
@@ -479,6 +727,14 @@ class AiModelQueryDatasource {
           'Content-Type': 'application/json',
         },
       };
+
+  /// 流式请求头：显式声明 SSE，并禁用压缩与缓存，避免网关把整段回复攒完再下发。
+  Map<String, String> _streamHeaders(AiConfigDto config) => <String, String>{
+    'Accept': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Accept-Encoding': 'identity',
+    ..._headers(config),
+  };
 
   List<String> _parseModelIds(Object? data) {
     final List<Object?> items = switch (data) {
@@ -521,4 +777,22 @@ class AiModelQueryDatasource {
     if (data is String && data.trim().isNotEmpty) return data.trim();
     return null;
   }
+}
+
+/// 一个 SSE 事件：`data` 已按行拼好，其余为可选元字段。
+class _SseEvent {
+  const _SseEvent({required this.data, this.event, this.id, this.retry});
+
+  final String data;
+  final String? event;
+  final String? id;
+  final int? retry;
+}
+
+/// 单个事件解析结果：正文增量与是否已到终止态。
+class _ProbeFrame {
+  const _ProbeFrame({this.text = '', this.terminal = false});
+
+  final String text;
+  final bool terminal;
 }
