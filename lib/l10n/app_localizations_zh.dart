@@ -367,6 +367,69 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatTitle => '对话';
 
   @override
+  String get chatInputHint => '描述你的设备情况，或直接提问';
+
+  @override
+  String get chatSend => '发送';
+
+  @override
+  String get chatStop => '停止';
+
+  @override
+  String get chatNewSession => '新对话';
+
+  @override
+  String get chatReasoning => '思考过程';
+
+  @override
+  String get chatThinking => '正在思考…';
+
+  @override
+  String get chatThought => '思考完成';
+
+  @override
+  String get chatToolRunning => '执行中';
+
+  @override
+  String get chatToolSucceeded => '已完成';
+
+  @override
+  String get chatToolFailed => '执行失败';
+
+  @override
+  String get chatToolArguments => '参数';
+
+  @override
+  String get chatToolResult => '结果';
+
+  @override
+  String get chatCopied => '已复制';
+
+  @override
+  String get chatNoticeToolLimit => '工具调用次数已达上限，请换个问法继续';
+
+  @override
+  String get chatNoticeEmptyReply => '模型没有返回内容';
+
+  @override
+  String get chatIssueNoConfig => '请先在 AI 配置里完成设置';
+
+  @override
+  String get chatEmptyTitle => 'AI 提权助手';
+
+  @override
+  String get chatEmptyHint => '描述你的设备情况，我会读取设备信息并给出提权方案';
+
+  @override
+  String get chatSuggestionDevice => '分析我的设备环境';
+
+  @override
+  String get chatSuggestionRoot => '当前设备是否已 root';
+
+  @override
+  String get chatSuggestionPlan => '推荐一条可用的提权方案';
+
+  @override
   String get aiQuickPanelTitle => 'AI 提权助手';
 
   @override
@@ -382,7 +445,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get manualQuickEscalateTitle => '手动提权';
 
   @override
-  String get manualQuickEscalateDesc => '自定义命令与脚本，逐步掌控提权流程';
+  String get manualQuickEscalateDesc => '利用目前已知的提权方案进行提权';
 
   @override
   String get manualQuickEscalateComingSoon => '手动提权功能开发中';

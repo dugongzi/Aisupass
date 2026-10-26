@@ -373,6 +373,70 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatTitle => 'Chat';
 
   @override
+  String get chatInputHint => 'Describe your device, or ask anything';
+
+  @override
+  String get chatSend => 'Send';
+
+  @override
+  String get chatStop => 'Stop';
+
+  @override
+  String get chatNewSession => 'New chat';
+
+  @override
+  String get chatReasoning => 'Reasoning';
+
+  @override
+  String get chatThinking => 'Thinking…';
+
+  @override
+  String get chatThought => 'Thought for a while';
+
+  @override
+  String get chatToolRunning => 'Running';
+
+  @override
+  String get chatToolSucceeded => 'Done';
+
+  @override
+  String get chatToolFailed => 'Failed';
+
+  @override
+  String get chatToolArguments => 'Arguments';
+
+  @override
+  String get chatToolResult => 'Result';
+
+  @override
+  String get chatCopied => 'Copied';
+
+  @override
+  String get chatNoticeToolLimit => 'Tool call limit reached, try rephrasing';
+
+  @override
+  String get chatNoticeEmptyReply => 'The model returned no content';
+
+  @override
+  String get chatIssueNoConfig => 'Finish setting up an AI config first';
+
+  @override
+  String get chatEmptyTitle => 'AI Escalation Assistant';
+
+  @override
+  String get chatEmptyHint =>
+      'Describe your device and I will inspect it before suggesting an escalation plan';
+
+  @override
+  String get chatSuggestionDevice => 'Analyze my device';
+
+  @override
+  String get chatSuggestionRoot => 'Is this device already rooted?';
+
+  @override
+  String get chatSuggestionPlan => 'Recommend an escalation plan';
+
+  @override
   String get aiQuickPanelTitle => 'AI Escalation';
 
   @override
@@ -390,7 +454,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get manualQuickEscalateDesc =>
-      'Run custom commands and scripts step by step';
+      'Escalate using currently known exploits';
 
   @override
   String get manualQuickEscalateComingSoon =>

@@ -80,6 +80,10 @@ dependencies:
   # 品牌 SVG 图标
   flutter_svg: ^2.3.0
 
+  # AI 对话 Markdown 渲染（与 JsxposedX 保持一致）
+  flutter_markdown: ^0.7.7+1
+  markdown: ^7.3.1
+
   # 轻提示 / 弹窗
   flutter_smart_dialog: ^4.9.8+9
 

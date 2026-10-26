@@ -776,6 +776,132 @@ abstract class AppLocalizations {
   /// **'对话'**
   String get chatTitle;
 
+  /// 对话输入框占位文案
+  ///
+  /// In zh, this message translates to:
+  /// **'描述你的设备情况，或直接提问'**
+  String get chatInputHint;
+
+  /// 发送按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'发送'**
+  String get chatSend;
+
+  /// 流式接收时的停止按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'停止'**
+  String get chatStop;
+
+  /// 清空当前会话
+  ///
+  /// In zh, this message translates to:
+  /// **'新对话'**
+  String get chatNewSession;
+
+  /// 思考过程卡片标题
+  ///
+  /// In zh, this message translates to:
+  /// **'思考过程'**
+  String get chatReasoning;
+
+  /// 思考尚未结束时卡片标题
+  ///
+  /// In zh, this message translates to:
+  /// **'正在思考…'**
+  String get chatThinking;
+
+  /// 思考结束后的卡片标题
+  ///
+  /// In zh, this message translates to:
+  /// **'思考完成'**
+  String get chatThought;
+
+  /// 工具调用执行中的状态
+  ///
+  /// In zh, this message translates to:
+  /// **'执行中'**
+  String get chatToolRunning;
+
+  /// 工具调用成功的状态
+  ///
+  /// In zh, this message translates to:
+  /// **'已完成'**
+  String get chatToolSucceeded;
+
+  /// 工具调用失败的状态
+  ///
+  /// In zh, this message translates to:
+  /// **'执行失败'**
+  String get chatToolFailed;
+
+  /// 工具调用参数小节标题
+  ///
+  /// In zh, this message translates to:
+  /// **'参数'**
+  String get chatToolArguments;
+
+  /// 工具调用结果小节标题
+  ///
+  /// In zh, this message translates to:
+  /// **'结果'**
+  String get chatToolResult;
+
+  /// 复制成功提示
+  ///
+  /// In zh, this message translates to:
+  /// **'已复制'**
+  String get chatCopied;
+
+  /// 工具调用轮次超限提示
+  ///
+  /// In zh, this message translates to:
+  /// **'工具调用次数已达上限，请换个问法继续'**
+  String get chatNoticeToolLimit;
+
+  /// 模型返回空内容提示
+  ///
+  /// In zh, this message translates to:
+  /// **'模型没有返回内容'**
+  String get chatNoticeEmptyReply;
+
+  /// 未取到 AI 配置时的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'请先在 AI 配置里完成设置'**
+  String get chatIssueNoConfig;
+
+  /// 空会话引导标题
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 提权助手'**
+  String get chatEmptyTitle;
+
+  /// 空会话引导说明
+  ///
+  /// In zh, this message translates to:
+  /// **'描述你的设备情况，我会读取设备信息并给出提权方案'**
+  String get chatEmptyHint;
+
+  /// 空会话建议提问-设备环境
+  ///
+  /// In zh, this message translates to:
+  /// **'分析我的设备环境'**
+  String get chatSuggestionDevice;
+
+  /// 空会话建议提问-root 状态
+  ///
+  /// In zh, this message translates to:
+  /// **'当前设备是否已 root'**
+  String get chatSuggestionRoot;
+
+  /// 空会话建议提问-提权方案
+  ///
+  /// In zh, this message translates to:
+  /// **'推荐一条可用的提权方案'**
+  String get chatSuggestionPlan;
+
   /// 底栏圆球快捷面板标题
   ///
   /// In zh, this message translates to:
@@ -809,7 +935,7 @@ abstract class AppLocalizations {
   /// 快捷面板-手动提权入口说明
   ///
   /// In zh, this message translates to:
-  /// **'自定义命令与脚本，逐步掌控提权流程'**
+  /// **'利用目前已知的提权方案进行提权'**
   String get manualQuickEscalateDesc;
 
   /// 点击手动提权时的占位提示

@@ -501,6 +501,90 @@
   "@chatTitle": {
     "description": "AI 对话页标题"
   },
+  "chatInputHint": "描述你的设备情况，或直接提问",
+  "@chatInputHint": {
+    "description": "对话输入框占位文案"
+  },
+  "chatSend": "发送",
+  "@chatSend": {
+    "description": "发送按钮"
+  },
+  "chatStop": "停止",
+  "@chatStop": {
+    "description": "流式接收时的停止按钮"
+  },
+  "chatNewSession": "新对话",
+  "@chatNewSession": {
+    "description": "清空当前会话"
+  },
+  "chatReasoning": "思考过程",
+  "@chatReasoning": {
+    "description": "思考过程卡片标题"
+  },
+  "chatThinking": "正在思考…",
+  "@chatThinking": {
+    "description": "思考尚未结束时卡片标题"
+  },
+  "chatThought": "思考完成",
+  "@chatThought": {
+    "description": "思考结束后的卡片标题"
+  },
+  "chatToolRunning": "执行中",
+  "@chatToolRunning": {
+    "description": "工具调用执行中的状态"
+  },
+  "chatToolSucceeded": "已完成",
+  "@chatToolSucceeded": {
+    "description": "工具调用成功的状态"
+  },
+  "chatToolFailed": "执行失败",
+  "@chatToolFailed": {
+    "description": "工具调用失败的状态"
+  },
+  "chatToolArguments": "参数",
+  "@chatToolArguments": {
+    "description": "工具调用参数小节标题"
+  },
+  "chatToolResult": "结果",
+  "@chatToolResult": {
+    "description": "工具调用结果小节标题"
+  },
+  "chatCopied": "已复制",
+  "@chatCopied": {
+    "description": "复制成功提示"
+  },
+  "chatNoticeToolLimit": "工具调用次数已达上限，请换个问法继续",
+  "@chatNoticeToolLimit": {
+    "description": "工具调用轮次超限提示"
+  },
+  "chatNoticeEmptyReply": "模型没有返回内容",
+  "@chatNoticeEmptyReply": {
+    "description": "模型返回空内容提示"
+  },
+  "chatIssueNoConfig": "请先在 AI 配置里完成设置",
+  "@chatIssueNoConfig": {
+    "description": "未取到 AI 配置时的提示"
+  },
+  "chatEmptyTitle": "AI 提权助手",
+  "@chatEmptyTitle": {
+    "description": "空会话引导标题"
+  },
+  "chatEmptyHint": "描述你的设备情况，我会读取设备信息并给出提权方案",
+  "@chatEmptyHint": {
+    "description": "空会话引导说明"
+  },
+  "chatSuggestionDevice": "分析我的设备环境",
+  "@chatSuggestionDevice": {
+    "description": "空会话建议提问-设备环境"
+  },
+  "chatSuggestionRoot": "当前设备是否已 root",
+  "@chatSuggestionRoot": {
+    "description": "空会话建议提问-root 状态"
+  },
+  "chatSuggestionPlan": "推荐一条可用的提权方案",
+  "@chatSuggestionPlan": {
+    "description": "空会话建议提问-提权方案"
+  },
   "aiQuickPanelTitle": "AI 提权助手",
   "@aiQuickPanelTitle": {
     "description": "底栏圆球快捷面板标题"
@@ -521,7 +605,7 @@
   "@manualQuickEscalateTitle": {
     "description": "快捷面板-手动提权入口"
   },
-  "manualQuickEscalateDesc": "自定义命令与脚本，逐步掌控提权流程",
+  "manualQuickEscalateDesc": "利用目前已知的提权方案进行提权",
   "@manualQuickEscalateDesc": {
     "description": "快捷面板-手动提权入口说明"
   },

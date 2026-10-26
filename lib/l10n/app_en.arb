@@ -179,12 +179,96 @@
     }
   },
   "chatTitle": "Chat",
+  "chatInputHint": "Describe your device, or ask anything",
+  "@chatInputHint": {
+    "description": "Composer placeholder"
+  },
+  "chatSend": "Send",
+  "@chatSend": {
+    "description": "Send button"
+  },
+  "chatStop": "Stop",
+  "@chatStop": {
+    "description": "Stop button while streaming"
+  },
+  "chatNewSession": "New chat",
+  "@chatNewSession": {
+    "description": "Clear the current conversation"
+  },
+  "chatReasoning": "Reasoning",
+  "@chatReasoning": {
+    "description": "Reasoning card title"
+  },
+  "chatThinking": "Thinking…",
+  "@chatThinking": {
+    "description": "Reasoning card title while streaming"
+  },
+  "chatThought": "Thought for a while",
+  "@chatThought": {
+    "description": "Reasoning card title after finishing"
+  },
+  "chatToolRunning": "Running",
+  "@chatToolRunning": {
+    "description": "Tool call running status"
+  },
+  "chatToolSucceeded": "Done",
+  "@chatToolSucceeded": {
+    "description": "Tool call succeeded status"
+  },
+  "chatToolFailed": "Failed",
+  "@chatToolFailed": {
+    "description": "Tool call failed status"
+  },
+  "chatToolArguments": "Arguments",
+  "@chatToolArguments": {
+    "description": "Tool call arguments section title"
+  },
+  "chatToolResult": "Result",
+  "@chatToolResult": {
+    "description": "Tool call result section title"
+  },
+  "chatCopied": "Copied",
+  "@chatCopied": {
+    "description": "Copy success toast"
+  },
+  "chatNoticeToolLimit": "Tool call limit reached, try rephrasing",
+  "@chatNoticeToolLimit": {
+    "description": "Tool call round limit notice"
+  },
+  "chatNoticeEmptyReply": "The model returned no content",
+  "@chatNoticeEmptyReply": {
+    "description": "Empty reply notice"
+  },
+  "chatIssueNoConfig": "Finish setting up an AI config first",
+  "@chatIssueNoConfig": {
+    "description": "No AI config available"
+  },
+  "chatEmptyTitle": "AI Escalation Assistant",
+  "@chatEmptyTitle": {
+    "description": "Empty conversation title"
+  },
+  "chatEmptyHint": "Describe your device and I will inspect it before suggesting an escalation plan",
+  "@chatEmptyHint": {
+    "description": "Empty conversation hint"
+  },
+  "chatSuggestionDevice": "Analyze my device",
+  "@chatSuggestionDevice": {
+    "description": "Suggestion: device environment"
+  },
+  "chatSuggestionRoot": "Is this device already rooted?",
+  "@chatSuggestionRoot": {
+    "description": "Suggestion: root status"
+  },
+  "chatSuggestionPlan": "Recommend an escalation plan",
+  "@chatSuggestionPlan": {
+    "description": "Suggestion: escalation plan"
+  },
   "aiQuickPanelTitle": "AI Escalation",
   "aiQuickPanelSubtitle": "Choose a way to gain root access",
   "aiQuickEscalateTitle": "AI Escalation",
   "aiQuickEscalateDesc": "Analyze your device and generate an exploit plan automatically",
   "manualQuickEscalateTitle": "Manual Escalation",
-  "manualQuickEscalateDesc": "Run custom commands and scripts step by step",
+  "manualQuickEscalateDesc": "Escalate using currently known exploits",
   "manualQuickEscalateComingSoon": "Manual escalation is coming soon",
   "languageTitle": "Language",
   "errorTitle": "Page Not Found",
