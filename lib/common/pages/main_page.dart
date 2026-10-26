@@ -35,6 +35,8 @@ class MainPage extends HookConsumerWidget {
     final ValueNotifier<int> currentIndex = useState<int>(0);
     final ValueNotifier<bool> isQuickPanelOpen = useState<bool>(false);
     final PageController pageController = usePageController();
+    // 与首页 AI 状态卡共用同一份真实状态，检测中按未激活处理。
+    final bool isAiActivated = ref.watch(aiStatusProvider).value ?? false;
 
     final List<String> titles = <String>[
       context.l10n.homeTitle,
@@ -65,6 +67,7 @@ class MainPage extends HookConsumerWidget {
           ),
           floatingActionButton: AppBottomCenterBall(
             size: _centerBallSize.w,
+            isActivated: isAiActivated,
             onPressed: () => isQuickPanelOpen.value = !isQuickPanelOpen.value,
           ),
           appBar: AppBar(
@@ -88,13 +91,14 @@ class MainPage extends HookConsumerWidget {
             fabSize: _centerBallSize,
             fabOffsetY: _centerBallOffsetY,
             // 与首页 AI 状态卡共用同一份真实状态，检测中按未激活处理。
-            isAiActivated: ref.watch(aiStatusProvider).value ?? false,
+            isAiActivated: isAiActivated,
           ),
         ),
         // 快捷提权面板叠在 Scaffold 之上，遮罩会同时盖住圆球，
         // 因此展开时再次点击圆球实际命中的是遮罩，用于收起面板。
         AiQuickPanelOverlay(
           visible: isQuickPanelOpen.value,
+          isActivated: isAiActivated,
           bottomOffset: _quickPanelBottomOffset(context),
           onDismiss: () => isQuickPanelOpen.value = false,
           onAiEscalate: () {

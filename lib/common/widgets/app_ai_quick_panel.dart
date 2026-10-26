@@ -18,10 +18,14 @@ class AiQuickPanelOverlay extends HookWidget {
     required this.onDismiss,
     required this.onAiEscalate,
     required this.onManualEscalate,
+    this.isActivated = false,
   });
 
   /// 面板是否展开。
   final bool visible;
+
+  /// AI 是否已激活：未激活时描边与外发光退回普通中性色。
+  final bool isActivated;
 
   /// 面板底端（水滴尖端）距屏幕底部的距离。
   final double bottomOffset;
@@ -104,6 +108,7 @@ class AiQuickPanelOverlay extends HookWidget {
                           child: ConstrainedBox(
                             constraints: BoxConstraints(maxWidth: maxWidth),
                             child: _AiQuickPanel(
+                              isActivated: isActivated,
                               onAiEscalate: onAiEscalate,
                               onManualEscalate: onManualEscalate,
                             ),
@@ -122,13 +127,16 @@ class AiQuickPanelOverlay extends HookWidget {
   }
 }
 
-/// 水滴形面板主体：渐变描边 + 外发光 + 底部尖角。
+/// 水滴形面板主体：激活态渐变描边 + 外发光，未激活时退为中性描边。
 class _AiQuickPanel extends HookWidget {
   const _AiQuickPanel({
+    required this.isActivated,
     required this.onAiEscalate,
     required this.onManualEscalate,
   });
 
+  /// AI 是否已激活。
+  final bool isActivated;
   final VoidCallback onAiEscalate;
   final VoidCallback onManualEscalate;
 
@@ -146,12 +154,15 @@ class _AiQuickPanel extends HookWidget {
         tailHeight: tailHeight,
         tailHalfWidth: tailHalfWidth,
         shadowColor: Colors.black.withValues(alpha: isDark ? 0.55 : 0.20),
+        isGlowing: isActivated,
         isDark: isDark,
       ),
       foregroundPainter: _DropletBorderPainter(
         radius: radius,
         tailHeight: tailHeight,
         tailHalfWidth: tailHalfWidth,
+        gradient: isActivated ? aiActivationGradient : null,
+        color: colorScheme.outline.withValues(alpha: isDark ? 0.34 : 0.18),
       ),
       child: ClipPath(
         clipper: _DropletClipper(
@@ -163,28 +174,14 @@ class _AiQuickPanel extends HookWidget {
           color: colorScheme.surface,
           child: Padding(
             // 底部额外留出尖角高度，内容不会被水滴尾巴挤压。
-            padding: EdgeInsets.fromLTRB(14.w, 16.h, 14.w, 16.h + tailHeight),
+            padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 16.h + tailHeight),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                _buildHeader(context),
-                SizedBox(height: 14.h),
-                _AiQuickActionTile(
-                  isPrimary: true,
-                  icon: Icons.auto_awesome_rounded,
-                  title: context.l10n.aiQuickEscalateTitle,
-                  description: context.l10n.aiQuickEscalateDesc,
-                  onTap: onAiEscalate,
-                ),
+                _buildCaption(context),
                 SizedBox(height: 10.h),
-                _AiQuickActionTile(
-                  isPrimary: false,
-                  icon: Icons.terminal_rounded,
-                  title: context.l10n.manualQuickEscalateTitle,
-                  description: context.l10n.manualQuickEscalateDesc,
-                  onTap: onManualEscalate,
-                ),
+                _buildActionGroup(context),
               ],
             ),
           ),
@@ -193,65 +190,78 @@ class _AiQuickPanel extends HookWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  /// 面板标题退为小节标题：只做分组提示，不与下面的操作项抢层级。
+  Widget _buildCaption(BuildContext context) {
     final ColorScheme colorScheme = context.colorScheme;
 
-    return Row(
-      children: <Widget>[
-        Container(
-          width: 34.w,
-          height: 34.w,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: aiActivationGradient,
-          ),
-          child: Icon(Icons.bolt_rounded, size: 20.sp, color: Colors.white),
+    return Padding(
+      padding: EdgeInsets.only(left: 4.w),
+      child: Text(
+        context.l10n.aiQuickPanelTitle,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontSize: 12.sp,
+          fontWeight: FontWeight.w700,
+          height: 1.2,
+          letterSpacing: 0.2,
+          color: colorScheme.onSurface.withValues(alpha: 0.45),
         ),
-        SizedBox(width: 10.w),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              ShaderMask(
-                blendMode: BlendMode.srcIn,
-                shaderCallback: (Rect bounds) =>
-                    aiActivationGradient.createShader(bounds),
-                child: Text(
-                  context.l10n.aiQuickPanelTitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w800,
-                    height: 1.2,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              SizedBox(height: 2.h),
-              Text(
-                context.l10n.aiQuickPanelSubtitle,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w500,
-                  height: 1.3,
-                  color: colorScheme.onSurface.withValues(alpha: 0.50),
-                ),
-              ),
-            ],
-          ),
+      ),
+    );
+  }
+
+  /// 两个入口共用一个圆角容器，中间一条极淡分隔线，
+  /// 避免每行各套一层底色造成视觉碎片。
+  Widget _buildActionGroup(BuildContext context) {
+    final ColorScheme colorScheme = context.colorScheme;
+    final bool isDark = context.isDark;
+    final BorderRadius radius = BorderRadius.circular(16.r);
+
+    return ClipRRect(
+      borderRadius: radius,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: radius,
+          color: colorScheme.onSurface.withValues(alpha: isDark ? 0.05 : 0.035),
         ),
-      ],
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            _AiQuickActionTile(
+              isPrimary: true,
+              icon: Icons.auto_awesome_rounded,
+              title: context.l10n.aiQuickEscalateTitle,
+              description: context.l10n.aiQuickEscalateDesc,
+              onTap: onAiEscalate,
+            ),
+            Divider(
+              height: 1,
+              thickness: 1,
+              indent: 12.w,
+              endIndent: 12.w,
+              color: colorScheme.onSurface.withValues(
+                alpha: isDark ? 0.07 : 0.06,
+              ),
+            ),
+            _AiQuickActionTile(
+              isPrimary: false,
+              icon: Icons.terminal_rounded,
+              title: context.l10n.manualQuickEscalateTitle,
+              description: context.l10n.manualQuickEscalateDesc,
+              onTap: onManualEscalate,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
 
 /// 面板内的单个提权入口。
 ///
-/// 主按钮走 AI 渐变描边 + 渐变图标 + 发光，次按钮退为中性命中区，
-/// 按下时整体轻微缩放，给到明确的触感反馈。
+/// 平铺在分组容器里：图标与文字左对齐成一条竖线，右侧统一箭头；
+/// 主次只靠图标颜色区分，按下时叠一层极淡高亮，不做缩放与发光。
 class _AiQuickActionTile extends HookWidget {
   const _AiQuickActionTile({
     required this.isPrimary,
@@ -273,7 +283,6 @@ class _AiQuickActionTile extends HookWidget {
     final ColorScheme colorScheme = context.colorScheme;
     final bool isDark = context.isDark;
     final ValueNotifier<bool> pressed = useState<bool>(false);
-    final BorderRadius radius = BorderRadius.circular(18.r);
 
     return Semantics(
       button: true,
@@ -284,153 +293,64 @@ class _AiQuickActionTile extends HookWidget {
         onTapCancel: () => pressed.value = false,
         onTapUp: (_) => pressed.value = false,
         onTap: onTap,
-        child: AnimatedScale(
-          scale: pressed.value ? 0.97 : 1,
-          duration: const Duration(milliseconds: 120),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 140),
           curve: Curves.easeOut,
-          child: Container(
-            // 主按钮靠 1.4 的 padding 露出外层渐变，形成描边。
-            padding: EdgeInsets.all(isPrimary ? 1.4.w : 1.w),
-            decoration: BoxDecoration(
-              borderRadius: radius,
-              gradient: isPrimary ? aiActivationGradient : null,
-              color: isPrimary
-                  ? null
-                  : colorScheme.outline.withValues(
-                      alpha: isDark ? 0.28 : 0.14,
-                    ),
-              boxShadow: isPrimary
-                  ? buildAiActivationGlowShadows(isDark: isDark)
-                  : null,
-            ),
-            child: Container(
-              padding: EdgeInsets.fromLTRB(12.w, 12.h, 10.w, 12.h),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(17.r),
-                color: isPrimary ? null : colorScheme.surface,
-                gradient: isPrimary
-                    ? LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: <Color>[
-                          aiActivationGradientColors[0].withValues(
-                            alpha: isDark ? 0.18 : 0.13,
-                          ),
-                          aiActivationGradientColors[1].withValues(
-                            alpha: isDark ? 0.13 : 0.09,
-                          ),
-                          aiActivationGradientColors[2].withValues(
-                            alpha: isDark ? 0.10 : 0.07,
-                          ),
-                        ],
-                      )
-                    : null,
+          padding: EdgeInsets.fromLTRB(12.w, 11.h, 12.w, 11.h),
+          color: pressed.value
+              ? colorScheme.onSurface.withValues(alpha: isDark ? 0.06 : 0.05)
+              : Colors.transparent,
+          child: Row(
+            children: <Widget>[
+              Icon(
+                icon,
+                size: 20.sp,
+                color: isPrimary
+                    ? colorScheme.primary
+                    : colorScheme.onSurface.withValues(alpha: 0.55),
               ),
-              child: Row(
-                children: <Widget>[
-                  _buildIconBadge(context),
-                  SizedBox(width: 12.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        _buildTitle(context),
-                        SizedBox(height: 3.h),
-                        Text(
-                          description,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 11.sp,
-                            fontWeight: FontWeight.w500,
-                            height: 1.35,
-                            color: colorScheme.onSurface.withValues(
-                              alpha: isPrimary ? 0.62 : 0.52,
-                            ),
-                          ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w700,
+                        height: 1.2,
+                        color: colorScheme.onSurface.withValues(alpha: 0.90),
+                      ),
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w500,
+                        height: 1.35,
+                        color: colorScheme.onSurface.withValues(
+                          alpha: isPrimary ? 0.55 : 0.45,
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                  SizedBox(width: 6.w),
-                  _buildTrailing(context),
-                ],
+                  ],
+                ),
               ),
-            ),
+              SizedBox(width: 8.w),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 17.sp,
+                color: colorScheme.onSurface.withValues(alpha: 0.28),
+              ),
+            ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildIconBadge(BuildContext context) {
-    final ColorScheme colorScheme = context.colorScheme;
-    final bool isDark = context.isDark;
-
-    return Container(
-      width: 40.w,
-      height: 40.w,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: isPrimary ? aiActivationGradient : null,
-        color: isPrimary
-            ? null
-            : colorScheme.primary.withValues(alpha: isDark ? 0.18 : 0.10),
-      ),
-      child: Icon(
-        icon,
-        size: 21.sp,
-        color: isPrimary ? Colors.white : colorScheme.primary,
-      ),
-    );
-  }
-
-  Widget _buildTitle(BuildContext context) {
-    final TextStyle style = TextStyle(
-      fontSize: 15.sp,
-      fontWeight: FontWeight.w800,
-      height: 1.2,
-    );
-
-    if (!isPrimary) {
-      return Text(
-        title,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: style.copyWith(
-          color: context.colorScheme.onSurface.withValues(alpha: 0.90),
-        ),
-      );
-    }
-
-    return ShaderMask(
-      blendMode: BlendMode.srcIn,
-      shaderCallback: (Rect bounds) => aiActivationGradient.createShader(bounds),
-      child: Text(
-        title,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: style.copyWith(color: Colors.white),
-      ),
-    );
-  }
-
-  Widget _buildTrailing(BuildContext context) {
-    if (!isPrimary) {
-      return Icon(
-        Icons.chevron_right_rounded,
-        size: 20.sp,
-        color: context.colorScheme.onSurface.withValues(alpha: 0.32),
-      );
-    }
-
-    return ShaderMask(
-      blendMode: BlendMode.srcIn,
-      shaderCallback: (Rect bounds) => aiActivationGradient.createShader(bounds),
-      child: Icon(
-        Icons.arrow_forward_rounded,
-        size: 19.sp,
-        color: Colors.white,
       ),
     );
   }
@@ -513,13 +433,14 @@ class _DropletClipper extends CustomClipper<Path> {
   }
 }
 
-/// 面板投影与渐变光晕，画在裁剪区域之外，避免被自身形状裁掉。
+/// 面板投影与外发光，画在裁剪区域之外，避免被自身形状裁掉。
 class _DropletBackdropPainter extends CustomPainter {
   const _DropletBackdropPainter({
     required this.radius,
     required this.tailHeight,
     required this.tailHalfWidth,
     required this.shadowColor,
+    required this.isGlowing,
     required this.isDark,
   });
 
@@ -527,6 +448,9 @@ class _DropletBackdropPainter extends CustomPainter {
   final double tailHeight;
   final double tailHalfWidth;
   final Color shadowColor;
+
+  /// 是否绘制 AI 渐变光晕，未激活时只留投影。
+  final bool isGlowing;
   final bool isDark;
 
   @override
@@ -539,6 +463,8 @@ class _DropletBackdropPainter extends CustomPainter {
     );
 
     canvas.drawShadow(path, shadowColor, 16, true);
+
+    if (!isGlowing) return;
 
     // 深色模式下压低透明度，避免光晕在暗背景上过曝。
     final double factor = isDark ? 0.6 : 1;
@@ -562,21 +488,28 @@ class _DropletBackdropPainter extends CustomPainter {
         oldDelegate.tailHeight != tailHeight ||
         oldDelegate.tailHalfWidth != tailHalfWidth ||
         oldDelegate.shadowColor != shadowColor ||
+        oldDelegate.isGlowing != isGlowing ||
         oldDelegate.isDark != isDark;
   }
 }
 
-/// 沿水滴轮廓描一圈 AI 渐变边，与底栏缺口、圆球同一套视觉语言。
+/// 沿水滴轮廓描一圈边：激活态走 AI 渐变，未激活时用中性描边色。
 class _DropletBorderPainter extends CustomPainter {
   const _DropletBorderPainter({
     required this.radius,
     required this.tailHeight,
     required this.tailHalfWidth,
+    required this.gradient,
+    required this.color,
   });
 
   final double radius;
   final double tailHeight;
   final double tailHalfWidth;
+
+  /// 非空时用渐变描边，否则用 [color] 单色。
+  final LinearGradient? gradient;
+  final Color color;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -589,8 +522,14 @@ class _DropletBorderPainter extends CustomPainter {
 
     final Paint paint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2
-      ..shader = aiActivationGradient.createShader(Offset.zero & size);
+      ..strokeWidth = 1.2;
+
+    final LinearGradient? gradient = this.gradient;
+    if (gradient != null) {
+      paint.shader = gradient.createShader(Offset.zero & size);
+    } else {
+      paint.color = color;
+    }
 
     canvas.drawPath(path, paint);
   }
@@ -599,6 +538,8 @@ class _DropletBorderPainter extends CustomPainter {
   bool shouldRepaint(covariant _DropletBorderPainter oldDelegate) {
     return oldDelegate.radius != radius ||
         oldDelegate.tailHeight != tailHeight ||
-        oldDelegate.tailHalfWidth != tailHalfWidth;
+        oldDelegate.tailHalfWidth != tailHalfWidth ||
+        oldDelegate.gradient != gradient ||
+        oldDelegate.color != color;
   }
 }

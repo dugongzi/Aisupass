@@ -6,13 +6,22 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 底栏正中的圆球。
 ///
-/// 渐变描边 + 外发光，内部是主题表面色，与 AI 激活卡片同一套视觉语言。
+/// 已激活时用渐变描边 + 外发光，内部铺主题表面色，与 AI 激活卡片同一套视觉语言；
+/// 未激活时退回主题色实心球，不发光，与普通悬浮按钮一致。
 /// 尺寸需与 [AppBottomBar] 的 `fabSize` 保持一致，否则缺口对不上。
 class AppBottomCenterBall extends HookWidget {
-  const AppBottomCenterBall({super.key, required this.size, this.onPressed});
+  const AppBottomCenterBall({
+    super.key,
+    required this.size,
+    this.isActivated = false,
+    this.onPressed,
+  });
 
   /// 圆球直径（已按 `.w` 缩放后的实际值）。
   final double size;
+
+  /// AI 是否已激活：决定使用 AI 渐变还是主题色。
+  final bool isActivated;
 
   /// 点击回调；为 null 时仅展示，不响应点击。
   final VoidCallback? onPressed;
@@ -27,9 +36,10 @@ class AppBottomCenterBall extends HookWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: aiActivationGradient,
+        gradient: isActivated ? aiActivationGradient : null,
+        color: isActivated ? null : colorScheme.primary,
         boxShadow: <BoxShadow>[
-          ...buildAiActivationGlowShadows(isDark: isDark),
+          if (isActivated) ...buildAiActivationGlowShadows(isDark: isDark),
           BoxShadow(
             color: Colors.black.withValues(alpha: isDark ? 0.14 : 0.08),
             blurRadius: 10,
@@ -38,26 +48,32 @@ class AppBottomCenterBall extends HookWidget {
         ],
       ),
       child: Padding(
-        // 留出渐变描边，内圈铺表面色，日间白、夜间深灰。
-        padding: EdgeInsets.all(2.w),
+        // 激活态留出渐变描边，内圈铺表面色，日间白、夜间深灰。
+        padding: EdgeInsets.all(isActivated ? 2.w : 0),
         child: Material(
-          color: colorScheme.surface,
+          color: isActivated ? colorScheme.surface : Colors.transparent,
           shape: const CircleBorder(),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: onPressed,
             customBorder: const CircleBorder(),
             child: Center(
-              child: ShaderMask(
-                blendMode: BlendMode.srcIn,
-                shaderCallback: (Rect bounds) =>
-                    aiActivationGradient.createShader(bounds),
-                child: Icon(
-                  Icons.auto_awesome_rounded,
-                  size: size * 0.42,
-                  color: Colors.white,
-                ),
-              ),
+              child: isActivated
+                  ? ShaderMask(
+                      blendMode: BlendMode.srcIn,
+                      shaderCallback: (Rect bounds) =>
+                          aiActivationGradient.createShader(bounds),
+                      child: Icon(
+                        Icons.auto_awesome_rounded,
+                        size: size * 0.42,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Icon(
+                      Icons.auto_awesome_rounded,
+                      size: size * 0.42,
+                      color: colorScheme.onPrimary,
+                    ),
             ),
           ),
         ),

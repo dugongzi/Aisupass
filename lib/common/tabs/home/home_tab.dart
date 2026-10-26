@@ -23,9 +23,10 @@ class HomeTab extends HookConsumerWidget {
       padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 100.h),
       children: <Widget>[
         // 页面内的品牌标题，位于激活卡片上方。
-        const Padding(
-          padding: EdgeInsets.fromLTRB(10, 8, 10, 12),
-          child: AppBrandTitle(highlighted: true),
+        // 已激活时跟随 AI 渐变，未激活（含检测中）时用主题色渐变。
+        Padding(
+          padding: const EdgeInsets.fromLTRB(10, 8, 10, 12),
+          child: AppBrandTitle(highlighted: aiStatusAsync.value ?? false),
         ),
         AppAiActivationCard(
           isActivated: aiStatusAsync.value ?? false,
