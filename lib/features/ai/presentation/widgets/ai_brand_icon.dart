@@ -1,109 +1,156 @@
+import 'package:Aisupass/core/extensions/context_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
-/// 已知的模型服务品牌，用于给配置卡片配一个可辨识的图标与配色。
-enum AiBrand { openai, anthropic, deepseek, moonshot, gemini, qwen, generic }
+/// 已收录的品牌图标（simple-icons，CC0-1.0），颜色取各家官方品牌色。
+enum AiBrand {
+  openai('openai', Color(0xFF412991)),
+  anthropic('anthropic', Color(0xFF191919)),
+  claude('claude', Color(0xFFD97757)),
+  deepseek('deepseek', Color(0xFF5786FE)),
+  moonshot('moonshotai', Color(0xFF000000)),
+  gemini('googlegemini', Color(0xFF8E75B2)),
+  mistral('mistralai', Color(0xFFFA520F)),
+  ollama('ollama', Color(0xFF000000)),
+  qwen('qwen', Color(0xFF6950EF)),
+  perplexity('perplexity', Color(0xFF1FB8CD)),
+  glm('glm', Color(0xFF3B82F6)),
+  groq('groq', Color(0xFFF55036)),
+  xai('xai', Color(0xFF000000)),
+  meta('meta', Color(0xFF0668E1)),
+  minimax('minimax', Color(0xFF5B5CE2)),
+  cohere('cohere', Color(0xFF39594D)),
+  baichuan('baichuan', Color(0xFF3D7EFF)),
+  yi('01ai', Color(0xFF111111)),
+  internlm('internlm', Color(0xFF1677FF)),
+  doubao('doubao', Color(0xFF3370FF)),
+  llama('llama', Color(0xFF0668E1)),
+  grok('grok', Color(0xFF000000)),
+  stepfun('stepfun', Color(0xFF5B5CE2)),
+  tencent('tencent', Color(0xFF0052D9)),
+  amazon('amazon', Color(0xFFFF9900)),
+  microsoft('microsoft', Color(0xFF5E5E5E)),
+  ai21('ai21', Color(0xFF6C47FF));
 
-/// 品牌视觉：渐变底色 + 图标。
-class AiBrandStyle {
-  const AiBrandStyle({required this.colors, required this.icon});
+  const AiBrand(this.assetName, this.brandColor);
 
-  final List<Color> colors;
-  final IconData icon;
+  final String assetName;
+
+  /// 官方品牌色。
+  final Color brandColor;
+
+  String get assetPath => 'assets/images/ai_icons/$assetName.svg';
+
+  /// 在给定亮度下实际可用的着色。
+  ///
+  /// 多数品牌色（如 DeepSeek 蓝、Claude 橙）是中间明度，两种主题下都清晰；
+  /// 但 Moonshot / Ollama 的纯黑、Anthropic 的近黑在深色背景上会隐形，
+  /// 因此过暗的品牌色在深色模式下按原色相提亮，无色相的则转浅灰。
+  Color resolveColor({required bool isDark}) {
+    if (!isDark) return brandColor;
+
+    final HSLColor hsl = HSLColor.fromColor(brandColor);
+    if (hsl.lightness >= 0.55) return brandColor;
+
+    // 近乎无彩色的品牌（纯黑/近黑）没有可提亮的色相，改用中性浅色。
+    if (hsl.saturation < 0.08) return const Color(0xFFE6E6E6);
+
+    return hsl
+        .withLightness(hsl.lightness < 0.35 ? 0.72 : 0.80)
+        .withSaturation(hsl.saturation.clamp(0.55, 1.0))
+        .toColor();
+  }
+
+  /// 依据接口地址/模型名/配置名推断服务商，识别不出返回 null。
+  static AiBrand? resolve({String? apiUrl, String? modelName, String? name}) {
+    final String haystack = <String>[
+      apiUrl ?? '',
+      modelName ?? '',
+      name ?? '',
+    ].join(' ').toLowerCase();
+
+    if (haystack.trim().isEmpty) return null;
+
+    // 关键词顺序敏感：产品品牌优先于公司品牌。
+    const List<(AiBrand, List<String>)> matchers = <(AiBrand, List<String>)>[
+      (AiBrand.claude, <String>['claude']),
+      (AiBrand.anthropic, <String>['anthropic']),
+      (AiBrand.deepseek, <String>['deepseek']),
+      (AiBrand.moonshot, <String>['moonshot', 'kimi', '月之暗面']),
+      (
+        AiBrand.gemini,
+        <String>['gemini', 'generativelanguage', 'googleapis'],
+      ),
+      (AiBrand.mistral, <String>['mistral']),
+      (AiBrand.ollama, <String>['ollama']),
+      (AiBrand.qwen, <String>['qwen', 'dashscope', '通义']),
+      (AiBrand.perplexity, <String>['perplexity']),
+      (AiBrand.glm, <String>['glm', 'chatglm', 'zhipu', '智谱', '清言']),
+      (AiBrand.groq, <String>['groq']),
+      (AiBrand.xai, <String>['x.ai', 'grok', 'xai']),
+      (AiBrand.meta, <String>['llama', 'meta']),
+      (AiBrand.minimax, <String>['minimax', 'abab']),
+      (AiBrand.cohere, <String>['cohere', 'command-r']),
+      (AiBrand.baichuan, <String>['baichuan', '百川']),
+      (AiBrand.yi, <String>['01.ai', '01ai', 'yi-']),
+      (AiBrand.internlm, <String>['internlm', '书生']),
+      (AiBrand.doubao, <String>['doubao', '豆包', 'volcengine']),
+      (AiBrand.stepfun, <String>['stepfun', 'step-']),
+      (AiBrand.tencent, <String>['hunyuan', '混元', 'tencent']),
+      (AiBrand.amazon, <String>['amazon', 'nova', 'bedrock']),
+      (AiBrand.microsoft, <String>['azure', 'copilot', 'phi-']),
+      (AiBrand.ai21, <String>['ai21', 'jamba']),
+      (
+        AiBrand.openai,
+        <String>['openai', 'gpt-', 'gpt4', 'gpt5', 'o1-', 'o3-', 'o4-'],
+      ),
+    ];
+
+    for (final (AiBrand brand, List<String> keywords) in matchers) {
+      if (keywords.any(haystack.contains)) return brand;
+    }
+    return null;
+  }
 }
 
-/// 根据地址、模型名与配置名推断品牌。
-AiBrand resolveAiBrand({String? apiUrl, String? modelName, String? name}) {
-  final String source =
-      '${apiUrl ?? ''} ${modelName ?? ''} ${name ?? ''}'.toLowerCase();
-  if (source.contains('anthropic') || source.contains('claude')) {
-    return AiBrand.anthropic;
-  }
-  if (source.contains('deepseek')) return AiBrand.deepseek;
-  if (source.contains('moonshot') || source.contains('kimi')) {
-    return AiBrand.moonshot;
-  }
-  if (source.contains('gemini') || source.contains('generativelanguage')) {
-    return AiBrand.gemini;
-  }
-  if (source.contains('qwen') ||
-      source.contains('dashscope') ||
-      source.contains('tongyi')) {
-    return AiBrand.qwen;
-  }
-  if (source.contains('openai') ||
-      source.contains('gpt') ||
-      source.contains('o1-') ||
-      source.contains('o3-') ||
-      source.contains('o4-')) {
-    return AiBrand.openai;
-  }
-  return AiBrand.generic;
-}
+/// 依据接口地址/模型名/配置名推断服务商，识别不出返回 null。
+AiBrand? resolveAiBrand({String? apiUrl, String? modelName, String? name}) =>
+    AiBrand.resolve(apiUrl: apiUrl, modelName: modelName, name: name);
 
-AiBrandStyle aiBrandStyle(AiBrand brand, ColorScheme scheme) =>
-    switch (brand) {
-      AiBrand.openai => const AiBrandStyle(
-        colors: <Color>[Color(0xFF19C39C), Color(0xFF0E8C6D)],
-        icon: Icons.auto_awesome_rounded,
-      ),
-      AiBrand.anthropic => const AiBrandStyle(
-        colors: <Color>[Color(0xFFE08A66), Color(0xFFB85C3E)],
-        icon: Icons.psychology_alt_rounded,
-      ),
-      AiBrand.deepseek => const AiBrandStyle(
-        colors: <Color>[Color(0xFF5B7BFF), Color(0xFF2F4BE0)],
-        icon: Icons.waves_rounded,
-      ),
-      AiBrand.moonshot => const AiBrandStyle(
-        colors: <Color>[Color(0xFF7C6BFF), Color(0xFF4A3ACB)],
-        icon: Icons.nightlight_round,
-      ),
-      AiBrand.gemini => const AiBrandStyle(
-        colors: <Color>[Color(0xFF4285F4), Color(0xFF9B72CB)],
-        icon: Icons.diamond_rounded,
-      ),
-      AiBrand.qwen => const AiBrandStyle(
-        colors: <Color>[Color(0xFF7A5CFF), Color(0xFF4C2FD6)],
-        icon: Icons.hexagon_outlined,
-      ),
-      AiBrand.generic => AiBrandStyle(
-        colors: <Color>[scheme.primary, scheme.tertiary],
-        icon: Icons.smart_toy_rounded,
-      ),
-    };
-
-/// 品牌图标块：渐变底 + 白色图标，尺寸由 [size] 决定。
+/// 品牌图标，按各家官方品牌色着色；无匹配品牌时回退为通用图标。
 class AiBrandIcon extends HookWidget {
-  const AiBrandIcon({super.key, required this.brand, this.size = 20});
+  const AiBrandIcon({
+    super.key,
+    this.brand,
+    this.size = 22,
+    this.fallbackIcon = Icons.smart_toy_outlined,
+  });
 
-  final AiBrand brand;
+  final AiBrand? brand;
   final double size;
+  final IconData fallbackIcon;
 
   @override
   Widget build(BuildContext context) {
-    final AiBrandStyle style = aiBrandStyle(brand, Theme.of(context).colorScheme);
+    final ColorScheme scheme = context.colorScheme;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final AiBrand? brand = this.brand;
 
-    return Container(
+    if (brand == null) return _fallback(scheme);
+
+    return SvgPicture.asset(
+      brand.assetPath,
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: style.colors,
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(size * 0.32),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: style.colors.first.withValues(alpha: 0.32),
-            blurRadius: size * 0.36,
-            offset: Offset(0, size * 0.10),
-          ),
-        ],
+      colorFilter: ColorFilter.mode(
+        brand.resolveColor(isDark: isDark),
+        BlendMode.srcIn,
       ),
-      child: Icon(style.icon, size: size * 0.54, color: Colors.white),
+      placeholderBuilder: (BuildContext _) => _fallback(scheme),
     );
   }
+
+  Widget _fallback(ColorScheme scheme) =>
+      Icon(fallbackIcon, size: size * 0.86, color: scheme.primary);
 }

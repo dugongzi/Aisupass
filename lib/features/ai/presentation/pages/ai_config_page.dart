@@ -5,6 +5,7 @@ import 'package:Aisupass/core/extensions/context_extensions.dart';
 import 'package:Aisupass/core/routes/app_route.dart';
 import 'package:Aisupass/core/themes/ai_activation_theme.dart';
 import 'package:Aisupass/core/utils/platform.dart';
+import 'package:Aisupass/features/ai/domain/constants/builtin_ai_config.dart';
 import 'package:Aisupass/features/ai/domain/models/ai_config.dart';
 import 'package:Aisupass/features/ai/presentation/providers/ai_config_action_provider.dart';
 import 'package:Aisupass/features/ai/presentation/providers/ai_config_query_provider.dart';
@@ -15,10 +16,11 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// AI 配置列表页。
 ///
-/// 移动端用悬浮按钮新建，桌面端在标题行右侧放新建按钮；
+/// 新建入口统一放在标题栏右上角的「+」图标；
 /// 点击卡片进入编辑页，卡片右上角菜单可切换、编辑与删除。
 class AiConfigPage extends HookConsumerWidget {
   const AiConfigPage({super.key});
@@ -68,33 +70,42 @@ class AiConfigPage extends HookConsumerWidget {
       ToastMessage.success(l10n.aiConfigSwitched);
     }
 
+    /// 打开内置服务的站点获取 API Key。
+    Future<void> openGetKey() => launchUrl(
+      Uri.parse(builtinAiConfigPurchaseUrl),
+      mode: LaunchMode.externalApplication,
+    );
+
     final Widget content = configsAsync.when(
       loading: () => const Loading(),
       error: (Object error, StackTrace stackTrace) =>
           RefError(onRetry: () => ref.invalidate(aiConfigProvider)),
       data: (AiConfigState state) => state.configs.isEmpty
-          ? _EmptyState(onCreate: () => openEditor(AppRoute.newConfigId))
+          ? const _EmptyState()
           : _ConfigList(
               configs: state.configs,
               currentId: state.currentId,
               onEdit: (AiConfig config) => openEditor(config.id),
               onActivate: activate,
               onDelete: confirmDelete,
+              onGetKey: openGetKey,
             ),
     );
 
     if (!isDesktop) {
       return Scaffold(
-        appBar: AppBar(title: Text(l10n.aiConfigTitle)),
-        body: content,
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () => openEditor(AppRoute.newConfigId),
-          icon: Icon(Icons.add_rounded, size: 20.sp),
-          label: Text(
-            l10n.aiConfigNew,
-            style: TextStyle(fontSize: 13.5.sp, fontWeight: FontWeight.w600),
-          ),
+        appBar: AppBar(
+          title: Text(l10n.aiConfigTitle),
+          actions: <Widget>[
+            IconButton(
+              onPressed: () => openEditor(AppRoute.newConfigId),
+              icon: Icon(Icons.add_rounded, size: 22.sp),
+              tooltip: l10n.aiConfigNew,
+            ),
+            SizedBox(width: 6.w),
+          ],
         ),
+        body: content,
       );
     }
 
@@ -120,23 +131,10 @@ class AiConfigPage extends HookConsumerWidget {
                     ),
                   ),
                 ),
-                FilledButton.icon(
+                IconButton(
                   onPressed: () => openEditor(AppRoute.newConfigId),
-                  icon: const Icon(Icons.add_rounded, size: 18),
-                  label: Text(
-                    l10n.aiConfigNew,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size(0, 38),
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
+                  icon: const Icon(Icons.add_rounded, size: 22),
+                  tooltip: l10n.aiConfigNew,
                 ),
               ],
             ),
@@ -156,6 +154,7 @@ class _ConfigList extends HookWidget {
     required this.onEdit,
     required this.onActivate,
     required this.onDelete,
+    required this.onGetKey,
   });
 
   final List<AiConfig> configs;
@@ -163,6 +162,7 @@ class _ConfigList extends HookWidget {
   final ValueChanged<AiConfig> onEdit;
   final ValueChanged<AiConfig> onActivate;
   final ValueChanged<AiConfig> onDelete;
+  final VoidCallback onGetKey;
 
   @override
   Widget build(BuildContext context) {
@@ -176,7 +176,7 @@ class _ConfigList extends HookWidget {
         child: ListView(
           padding: isDesktop
               ? const EdgeInsets.fromLTRB(28, 6, 28, 28)
-              : EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 100.h),
+              : EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 24.h),
           children: <Widget>[
             Padding(
               padding: EdgeInsets.only(left: 4.w, bottom: 10.h),
@@ -221,6 +221,7 @@ class _ConfigList extends HookWidget {
                 onEdit: () => onEdit(configs[index]),
                 onActivate: () => onActivate(configs[index]),
                 onDelete: () => onDelete(configs[index]),
+                onGetKey: onGetKey,
               ),
             ],
           ],
@@ -238,6 +239,7 @@ class _ConfigCard extends HookWidget {
     required this.onEdit,
     required this.onActivate,
     required this.onDelete,
+    required this.onGetKey,
   });
 
   final AiConfig config;
@@ -245,6 +247,7 @@ class _ConfigCard extends HookWidget {
   final VoidCallback onEdit;
   final VoidCallback onActivate;
   final VoidCallback onDelete;
+  final VoidCallback onGetKey;
 
   @override
   Widget build(BuildContext context) {
@@ -252,6 +255,7 @@ class _ConfigCard extends HookWidget {
     final ColorScheme scheme = context.colorScheme;
     final bool isDark = context.isDark;
     final bool isDesktop = isDesktopPlatform;
+    final bool isBuiltin = isBuiltinAiConfig(config);
     final double radius = isDesktop ? 12 : 18.r;
 
     // 当前配置用渐变描边 + 微发光，与底栏、圆球的激活态保持同一套视觉。
@@ -301,13 +305,19 @@ class _ConfigCard extends HookWidget {
                 : EdgeInsets.fromLTRB(14.w, 13.h, 4.w, 13.h),
             child: Row(
               children: <Widget>[
-                AiBrandIcon(
-                  brand: resolveAiBrand(
-                    apiUrl: config.apiUrl,
-                    modelName: config.modelName,
-                    name: config.name,
+                SizedBox(
+                  width: isDesktop ? 40 : 40.w,
+                  height: isDesktop ? 40 : 40.w,
+                  child: Center(
+                    child: AiBrandIcon(
+                      brand: resolveAiBrand(
+                        apiUrl: config.apiUrl,
+                        modelName: config.modelName,
+                        name: config.name,
+                      ),
+                      size: isDesktop ? 26 : 26.w,
+                    ),
                   ),
-                  size: isDesktop ? 40 : 40.w,
                 ),
                 SizedBox(width: 12.w),
                 Expanded(
@@ -328,6 +338,10 @@ class _ConfigCard extends HookWidget {
                               ),
                             ),
                           ),
+                          if (isBuiltin) ...<Widget>[
+                            SizedBox(width: 8.w),
+                            _BuiltinBadge(label: l10n.aiConfigBuiltin),
+                          ],
                           if (isCurrent) ...<Widget>[
                             SizedBox(width: 8.w),
                             _CurrentBadge(label: l10n.aiConfigCurrent),
@@ -348,14 +362,29 @@ class _ConfigCard extends HookWidget {
                         ),
                       ),
                       SizedBox(height: 2.h),
-                      Text(
-                        config.apiUrl,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 10.5.sp,
-                          color: scheme.onSurfaceVariant.withValues(alpha: 0.72),
-                        ),
+                      Row(
+                        children: <Widget>[
+                          Expanded(
+                            child: Text(
+                              config.apiUrl,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 10.5.sp,
+                                color: scheme.onSurfaceVariant.withValues(
+                                  alpha: 0.72,
+                                ),
+                              ),
+                            ),
+                          ),
+                          if (isBuiltin) ...<Widget>[
+                            SizedBox(width: 6.w),
+                            _GetKeyLink(
+                              label: l10n.aiConfigGetKey,
+                              onTap: onGetKey,
+                            ),
+                          ],
+                        ],
                       ),
                     ],
                   ),
@@ -390,15 +419,17 @@ class _ConfigCard extends HookWidget {
                             label: l10n.aiConfigEdit,
                           ),
                         ),
-                        const PopupMenuDivider(),
-                        PopupMenuItem<_ConfigAction>(
-                          value: _ConfigAction.delete,
-                          child: _MenuRow(
-                            icon: Icons.delete_outline_rounded,
-                            label: l10n.aiConfigDelete,
-                            color: scheme.error,
+                        if (!isBuiltin) ...<PopupMenuEntry<_ConfigAction>>[
+                          const PopupMenuDivider(),
+                          PopupMenuItem<_ConfigAction>(
+                            value: _ConfigAction.delete,
+                            child: _MenuRow(
+                              icon: Icons.delete_outline_rounded,
+                              label: l10n.aiConfigDelete,
+                              color: scheme.error,
+                            ),
                           ),
-                        ),
+                        ],
                       ],
                 ),
               ],
@@ -441,6 +472,75 @@ class _CurrentBadge extends HookWidget {
   }
 }
 
+/// 卡片上的「内置」标记，用中性色与「当前」区分。
+class _BuiltinBadge extends HookWidget {
+  const _BuiltinBadge({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final ColorScheme scheme = context.colorScheme;
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 2.h),
+      decoration: BoxDecoration(
+        color: scheme.onSurfaceVariant.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(6.r),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 9.5.sp,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.3,
+          color: scheme.onSurfaceVariant,
+        ),
+      ),
+    );
+  }
+}
+
+/// 卡片上的「获取 Key」入口，点击跳转内置服务站点。
+class _GetKeyLink extends HookWidget {
+  const _GetKeyLink({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final ColorScheme scheme = context.colorScheme;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(6.r),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 2.h),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10.5.sp,
+                fontWeight: FontWeight.w600,
+                color: scheme.primary,
+              ),
+            ),
+            SizedBox(width: 2.w),
+            Icon(
+              Icons.open_in_new_rounded,
+              size: 11.sp,
+              color: scheme.primary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// 弹出菜单里的一行：图标 + 文案。
 class _MenuRow extends HookWidget {
   const _MenuRow({required this.icon, required this.label, this.color});
@@ -471,11 +571,9 @@ class _MenuRow extends HookWidget {
   }
 }
 
-/// 空态：渐变图标 + 引导文案 + 新建按钮。
+/// 空态：仅引导文案。
 class _EmptyState extends HookWidget {
-  const _EmptyState({required this.onCreate});
-
-  final VoidCallback onCreate;
+  const _EmptyState();
 
   @override
   Widget build(BuildContext context) {
@@ -485,60 +583,14 @@ class _EmptyState extends HookWidget {
     return Center(
       child: SingleChildScrollView(
         padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 24.h),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Container(
-              padding: const EdgeInsets.all(1.6),
-              decoration: BoxDecoration(
-                gradient: aiActivationGradient,
-                borderRadius: BorderRadius.circular(25.r),
-                boxShadow: buildAiActivationGlowShadows(
-                  isDark: context.isDark,
-                ),
-              ),
-              child: Container(
-                width: 74.w,
-                height: 74.w,
-                decoration: BoxDecoration(
-                  color: scheme.surface,
-                  borderRadius: BorderRadius.circular(23.r),
-                ),
-                child: Icon(
-                  Icons.auto_awesome_rounded,
-                  size: 32.sp,
-                  color: scheme.primary,
-                ),
-              ),
-            ),
-            SizedBox(height: 20.h),
-            Text(
-              l10n.aiConfigEmpty,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13.sp,
-                height: 1.5,
-                color: scheme.onSurfaceVariant,
-              ),
-            ),
-            SizedBox(height: 22.h),
-            FilledButton.icon(
-              onPressed: onCreate,
-              icon: Icon(Icons.add_rounded, size: 18.sp),
-              label: Text(l10n.aiConfigNew),
-              style: FilledButton.styleFrom(
-                minimumSize: Size(0, 42.h),
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                textStyle: TextStyle(
-                  fontSize: 13.5.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
+        child: Text(
+          l10n.aiConfigEmpty,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 13.sp,
+            height: 1.5,
+            color: scheme.onSurfaceVariant,
+          ),
         ),
       ),
     );

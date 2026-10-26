@@ -139,7 +139,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiConfigEmpty =>
-      'No AI configuration yet. Tap the button below to create one.';
+      'No AI configuration yet. Tap + in the top right to create one.';
+
+  @override
+  String get aiConfigBuiltin => 'Built-in';
+
+  @override
+  String get aiConfigBuiltinHint =>
+      'The built-in endpoint is fixed. Enter your API key, then refresh to load models.';
+
+  @override
+  String get aiConfigGetKey => 'Get API Key';
 
   @override
   String get aiConfigUse => 'Use';
@@ -215,6 +225,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiModelRequired => 'Fetch the model list first';
+
+  @override
+  String get aiModelPickHint => 'Pick a model from the fetched list';
 
   @override
   String get aiModelSelect => 'Select Model';
@@ -307,6 +320,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatTitle => 'Chat';
+
+  @override
+  String get aiQuickPanelTitle => 'AI Escalation';
+
+  @override
+  String get aiQuickPanelSubtitle => 'Choose a way to gain root access';
+
+  @override
+  String get aiQuickEscalateTitle => 'AI Escalation';
+
+  @override
+  String get aiQuickEscalateDesc =>
+      'Analyze your device and generate an exploit plan automatically';
+
+  @override
+  String get manualQuickEscalateTitle => 'Manual Escalation';
+
+  @override
+  String get manualQuickEscalateDesc =>
+      'Run custom commands and scripts step by step';
+
+  @override
+  String get manualQuickEscalateComingSoon =>
+      'Manual escalation is coming soon';
 
   @override
   String get languageTitle => 'Language';

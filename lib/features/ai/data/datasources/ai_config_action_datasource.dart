@@ -4,6 +4,7 @@ import 'package:Aisupass/core/storage/preferences_store.dart';
 import 'package:Aisupass/core/storage/secure_store.dart';
 import 'package:Aisupass/features/ai/data/datasources/ai_config_query_datasource.dart';
 import 'package:Aisupass/features/ai/data/models/ai_config_dto.dart';
+import 'package:Aisupass/features/ai/domain/enums/ai_api_type.dart';
 
 /// AI 配置的写入数据源。
 ///
@@ -32,6 +33,19 @@ class AiConfigActionDatasource {
 
   Future<void> deleteApiKey(String id) =>
       _secure.delete(AiConfigQueryDatasource.apiKeyKey(id));
+
+  /// 写入内置配置所选模型。
+  Future<void> writeBuiltinModel(String modelName) => _preferences.write<String>(
+    AiConfigQueryDatasource.builtinModelKey,
+    modelName,
+  );
+
+  /// 写入内置配置所选协议。
+  Future<void> writeBuiltinApiType(AiApiType apiType) =>
+      _preferences.write<String>(
+        AiConfigQueryDatasource.builtinApiTypeKey,
+        apiType.name,
+      );
 
   Future<void> writeCurrentId(String id) => _preferences.write<String>(
     AiConfigQueryDatasource.currentIdKey,

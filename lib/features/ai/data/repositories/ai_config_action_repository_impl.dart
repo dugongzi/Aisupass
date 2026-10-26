@@ -1,6 +1,7 @@
 import 'package:Aisupass/features/ai/data/datasources/ai_config_action_datasource.dart';
 import 'package:Aisupass/features/ai/data/datasources/ai_config_query_datasource.dart';
 import 'package:Aisupass/features/ai/data/models/ai_config_dto.dart';
+import 'package:Aisupass/features/ai/domain/constants/builtin_ai_config.dart';
 import 'package:Aisupass/features/ai/domain/models/ai_config.dart';
 import 'package:Aisupass/features/ai/domain/repositories/ai_config_action_repository.dart';
 
@@ -19,6 +20,14 @@ class AiConfigActionRepositoryImpl implements AiConfigActionRepository {
 
   @override
   Future<void> save(AiConfig config) async {
+    // 内置配置的字段由常量决定，只落用户可改的 Key、模型与协议，不进用户列表。
+    if (isBuiltinAiConfig(config)) {
+      await _actionDatasource.writeApiKey(config.id, config.apiKey.trim());
+      await _actionDatasource.writeBuiltinModel(config.modelName.trim());
+      await _actionDatasource.writeBuiltinApiType(config.apiType);
+      return;
+    }
+
     final List<AiConfigDto> configs = List<AiConfigDto>.of(
       await _queryDatasource.loadAll(),
     );
@@ -38,6 +47,9 @@ class AiConfigActionRepositoryImpl implements AiConfigActionRepository {
 
   @override
   Future<void> delete(String id) async {
+    // 内置配置不可删除，否则列表会失去兜底项。
+    if (isBuiltinAiConfigId(id)) return;
+
     final List<AiConfigDto> configs = List<AiConfigDto>.of(
       await _queryDatasource.loadAll(),
     )..removeWhere((AiConfigDto item) => item.id == id);

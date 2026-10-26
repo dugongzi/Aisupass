@@ -4,6 +4,7 @@ import 'package:Aisupass/core/extensions/context_extensions.dart';
 import 'package:Aisupass/core/routes/app_route.dart';
 import 'package:Aisupass/core/utils/platform.dart';
 import 'package:Aisupass/features/ai/data/datasources/ai_model_query_datasource.dart';
+import 'package:Aisupass/features/ai/domain/constants/builtin_ai_config.dart';
 import 'package:Aisupass/features/ai/domain/enums/ai_api_type.dart';
 import 'package:Aisupass/features/ai/domain/models/ai_config.dart';
 import 'package:Aisupass/features/ai/presentation/providers/ai_config_action_provider.dart';
@@ -20,6 +21,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 
 /// 常用服务商预设。名称属于品牌专有名词，不做翻译。
@@ -77,6 +79,9 @@ class AiConfigEditPage extends HookConsumerWidget {
         ? null
         : ref.watch(aiConfigProvider).value?.byId(configId);
 
+    // 内置配置只允许改 API Key，其余字段一律取常量。
+    final bool isBuiltinEditing = existing != null && isBuiltinAiConfig(existing);
+
     final TextEditingController nameController = useTextEditingController(
       text: existing?.name ?? '',
     );
@@ -127,15 +132,28 @@ class AiConfigEditPage extends HookConsumerWidget {
       errors.value = <String, String>{...errors.value}..remove(key);
     }
 
-    AiConfig buildConfig() => AiConfig(
-      id: draftId,
-      name: nameController.text.trim(),
-      apiUrl: urlController.text.trim(),
-      apiKey: apiKeyController.text.trim(),
-      modelName: model.value.trim(),
-      maxToken: int.tryParse(maxTokensController.text.trim()) ?? 0,
-      temperature: double.tryParse(temperatureController.text.trim()) ?? -1,
-      apiType: apiType.value,
+    AiConfig buildConfig() => isBuiltinEditing
+        ? buildBuiltinAiConfig(
+            apiKey: apiKeyController.text.trim(),
+            modelName: model.value.trim(),
+            apiType: apiType.value,
+          )
+        : AiConfig(
+            id: draftId,
+            name: nameController.text.trim(),
+            apiUrl: urlController.text.trim(),
+            apiKey: apiKeyController.text.trim(),
+            modelName: model.value.trim(),
+            maxToken: int.tryParse(maxTokensController.text.trim()) ?? 0,
+            temperature:
+                double.tryParse(temperatureController.text.trim()) ?? -1,
+            apiType: apiType.value,
+          );
+
+    /// 打开内置服务的站点获取 API Key。
+    Future<void> openGetKey() => launchUrl(
+      Uri.parse(builtinAiConfigPurchaseUrl),
+      mode: LaunchMode.externalApplication,
     );
 
     String describeError(AiRequestException error) {
@@ -179,11 +197,17 @@ class AiConfigEditPage extends HookConsumerWidget {
             .fetchModels(buildConfig());
         models.value = list;
         connCount.value = list.length;
-        if (model.value.trim().isEmpty && list.isNotEmpty) {
-          model.value = list.first;
-        }
         clearFieldError('model');
         connState.value = _ConnState.ok;
+        // 已选模型若不在最新列表里（例如服务端已下线该模型），清空让用户重选。
+        final String current = model.value.trim();
+        if (current.isNotEmpty && !list.contains(current)) {
+          model.value = '';
+        }
+        // 不自动选中，交由用户从列表里挑。
+        if (model.value.trim().isEmpty) {
+          ToastMessage.show(l10n.aiModelPickHint);
+        }
         return true;
       } on AiRequestException catch (error) {
         connMessage.value = describeError(error);
@@ -214,14 +238,17 @@ class AiConfigEditPage extends HookConsumerWidget {
 
     Future<void> handleSave() async {
       final Map<String, String> nextErrors = <String, String>{};
-      if (nameController.text.trim().isEmpty) {
-        nextErrors['name'] = l10n.aiFieldRequired;
-      }
-      final String url = urlController.text.trim();
-      if (url.isEmpty) {
-        nextErrors['url'] = l10n.aiFieldRequired;
-      } else if (!_isValidUrl(url)) {
-        nextErrors['url'] = l10n.aiInvalidUrl;
+      // 内置配置的名称与地址由常量决定，跳过这两项校验。
+      if (!isBuiltinEditing) {
+        if (nameController.text.trim().isEmpty) {
+          nextErrors['name'] = l10n.aiFieldRequired;
+        }
+        final String url = urlController.text.trim();
+        if (url.isEmpty) {
+          nextErrors['url'] = l10n.aiFieldRequired;
+        } else if (!_isValidUrl(url)) {
+          nextErrors['url'] = l10n.aiInvalidUrl;
+        }
       }
       if (apiKeyController.text.trim().isEmpty) {
         nextErrors['key'] = l10n.aiFieldRequired;
@@ -229,16 +256,13 @@ class AiConfigEditPage extends HookConsumerWidget {
       errors.value = nextErrors;
       if (nextErrors.isNotEmpty) return;
 
-      // 保存前先验证连通性：拿到模型目录才允许落盘。
-      if (models.value.isEmpty) {
-        final bool reachable = await loadModels();
-        if (!reachable) return;
-      }
+      // 保存与刷新互不触发：只校验模型是否已选定。
       if (model.value.trim().isEmpty) {
-        errors.value = <String, String>{
-          ...errors.value,
-          'model': l10n.aiModelRequired,
-        };
+        final String tip = models.value.isEmpty
+            ? l10n.aiModelRequired
+            : l10n.aiModelPickHint;
+        errors.value = <String, String>{...errors.value, 'model': tip};
+        ToastMessage.show(tip);
         return;
       }
 
@@ -260,15 +284,8 @@ class AiConfigEditPage extends HookConsumerWidget {
       color: context.colorScheme.onSurfaceVariant,
     );
 
-    final Widget apiTypeField = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Padding(
-          padding: EdgeInsets.only(left: 2.w, bottom: 7.h),
-          child: Text(l10n.aiApiType, style: labelStyle),
-        ),
-        if (isDesktop)
-          AppSelect<AiApiType>(
+    final Widget apiTypeControl = isDesktop
+        ? AppSelect<AiApiType>(
             value: apiType.value,
             width: 220,
             items: <AppSelectItem<AiApiType>>[
@@ -277,8 +294,7 @@ class AiConfigEditPage extends HookConsumerWidget {
             ],
             onChanged: (AiApiType value) => apiType.value = value,
           )
-        else
-          SizedBox(
+        : SizedBox(
             width: double.infinity,
             child: SegmentedButton<AiApiType>(
               segments: <ButtonSegment<AiApiType>>[
@@ -302,7 +318,16 @@ class AiConfigEditPage extends HookConsumerWidget {
               onSelectionChanged: (Set<AiApiType> selection) =>
                   apiType.value = selection.first,
             ),
-          ),
+          );
+
+    final Widget apiTypeField = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Padding(
+          padding: EdgeInsets.only(left: 2.w, bottom: 7.h),
+          child: Text(l10n.aiApiType, style: labelStyle),
+        ),
+        apiTypeControl,
       ],
     );
 
@@ -338,10 +363,15 @@ class AiConfigEditPage extends HookConsumerWidget {
       title: l10n.aiConnectionSection,
       icon: Icons.link_rounded,
       children: <Widget>[
+        if (isBuiltinEditing) ...<Widget>[
+          _BuiltinNotice(onGetKey: openGetKey),
+          SizedBox(height: 14.h),
+        ],
         AiTextField(
           controller: nameController,
           label: l10n.aiConfigName,
           hint: l10n.aiConfigNameHint,
+          readOnly: isBuiltinEditing,
           errorText: errors.value['name'],
           onChanged: (String _) => clearFieldError('name'),
         ),
@@ -351,6 +381,7 @@ class AiConfigEditPage extends HookConsumerWidget {
           label: l10n.aiBaseUrl,
           hint: l10n.aiBaseUrlHint,
           keyboardType: TextInputType.url,
+          readOnly: isBuiltinEditing,
           errorText: errors.value['url'],
           onChanged: (String _) {
             clearFieldError('url');
@@ -376,36 +407,29 @@ class AiConfigEditPage extends HookConsumerWidget {
     final Widget modelCard = AiSectionCard(
       title: l10n.aiModelName,
       icon: Icons.hub_outlined,
-      trailing: loadingModels.value
-          ? SizedBox(
-              width: 16.w,
-              height: 16.w,
-              child: const CircularProgressIndicator(strokeWidth: 2),
-            )
-          : TextButton.icon(
-              onPressed: saving.value ? null : loadModels,
-              icon: Icon(Icons.refresh_rounded, size: 16.sp),
-              label: Text(
-                l10n.aiModelLoad,
-                style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600),
-              ),
-              style: TextButton.styleFrom(
-                visualDensity: VisualDensity.compact,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                minimumSize: Size.zero,
-                padding: EdgeInsets.symmetric(horizontal: 8.w),
+      children: <Widget>[
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Expanded(
+              child: AiModelPicker(
+                value: model.value,
+                models: models.value,
+                loading: loadingModels.value,
+                onChanged: (String value) {
+                  model.value = value;
+                  clearFieldError('model');
+                },
+                errorText: errors.value['model'],
               ),
             ),
-      children: <Widget>[
-        AiModelPicker(
-          value: model.value,
-          models: models.value,
-          loading: loadingModels.value,
-          onChanged: (String value) {
-            model.value = value;
-            clearFieldError('model');
-          },
-          errorText: errors.value['model'],
+            SizedBox(width: 8.w),
+            _RefreshButton(
+              loading: loadingModels.value,
+              tooltip: l10n.aiModelLoad,
+              onTap: loadModels,
+            ),
+          ],
         ),
       ],
     );
@@ -467,13 +491,17 @@ class AiConfigEditPage extends HookConsumerWidget {
               ? const EdgeInsets.fromLTRB(28, 6, 28, 24)
               : EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 24.h),
           children: <Widget>[
-            quickStartCard,
-            SizedBox(height: isDesktop ? 16 : 16.h),
+            if (!isBuiltinEditing) ...<Widget>[
+              quickStartCard,
+              SizedBox(height: isDesktop ? 16 : 16.h),
+            ],
             connectionCard,
             SizedBox(height: isDesktop ? 16 : 16.h),
             modelCard,
-            SizedBox(height: isDesktop ? 16 : 16.h),
-            advancedCard,
+            if (!isBuiltinEditing) ...<Widget>[
+              SizedBox(height: isDesktop ? 16 : 16.h),
+              advancedCard,
+            ],
           ],
         ),
       ),
@@ -522,7 +550,11 @@ class AiConfigEditPage extends HookConsumerWidget {
       ),
       child: SafeArea(
         top: false,
-        child: Center(
+        // heightFactor 让底部栏贴合内容高度；直接 Center 会在
+        // bottomNavigationBar 的松约束下撑满整屏，把 body 挤成 0 高。
+        child: Align(
+          alignment: Alignment.center,
+          heightFactor: 1,
           child: ConstrainedBox(
             constraints: BoxConstraints(
               maxWidth: isDesktop ? 760 : double.infinity,
@@ -652,6 +684,114 @@ class _PresetChip extends HookWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// 模型输入框右侧的小刷新按钮，用于重新拉取模型列表。
+class _RefreshButton extends HookWidget {
+  const _RefreshButton({
+    required this.loading,
+    required this.tooltip,
+    required this.onTap,
+  });
+
+  final bool loading;
+  final String tooltip;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final ColorScheme scheme = context.colorScheme;
+    final bool isDark = context.isDark;
+    final bool disabled = onTap == null;
+
+    return Tooltip(
+      message: tooltip,
+      child: SizedBox(
+        width: 44.w,
+        height: 44.h,
+        child: Material(
+          color: isDark
+              ? scheme.onSurface.withValues(alpha: 0.04)
+              : scheme.surfaceContainerHighest.withValues(alpha: 0.35),
+          borderRadius: BorderRadius.circular(14.r),
+          child: InkWell(
+            onTap: loading ? null : onTap,
+            borderRadius: BorderRadius.circular(14.r),
+            child: Center(
+              child: loading
+                  ? SizedBox(
+                      width: 16.w,
+                      height: 16.w,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: scheme.primary,
+                      ),
+                    )
+                  : Icon(
+                      Icons.refresh_rounded,
+                      size: 19.sp,
+                      color: disabled
+                          ? scheme.onSurfaceVariant.withValues(alpha: 0.45)
+                          : scheme.primary,
+                    ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 内置配置提示条：说明服务地址已锁定，并给出获取 Key 的入口。
+class _BuiltinNotice extends HookWidget {
+  const _BuiltinNotice({required this.onGetKey});
+
+  final VoidCallback onGetKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final AppLocalizations l10n = context.l10n;
+    final ColorScheme scheme = context.colorScheme;
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: scheme.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: scheme.primary.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        children: <Widget>[
+          Icon(Icons.lock_outline_rounded, size: 16.sp, color: scheme.primary),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: Text(
+              l10n.aiConfigBuiltinHint,
+              style: TextStyle(
+                fontSize: 11.5.sp,
+                height: 1.35,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          SizedBox(width: 8.w),
+          TextButton(
+            onPressed: onGetKey,
+            style: TextButton.styleFrom(
+              visualDensity: VisualDensity.compact,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              minimumSize: Size.zero,
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+            ),
+            child: Text(
+              l10n.aiConfigGetKey,
+              style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
       ),
     );
   }

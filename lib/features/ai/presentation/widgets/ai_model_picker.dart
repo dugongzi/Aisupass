@@ -108,7 +108,11 @@ class AiModelPicker extends HookWidget {
                 ],
                 Expanded(
                   child: Text(
-                    hasValue ? value : context.l10n.aiModelHint,
+                    hasValue
+                        ? value
+                        : models.isEmpty
+                        ? context.l10n.aiModelHint
+                        : context.l10n.aiModelPickHint,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(

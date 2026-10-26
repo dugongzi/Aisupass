@@ -353,8 +353,26 @@ abstract class AppLocalizations {
   /// AI 配置列表为空时的提示
   ///
   /// In zh, this message translates to:
-  /// **'还没有 AI 配置，点击下方按钮新建一个'**
+  /// **'还没有 AI 配置，点击右上角 + 新建一个'**
   String get aiConfigEmpty;
+
+  /// 内置服务配置的标记
+  ///
+  /// In zh, this message translates to:
+  /// **'内置'**
+  String get aiConfigBuiltin;
+
+  /// 内置配置编辑页的说明
+  ///
+  /// In zh, this message translates to:
+  /// **'内置服务地址已锁定，填写 API Key 后可刷新获取模型'**
+  String get aiConfigBuiltinHint;
+
+  /// 跳转到内置服务站点获取 API Key
+  ///
+  /// In zh, this message translates to:
+  /// **'获取 Key'**
+  String get aiConfigGetKey;
 
   /// 切换到该 AI 配置
   ///
@@ -499,6 +517,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'请先获取模型列表'**
   String get aiModelRequired;
+
+  /// 已获取模型但尚未选择时的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'请从已获取的模型中选择一个'**
+  String get aiModelPickHint;
 
   /// 模型选择弹层标题
   ///
@@ -649,6 +673,48 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'对话'**
   String get chatTitle;
+
+  /// 底栏圆球快捷面板标题
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 提权助手'**
+  String get aiQuickPanelTitle;
+
+  /// 底栏圆球快捷面板副标题
+  ///
+  /// In zh, this message translates to:
+  /// **'选择一种方式开始获取最高权限'**
+  String get aiQuickPanelSubtitle;
+
+  /// 快捷面板-AI 提权入口
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 提权'**
+  String get aiQuickEscalateTitle;
+
+  /// 快捷面板-AI 提权入口说明
+  ///
+  /// In zh, this message translates to:
+  /// **'智能分析设备环境，自动生成并执行提权方案'**
+  String get aiQuickEscalateDesc;
+
+  /// 快捷面板-手动提权入口
+  ///
+  /// In zh, this message translates to:
+  /// **'手动提权'**
+  String get manualQuickEscalateTitle;
+
+  /// 快捷面板-手动提权入口说明
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义命令与脚本，逐步掌控提权流程'**
+  String get manualQuickEscalateDesc;
+
+  /// 点击手动提权时的占位提示
+  ///
+  /// In zh, this message translates to:
+  /// **'手动提权功能开发中'**
+  String get manualQuickEscalateComingSoon;
 
   /// 设置项-语言（语言名称本身在组件内硬编码，不走 l10n）
   ///

@@ -1,6 +1,8 @@
 import 'package:Aisupass/core/storage/storage_providers.dart';
 import 'package:Aisupass/features/ai/data/datasources/ai_config_query_datasource.dart';
 import 'package:Aisupass/features/ai/data/repositories/ai_config_query_repository_impl.dart';
+import 'package:Aisupass/features/ai/domain/constants/builtin_ai_config.dart';
+import 'package:Aisupass/features/ai/domain/enums/ai_api_type.dart';
 import 'package:Aisupass/features/ai/domain/models/ai_config.dart';
 import 'package:Aisupass/features/ai/domain/repositories/ai_config_query_repository.dart';
 import 'package:flutter/foundation.dart';
@@ -62,12 +64,24 @@ Future<AiConfigState> aiConfig(Ref ref) async {
   final AiConfigQueryRepository repository = ref.watch(
     aiConfigQueryRepositoryProvider,
   );
-  final List<AiConfig> configs = await repository.loadAll();
+  final List<AiConfig> stored = await repository.loadAll();
   final String storedId = await repository.readCurrentId();
+
+  // 内置配置不落用户列表，读取时拼在最前，保证列表永远至少有一项。
+  final AiConfig builtin = buildBuiltinAiConfig(
+    apiKey: await repository.readApiKey(builtinAiConfigId),
+    modelName: await repository.readBuiltinModel(),
+    apiType: AiApiType.fromName(await repository.readBuiltinApiTypeName()),
+  );
+  final List<AiConfig> configs = <AiConfig>[
+    builtin,
+    ...stored.where((AiConfig config) => !isBuiltinAiConfig(config)),
+  ];
+
   final String currentId = configs.any(
     (AiConfig config) => config.id == storedId,
   )
       ? storedId
-      : (configs.isEmpty ? '' : configs.first.id);
+      : configs.first.id;
   return AiConfigState(configs: configs, currentId: currentId);
 }

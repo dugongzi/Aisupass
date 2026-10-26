@@ -21,4 +21,13 @@ class AiConfigQueryRepositoryImpl implements AiConfigQueryRepository {
 
   @override
   Future<String> readCurrentId() => _datasource.readCurrentId();
+
+  @override
+  Future<String> readApiKey(String id) => _datasource.readApiKey(id);
+
+  @override
+  Future<String> readBuiltinModel() => _datasource.readBuiltinModel();
+
+  @override
+  Future<String> readBuiltinApiTypeName() => _datasource.readBuiltinApiTypeName();
 }

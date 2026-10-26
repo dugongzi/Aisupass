@@ -1,6 +1,7 @@
 import 'package:Aisupass/core/storage/storage_providers.dart';
 import 'package:Aisupass/features/ai/data/datasources/ai_config_action_datasource.dart';
 import 'package:Aisupass/features/ai/data/repositories/ai_config_action_repository_impl.dart';
+import 'package:Aisupass/features/ai/domain/constants/builtin_ai_config.dart';
 import 'package:Aisupass/features/ai/domain/models/ai_config.dart';
 import 'package:Aisupass/features/ai/domain/repositories/ai_config_action_repository.dart';
 import 'package:Aisupass/features/ai/domain/repositories/ai_config_query_repository.dart';
@@ -52,7 +53,11 @@ class AiConfigActions {
   }
 
   /// 删除指定配置；若删的是当前项，则改指向剩余首项。
+  ///
+  /// 内置配置不可删除，直接忽略。
   Future<void> remove(String id) async {
+    if (isBuiltinAiConfigId(id)) return;
+
     await _repository.delete(id);
     if (await _queryRepository.readCurrentId() == id) {
       final List<AiConfig> configs = await _queryRepository.loadAll();

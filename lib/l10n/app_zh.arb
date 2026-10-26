@@ -174,9 +174,21 @@
   "@aiConfigList": {
     "description": "AI 配置列表分组标题"
   },
-  "aiConfigEmpty": "还没有 AI 配置，点击下方按钮新建一个",
+  "aiConfigEmpty": "还没有 AI 配置，点击右上角 + 新建一个",
   "@aiConfigEmpty": {
     "description": "AI 配置列表为空时的提示"
+  },
+  "aiConfigBuiltin": "内置",
+  "@aiConfigBuiltin": {
+    "description": "内置服务配置的标记"
+  },
+  "aiConfigBuiltinHint": "内置服务地址已锁定，填写 API Key 后可刷新获取模型",
+  "@aiConfigBuiltinHint": {
+    "description": "内置配置编辑页的说明"
+  },
+  "aiConfigGetKey": "获取 Key",
+  "@aiConfigGetKey": {
+    "description": "跳转到内置服务站点获取 API Key"
   },
   "aiConfigUse": "切换",
   "@aiConfigUse": {
@@ -278,6 +290,10 @@
   "aiModelRequired": "请先获取模型列表",
   "@aiModelRequired": {
     "description": "未获取模型就点击选择器时的提示"
+  },
+  "aiModelPickHint": "请从已获取的模型中选择一个",
+  "@aiModelPickHint": {
+    "description": "已获取模型但尚未选择时的提示"
   },
   "aiModelSelect": "选择模型",
   "@aiModelSelect": {
@@ -416,6 +432,34 @@
   "chatTitle": "对话",
   "@chatTitle": {
     "description": "AI 对话页标题"
+  },
+  "aiQuickPanelTitle": "AI 提权助手",
+  "@aiQuickPanelTitle": {
+    "description": "底栏圆球快捷面板标题"
+  },
+  "aiQuickPanelSubtitle": "选择一种方式开始获取最高权限",
+  "@aiQuickPanelSubtitle": {
+    "description": "底栏圆球快捷面板副标题"
+  },
+  "aiQuickEscalateTitle": "AI 提权",
+  "@aiQuickEscalateTitle": {
+    "description": "快捷面板-AI 提权入口"
+  },
+  "aiQuickEscalateDesc": "智能分析设备环境，自动生成并执行提权方案",
+  "@aiQuickEscalateDesc": {
+    "description": "快捷面板-AI 提权入口说明"
+  },
+  "manualQuickEscalateTitle": "手动提权",
+  "@manualQuickEscalateTitle": {
+    "description": "快捷面板-手动提权入口"
+  },
+  "manualQuickEscalateDesc": "自定义命令与脚本，逐步掌控提权流程",
+  "@manualQuickEscalateDesc": {
+    "description": "快捷面板-手动提权入口说明"
+  },
+  "manualQuickEscalateComingSoon": "手动提权功能开发中",
+  "@manualQuickEscalateComingSoon": {
+    "description": "点击手动提权时的占位提示"
   },
   "languageTitle": "语言",
   "@languageTitle": {

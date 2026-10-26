@@ -138,7 +138,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiConfigList => '配置列表';
 
   @override
-  String get aiConfigEmpty => '还没有 AI 配置，点击下方按钮新建一个';
+  String get aiConfigEmpty => '还没有 AI 配置，点击右上角 + 新建一个';
+
+  @override
+  String get aiConfigBuiltin => '内置';
+
+  @override
+  String get aiConfigBuiltinHint => '内置服务地址已锁定，填写 API Key 后可刷新获取模型';
+
+  @override
+  String get aiConfigGetKey => '获取 Key';
 
   @override
   String get aiConfigUse => '切换';
@@ -213,6 +222,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiModelRequired => '请先获取模型列表';
+
+  @override
+  String get aiModelPickHint => '请从已获取的模型中选择一个';
 
   @override
   String get aiModelSelect => '选择模型';
@@ -302,6 +314,27 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get chatTitle => '对话';
+
+  @override
+  String get aiQuickPanelTitle => 'AI 提权助手';
+
+  @override
+  String get aiQuickPanelSubtitle => '选择一种方式开始获取最高权限';
+
+  @override
+  String get aiQuickEscalateTitle => 'AI 提权';
+
+  @override
+  String get aiQuickEscalateDesc => '智能分析设备环境，自动生成并执行提权方案';
+
+  @override
+  String get manualQuickEscalateTitle => '手动提权';
+
+  @override
+  String get manualQuickEscalateDesc => '自定义命令与脚本，逐步掌控提权流程';
+
+  @override
+  String get manualQuickEscalateComingSoon => '手动提权功能开发中';
 
   @override
   String get languageTitle => '语言';

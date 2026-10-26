@@ -16,6 +16,7 @@ class AiTextField extends HookWidget {
     this.inputFormatters,
     this.maxLines = 1,
     this.obscure = false,
+    this.readOnly = false,
     this.prefixIcon,
     this.onChanged,
   });
@@ -28,6 +29,9 @@ class AiTextField extends HookWidget {
   final List<TextInputFormatter>? inputFormatters;
   final int maxLines;
   final bool obscure;
+
+  /// 只读：用于内置配置等不允许修改的字段。
+  final bool readOnly;
   final IconData? prefixIcon;
   final ValueChanged<String>? onChanged;
 
@@ -57,8 +61,14 @@ class AiTextField extends HookWidget {
           inputFormatters: inputFormatters,
           maxLines: obscure ? 1 : maxLines,
           obscureText: obscure && hidden.value,
+          readOnly: readOnly,
           onChanged: onChanged,
-          style: TextStyle(fontSize: 14.sp, color: scheme.onSurface),
+          style: TextStyle(
+            fontSize: 14.sp,
+            color: readOnly
+                ? scheme.onSurface.withValues(alpha: 0.72)
+                : scheme.onSurface,
+          ),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(
@@ -66,9 +76,11 @@ class AiTextField extends HookWidget {
               color: scheme.onSurfaceVariant.withValues(alpha: 0.7),
             ),
             filled: true,
-            fillColor: isDark
-                ? scheme.onSurface.withValues(alpha: 0.04)
-                : scheme.surfaceContainerHighest.withValues(alpha: 0.35),
+            fillColor: readOnly
+                ? scheme.onSurface.withValues(alpha: isDark ? 0.02 : 0.03)
+                : (isDark
+                      ? scheme.onSurface.withValues(alpha: 0.04)
+                      : scheme.surfaceContainerHighest.withValues(alpha: 0.35)),
             contentPadding: EdgeInsets.symmetric(
               horizontal: 14.w,
               vertical: 14.h,
