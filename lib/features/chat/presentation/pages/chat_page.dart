@@ -11,6 +11,7 @@ import 'package:Aisupass/features/chat/presentation/widgets/chat_input_bar.dart'
 import 'package:Aisupass/features/chat/presentation/widgets/chat_message.dart';
 import 'package:Aisupass/features/chat/presentation/widgets/chat_notice.dart';
 import 'package:Aisupass/features/chat/presentation/widgets/chat_scroll_button.dart';
+import 'package:Aisupass/features/chat/presentation/widgets/chat_session_list.dart';
 import 'package:Aisupass/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -100,10 +101,23 @@ class ChatPage extends HookConsumerWidget {
       WidgetsBinding.instance.addPostFrameCallback((_) => jumpToLatest());
     }
 
-    void startNewSession() {
-      controller.clear();
+    Future<void> startNewSession() async {
+      await controller.startNewSession();
       unread.value = 0;
       if (scrollController.hasClients) scrollController.jumpTo(0);
+    }
+
+    // 头像与模型名只在每条用户消息后的首条 assistant 消息上出现，
+    // 后续工具续跑的轮次不再重复，保持正文连续。
+    final Set<String> headAssistantIds = <String>{};
+    bool awaitingReply = false;
+    for (final ChatTurn turn in state.turns) {
+      if (turn.isUser) {
+        awaitingReply = true;
+      } else if (awaitingReply) {
+        headAssistantIds.add(turn.id);
+        awaitingReply = false;
+      }
     }
 
     final Widget conversation = state.isEmpty
@@ -123,12 +137,24 @@ class ChatPage extends HookConsumerWidget {
                 itemBuilder: (BuildContext context, int index) {
                   final ChatTurn turn =
                       state.turns[state.turns.length - 1 - index];
-                  return ChatMessageView(
+                  final Widget message = ChatMessageView(
                     key: ValueKey<String>(turn.id),
                     turn: turn,
                     brand: brand,
                     modelName: config?.modelName ?? '',
+                    showModelName: headAssistantIds.contains(turn.id),
                     animate: index == 0,
+                  );
+                  // 除首轮外，每段新提问前加一条分隔线，便于区分多段对话。
+                  if (!turn.isUser || index == state.turns.length - 1) {
+                    return message;
+                  }
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      _SegmentDivider(),
+                      message,
+                    ],
                   );
                 },
               ),
@@ -170,13 +196,34 @@ class ChatPage extends HookConsumerWidget {
       ],
     );
 
+    // 日间对话区用纯白，夜间跟随主题底色。
+    final Color pageBackground = context.isDark
+        ? Theme.of(context).scaffoldBackgroundColor
+        : Colors.white;
+
     if (!isDesktop) {
       return Scaffold(
+        backgroundColor: pageBackground,
+        drawer: Drawer(
+          child: SafeArea(
+            child: ChatSessionList(
+              onSelected: () => Navigator.of(context).pop(),
+            ),
+          ),
+        ),
         appBar: AppBar(
+          backgroundColor: pageBackground,
+          leading: Builder(
+            builder: (BuildContext scaffoldContext) => IconButton(
+              onPressed: () => Scaffold.of(scaffoldContext).openDrawer(),
+              icon: Icon(Icons.history_rounded, size: 20.sp),
+              tooltip: l10n.chatSessions,
+            ),
+          ),
           title: Text(l10n.chatTitle),
           actions: <Widget>[
             IconButton(
-              onPressed: state.isEmpty ? null : startNewSession,
+              onPressed: state.isEmpty ? null : () => startNewSession(),
               icon: Icon(Icons.add_comment_outlined, size: 20.sp),
               tooltip: l10n.chatNewSession,
             ),
@@ -188,39 +235,82 @@ class ChatPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      body: Column(
+      backgroundColor: pageBackground,
+      body: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 20, 8),
-            child: Row(
+          SizedBox(
+            width: 260,
+            child: SafeArea(
+              right: false,
+              child: ChatSessionList(),
+            ),
+          ),
+          Container(
+            width: 1,
+            color: context.colorScheme.outlineVariant.withValues(alpha: 0.4),
+          ),
+          Expanded(
+            child: Column(
               children: <Widget>[
-                IconButton(
-                  onPressed: () {
-                    if (context.canPop()) context.pop();
-                  },
-                  icon: const Icon(Icons.arrow_back_rounded),
-                  tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-                ),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    l10n.chatTitle,
-                    style: context.textTheme.titleLarge?.copyWith(
-                      fontSize: 21,
-                      fontWeight: FontWeight.w700,
-                    ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 20, 8),
+                  child: Row(
+                    children: <Widget>[
+                      IconButton(
+                        onPressed: () {
+                          if (context.canPop()) context.pop();
+                        },
+                        icon: const Icon(Icons.arrow_back_rounded),
+                        tooltip:
+                            MaterialLocalizations.of(context).backButtonTooltip,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          l10n.chatTitle,
+                          style: context.textTheme.titleLarge?.copyWith(
+                            fontSize: 21,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: state.isEmpty
+                            ? null
+                            : () => startNewSession(),
+                        icon: const Icon(
+                          Icons.add_comment_outlined,
+                          size: 21,
+                        ),
+                        tooltip: l10n.chatNewSession,
+                      ),
+                    ],
                   ),
                 ),
-                IconButton(
-                  onPressed: state.isEmpty ? null : startNewSession,
-                  icon: const Icon(Icons.add_comment_outlined, size: 21),
-                  tooltip: l10n.chatNewSession,
-                ),
+                Expanded(child: body),
               ],
             ),
           ),
-          Expanded(child: body),
         ],
+      ),
+    );
+  }
+}
+
+/// 多段对话之间的分隔线。
+class _SegmentDivider extends StatelessWidget {
+  const _SegmentDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isDesktop = isDesktopPlatform;
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: isDesktop ? 4 : 4.h),
+      child: Divider(
+        height: 1,
+        thickness: 1,
+        color: context.colorScheme.outlineVariant.withValues(alpha: 0.35),
       ),
     );
   }

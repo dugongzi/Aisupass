@@ -48,8 +48,8 @@ MarkdownStyleSheet _buildStyleSheet(BuildContext context) {
   final bool isDark = context.isDark;
   final bool isDesktop = isDesktopPlatform;
 
-  final double body = isDesktop ? 14.5 : 14.5.sp;
-  final double codeSize = isDesktop ? 12.5 : 12.5.sp;
+  final double body = isDesktop ? 13.5 : 13.5.sp;
+  final double codeSize = isDesktop ? 12 : 12.sp;
   final double gap = isDesktop ? 8 : 8.h;
   final double radius = isDesktop ? 8 : 8.r;
 
@@ -229,7 +229,7 @@ class _CodeBlock extends StatelessWidget {
                 child: SelectableText(
                   code,
                   style: TextStyle(
-                    fontSize: isDesktop ? 12.5 : 12.5.sp,
+                    fontSize: isDesktop ? 12 : 12.sp,
                     height: 1.5,
                     fontFamily: 'monospace',
                     color: colors.onSurface.withValues(alpha: 0.92),
@@ -300,7 +300,7 @@ class _TableBuilder extends MarkdownElementBuilder {
 
     final ColorScheme colors = context.colorScheme;
     final bool isDesktop = isDesktopPlatform;
-    final double fontSize = isDesktop ? 13 : 12.5.sp;
+    final double fontSize = isDesktop ? 12 : 11.5.sp;
 
     return Padding(
       padding: EdgeInsets.symmetric(vertical: isDesktop ? 4 : 4.h),

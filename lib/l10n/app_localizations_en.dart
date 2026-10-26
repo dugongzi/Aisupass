@@ -409,7 +409,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatToolResult => 'Result';
 
   @override
-  String get chatCopied => 'Copied';
+  String get chatCopied => 'Copied to clipboard';
 
   @override
   String get chatNoticeToolLimit => 'Tool call limit reached, try rephrasing';
@@ -435,6 +435,96 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatSuggestionPlan => 'Recommend an escalation plan';
+
+  @override
+  String get chatSessions => 'Conversations';
+
+  @override
+  String get chatSessionEmpty => 'No conversations';
+
+  @override
+  String get chatUntitled => 'Untitled';
+
+  @override
+  String get chatRename => 'Rename';
+
+  @override
+  String get chatRenameHint => 'Enter a conversation name';
+
+  @override
+  String get chatDeleteSession => 'Delete conversation';
+
+  @override
+  String chatDeleteConfirm(String title) {
+    return 'This cannot be undone. Delete \"$title\"?';
+  }
+
+  @override
+  String get chatJustNow => 'Just now';
+
+  @override
+  String chatMinutesAgo(int count) {
+    return '${count}m ago';
+  }
+
+  @override
+  String chatHoursAgo(int count) {
+    return '${count}h ago';
+  }
+
+  @override
+  String chatDaysAgo(int count) {
+    return '${count}d ago';
+  }
+
+  @override
+  String chatToolGroupSummary(int count) {
+    return '$count tools executed';
+  }
+
+  @override
+  String chatToolMoreLines(int count) {
+    return 'Show all $count lines';
+  }
+
+  @override
+  String get chatToolCollapse => 'Collapse';
+
+  @override
+  String get chatToolReadDevice => 'Read device info';
+
+  @override
+  String get chatToolCheckRoot => 'Check ROOT status';
+
+  @override
+  String get chatToolCheckAdb => 'Check ADB status';
+
+  @override
+  String chatThoughtFor(String seconds) {
+    return 'Thought for ${seconds}s';
+  }
+
+  @override
+  String chatUsageTokens(int count) {
+    return '$count tokens';
+  }
+
+  @override
+  String chatElapsed(String seconds) {
+    return 'Took ${seconds}s';
+  }
+
+  @override
+  String get chatActionCopy => 'Copy';
+
+  @override
+  String get chatActionShare => 'Share';
+
+  @override
+  String get chatActionRegenerate => 'Regenerate';
+
+  @override
+  String get chatShareFailed => 'Share failed, please try again';
 
   @override
   String get aiQuickPanelTitle => 'AI Escalation';

@@ -848,10 +848,10 @@ abstract class AppLocalizations {
   /// **'结果'**
   String get chatToolResult;
 
-  /// 复制成功提示
+  /// 复制回答后的提示
   ///
   /// In zh, this message translates to:
-  /// **'已复制'**
+  /// **'已复制到剪贴板'**
   String get chatCopied;
 
   /// 工具调用轮次超限提示
@@ -901,6 +901,150 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'推荐一条可用的提权方案'**
   String get chatSuggestionPlan;
+
+  /// 会话列表标题
+  ///
+  /// In zh, this message translates to:
+  /// **'会话'**
+  String get chatSessions;
+
+  /// 会话列表空态
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无会话'**
+  String get chatSessionEmpty;
+
+  /// 会话没有标题时的占位名
+  ///
+  /// In zh, this message translates to:
+  /// **'未命名对话'**
+  String get chatUntitled;
+
+  /// 重命名会话
+  ///
+  /// In zh, this message translates to:
+  /// **'重命名'**
+  String get chatRename;
+
+  /// 重命名会话输入框占位文案
+  ///
+  /// In zh, this message translates to:
+  /// **'输入会话名称'**
+  String get chatRenameHint;
+
+  /// 删除会话菜单项
+  ///
+  /// In zh, this message translates to:
+  /// **'删除会话'**
+  String get chatDeleteSession;
+
+  /// 删除会话的确认文案
+  ///
+  /// In zh, this message translates to:
+  /// **'删除后无法恢复，确定删除「{title}」吗？'**
+  String chatDeleteConfirm(String title);
+
+  /// 会话时间的相对描述-刚刚
+  ///
+  /// In zh, this message translates to:
+  /// **'刚刚'**
+  String get chatJustNow;
+
+  /// 会话时间的相对描述-分钟
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 分钟前'**
+  String chatMinutesAgo(int count);
+
+  /// 会话时间的相对描述-小时
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 小时前'**
+  String chatHoursAgo(int count);
+
+  /// 会话时间的相对描述-天
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 天前'**
+  String chatDaysAgo(int count);
+
+  /// 同一轮多个工具合并后的摘要行
+  ///
+  /// In zh, this message translates to:
+  /// **'已执行 {count} 个工具'**
+  String chatToolGroupSummary(int count);
+
+  /// 工具结果过长时的展开提示
+  ///
+  /// In zh, this message translates to:
+  /// **'展开全部 {count} 行'**
+  String chatToolMoreLines(int count);
+
+  /// 工具结果展开后的收起提示
+  ///
+  /// In zh, this message translates to:
+  /// **'收起'**
+  String get chatToolCollapse;
+
+  /// 工具动作名-get_device_info
+  ///
+  /// In zh, this message translates to:
+  /// **'读取设备信息'**
+  String get chatToolReadDevice;
+
+  /// 工具动作名-get_root_status
+  ///
+  /// In zh, this message translates to:
+  /// **'检查 ROOT 状态'**
+  String get chatToolCheckRoot;
+
+  /// 工具动作名-get_adb_status
+  ///
+  /// In zh, this message translates to:
+  /// **'检查 ADB 状态'**
+  String get chatToolCheckAdb;
+
+  /// 思考过程耗时摘要
+  ///
+  /// In zh, this message translates to:
+  /// **'思考了 {seconds}s'**
+  String chatThoughtFor(String seconds);
+
+  /// 回答末尾的 token 消耗统计
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} tokens'**
+  String chatUsageTokens(int count);
+
+  /// 回答末尾的总耗时
+  ///
+  /// In zh, this message translates to:
+  /// **'耗时 {seconds}s'**
+  String chatElapsed(String seconds);
+
+  /// 回答末尾操作-复制
+  ///
+  /// In zh, this message translates to:
+  /// **'复制'**
+  String get chatActionCopy;
+
+  /// 回答末尾操作-分享
+  ///
+  /// In zh, this message translates to:
+  /// **'分享'**
+  String get chatActionShare;
+
+  /// 回答末尾操作-重新生成
+  ///
+  /// In zh, this message translates to:
+  /// **'重新生成'**
+  String get chatActionRegenerate;
+
+  /// 调用系统分享失败时的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'分享失败，请稍后重试'**
+  String get chatShareFailed;
 
   /// 底栏圆球快捷面板标题
   ///

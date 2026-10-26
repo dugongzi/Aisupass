@@ -57,6 +57,9 @@ dependencies:
   # 打开外部链接（内置服务获取 API Key）
   url_launcher: ^6.3.1
 
+  # 系统分享面板（对话回答分享）
+  share_plus: ^11.0.0
+
   # 不可变模型与序列化
   freezed_annotation: ^3.0.0
   json_annotation: ^4.9.0

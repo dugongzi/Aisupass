@@ -5,6 +5,7 @@ import 'package:Aisupass/core/utils/platform.dart';
 import 'package:Aisupass/features/ai/presentation/widgets/ai_brand_icon.dart';
 import 'package:Aisupass/features/chat/domain/models/chat_turn.dart';
 import 'package:Aisupass/features/chat/presentation/widgets/chat_markdown.dart';
+import 'package:Aisupass/features/chat/presentation/widgets/chat_message_actions.dart';
 import 'package:Aisupass/features/chat/presentation/widgets/chat_notice.dart';
 import 'package:Aisupass/features/chat/presentation/widgets/chat_reasoning_card.dart';
 import 'package:Aisupass/features/chat/presentation/widgets/chat_tool_card.dart';
@@ -22,12 +23,16 @@ class ChatMessageView extends HookWidget {
     required this.turn,
     this.brand,
     this.modelName = '',
+    this.showModelName = true,
     this.animate = false,
   });
 
   final ChatTurn turn;
   final AiBrand? brand;
   final String modelName;
+
+  /// 模型名只在会话首条 assistant 消息上显示，避免每条都重复。
+  final bool showModelName;
 
   /// 是否为新插入的消息，插入时做一次淡入上移动画。
   final bool animate;
@@ -40,11 +45,11 @@ class ChatMessageView extends HookWidget {
         : _AssistantMessage(
             turn: turn,
             brand: brand,
-            modelName: modelName,
+            modelName: showModelName ? modelName : '',
           );
 
     return Padding(
-      padding: EdgeInsets.only(bottom: isDesktop ? 20 : 20.h),
+      padding: EdgeInsets.only(bottom: isDesktop ? 16 : 16.h),
       child: _EnterTransition(enabled: animate, child: content),
     );
   }
@@ -90,7 +95,9 @@ class _EnterTransition extends HookWidget {
   }
 }
 
-/// 助手消息：头像 + 模型名 + 思考过程 + 工具卡片 + Markdown 正文。
+/// 助手消息：头像与模型名单独一行，正文整块排在其下方。
+///
+/// 头像不参与正文排版，避免每轮正文都整体右移一个头像的宽度。
 class _AssistantMessage extends HookWidget {
   const _AssistantMessage({
     required this.turn,
@@ -110,50 +117,48 @@ class _AssistantMessage extends HookWidget {
     // 正文尚未出现时才算「正在思考」，正文一开始流式就结束思考态。
     final bool thinking = turn.streaming && !hasText;
     final String shownText = _useThrottledText(turn.text, streaming: turn.streaming);
+    final bool showHeader = modelName.trim().isNotEmpty;
 
-    return Row(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        _AssistantAvatar(brand: brand),
-        SizedBox(width: isDesktop ? 12 : 12.w),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              if (modelName.trim().isNotEmpty)
-                Padding(
-                  padding: EdgeInsets.only(
-                    top: isDesktop ? 1 : 1.h,
-                    bottom: isDesktop ? 6 : 6.h,
-                  ),
+        if (showHeader)
+          Padding(
+            padding: EdgeInsets.only(bottom: isDesktop ? 8 : 8.h),
+            child: Row(
+              children: <Widget>[
+                _AssistantAvatar(brand: brand),
+                SizedBox(width: isDesktop ? 8 : 8.w),
+                Flexible(
                   child: Text(
                     modelName.trim(),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: isDesktop ? 11.5 : 11.5.sp,
+                      fontSize: isDesktop ? 12 : 12.sp,
                       fontWeight: FontWeight.w600,
                       color: context.colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ),
-              if (turn.reasoning.trim().isNotEmpty)
-                ChatReasoningCard(
-                  reasoning: turn.reasoning,
-                  active: thinking && turn.toolCalls.isEmpty,
-                ),
-              for (final ChatToolCall call in turn.toolCalls)
-                ChatToolCard(call: call),
-              if (hasText)
-                ChatMarkdown(data: shownText, streaming: turn.streaming),
-              if (thinking && turn.toolCalls.isEmpty) const _TypingDots(),
-              if ((turn.error ?? '').trim().isNotEmpty)
-                ChatInlineNotice(text: turn.error!, isError: true),
-              if (turn.notice != null)
-                ChatInlineNotice(text: _noticeText(context, turn.notice!)),
-            ],
+              ],
+            ),
           ),
-        ),
+        if (turn.reasoning.trim().isNotEmpty)
+          ChatReasoningCard(
+            reasoning: turn.reasoning,
+            active: thinking && turn.toolCalls.isEmpty,
+          ),
+        if (turn.toolCalls.isNotEmpty) ChatToolGroup(calls: turn.toolCalls),
+        if (hasText) ChatMarkdown(data: shownText, streaming: turn.streaming),
+        if (thinking && turn.toolCalls.isEmpty) const _TypingDots(),
+        if ((turn.error ?? '').trim().isNotEmpty)
+          ChatInlineNotice(text: turn.error!, isError: true),
+        if (turn.notice != null)
+          ChatInlineNotice(text: _noticeText(context, turn.notice!)),
+        // 回答结束后再显示信息行与操作按钮，流式过程中不占位。
+        if (!turn.streaming && (hasText || (turn.error ?? '').trim().isNotEmpty))
+          ChatMessageActions(turn: turn),
       ],
     );
   }
@@ -168,8 +173,8 @@ class _AssistantAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isDesktop = isDesktopPlatform;
-    final double size = isDesktop ? 30 : 30.r;
-    final double radius = isDesktop ? 10 : 10.r;
+    final double size = isDesktop ? 26 : 26.r;
+    final double radius = isDesktop ? 9 : 9.r;
 
     return Container(
       width: size,
@@ -226,7 +231,7 @@ class _UserBubble extends StatelessWidget {
           child: SelectableText(
             text,
             style: TextStyle(
-              fontSize: isDesktop ? 14.5 : 14.5.sp,
+              fontSize: isDesktop ? 13.5 : 13.5.sp,
               height: 1.5,
               color: colors.onSurface,
             ),

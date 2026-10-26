@@ -263,6 +263,94 @@
   "@chatSuggestionPlan": {
     "description": "Suggestion: escalation plan"
   },
+  "chatSessions": "Conversations",
+  "chatSessionEmpty": "No conversations",
+  "chatUntitled": "Untitled",
+  "chatRename": "Rename",
+  "chatRenameHint": "Enter a conversation name",
+  "chatDeleteSession": "Delete conversation",
+  "chatDeleteConfirm": "This cannot be undone. Delete \"{title}\"?",
+  "@chatDeleteConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "chatJustNow": "Just now",
+  "chatMinutesAgo": "{count}m ago",
+  "@chatMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatHoursAgo": "{count}h ago",
+  "@chatHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatDaysAgo": "{count}d ago",
+  "@chatDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatToolGroupSummary": "{count} tools executed",
+  "@chatToolGroupSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatToolMoreLines": "Show all {count} lines",
+  "@chatToolMoreLines": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatToolCollapse": "Collapse",
+  "chatToolReadDevice": "Read device info",
+  "chatToolCheckRoot": "Check ROOT status",
+  "chatToolCheckAdb": "Check ADB status",
+  "chatThoughtFor": "Thought for {seconds}s",
+  "@chatThoughtFor": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "chatUsageTokens": "{count} tokens",
+  "@chatUsageTokens": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatElapsed": "Took {seconds}s",
+  "@chatElapsed": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "chatActionCopy": "Copy",
+  "chatActionShare": "Share",
+  "chatActionRegenerate": "Regenerate",
+  "chatCopied": "Copied to clipboard",
+  "chatShareFailed": "Share failed, please try again",
   "aiQuickPanelTitle": "AI Escalation",
   "aiQuickPanelSubtitle": "Choose a way to gain root access",
   "aiQuickEscalateTitle": "AI Escalation",

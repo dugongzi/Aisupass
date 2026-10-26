@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-/// 思考过程卡片。
+/// 思考过程。
 ///
-/// 默认在流式思考时展开，思考结束后保留展开状态，
-/// 折叠后只留一行标题与耗时，避免占用对话正文空间。
+/// 与工具步骤同款单行样式：图标 + 摘要 + 展开箭头，
+/// 不填充、不描边，避免抢占对话正文的视觉重心。
 class ChatReasoningCard extends HookWidget {
   const ChatReasoningCard({
     super.key,
@@ -23,9 +23,8 @@ class ChatReasoningCard extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final ColorScheme colors = context.colorScheme;
-    final bool isDark = context.isDark;
     final bool isDesktop = isDesktopPlatform;
-    final double radius = isDesktop ? 10 : 10.r;
+    final Color muted = colors.onSurfaceVariant.withValues(alpha: 0.6);
 
     final ValueNotifier<bool> expanded = useState(active);
     final ObjectRef<Stopwatch?> stopwatch = useRef<Stopwatch?>(null);
@@ -47,81 +46,94 @@ class ChatReasoningCard extends HookWidget {
 
     final String title = active
         ? context.l10n.chatThinking
-        : context.l10n.chatThought;
+        : (elapsed.value == null
+              ? context.l10n.chatThought
+              : context.l10n.chatThoughtFor(
+                  _formatSeconds(elapsed.value!),
+                ));
     final String text = active ? '$reasoning▌' : reasoning;
 
-    return Container(
-      margin: EdgeInsets.only(bottom: isDesktop ? 10 : 10.h),
-      decoration: BoxDecoration(
-        color: colors.onSurface.withValues(alpha: isDark ? 0.04 : 0.03),
-        borderRadius: BorderRadius.circular(radius),
-        border: Border.all(
-          color: colors.outlineVariant.withValues(alpha: isDark ? 0.35 : 0.5),
-        ),
-      ),
+    return Padding(
+      padding: EdgeInsets.only(bottom: isDesktop ? 2 : 2.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           InkWell(
-            borderRadius: BorderRadius.circular(radius),
             onTap: () => expanded.value = !expanded.value,
+            borderRadius: BorderRadius.circular(isDesktop ? 6 : 6.r),
             child: Padding(
-              padding: EdgeInsets.fromLTRB(
-                isDesktop ? 10 : 10.w,
-                isDesktop ? 7 : 6.h,
-                isDesktop ? 6 : 6.w,
-                isDesktop ? 7 : 6.h,
+              padding: EdgeInsets.symmetric(
+                vertical: isDesktop ? 5 : 5.h,
+                horizontal: isDesktop ? 2 : 2.w,
               ),
               child: Row(
                 children: <Widget>[
-                  Icon(
-                    Icons.psychology_alt_outlined,
-                    size: isDesktop ? 15 : 15.sp,
-                    color: colors.onSurfaceVariant,
+                  SizedBox(
+                    width: isDesktop ? 16 : 16.w,
+                    height: isDesktop ? 16 : 16.w,
+                    child: Center(
+                      child: active
+                          ? SizedBox(
+                              width: isDesktop ? 12 : 12.w,
+                              height: isDesktop ? 12 : 12.w,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 1.6,
+                                color: colors.onSurfaceVariant,
+                              ),
+                            )
+                          : Icon(
+                              Icons.psychology_alt_outlined,
+                              size: isDesktop ? 15 : 15.sp,
+                              color: colors.onSurfaceVariant,
+                            ),
+                    ),
                   ),
-                  SizedBox(width: isDesktop ? 6 : 6.w),
+                  SizedBox(width: isDesktop ? 8 : 8.w),
                   Expanded(
                     child: Text(
                       title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: isDesktop ? 12 : 12.sp,
-                        fontWeight: FontWeight.w600,
+                        fontSize: isDesktop ? 12.5 : 12.5.sp,
+                        height: 1.3,
                         color: colors.onSurfaceVariant,
                       ),
                     ),
                   ),
-                  if (!active && elapsed.value != null)
-                    Padding(
-                      padding: EdgeInsets.only(right: isDesktop ? 4 : 4.w),
-                      child: Text(
-                        _formatDuration(elapsed.value!),
-                        style: TextStyle(
-                          fontSize: isDesktop ? 10.5 : 10.5.sp,
-                          fontFamily: 'monospace',
-                          color: colors.onSurfaceVariant.withValues(alpha: 0.8),
-                        ),
-                      ),
+                  SizedBox(width: isDesktop ? 4 : 4.w),
+                  SizedBox(
+                    width: isDesktop ? 15 : 15.w,
+                    height: isDesktop ? 15 : 15.w,
+                    child: Icon(
+                      expanded.value
+                          ? Icons.expand_less_rounded
+                          : Icons.expand_more_rounded,
+                      size: isDesktop ? 15 : 15.sp,
+                      color: muted,
                     ),
-                  Icon(
-                    expanded.value
-                        ? Icons.expand_less_rounded
-                        : Icons.expand_more_rounded,
-                    size: isDesktop ? 16 : 16.sp,
-                    color: colors.onSurfaceVariant,
                   ),
                 ],
               ),
             ),
           ),
           if (expanded.value)
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                isDesktop ? 10 : 10.w,
-                0,
-                isDesktop ? 10 : 10.w,
-                isDesktop ? 10 : 10.h,
+            Container(
+              margin: EdgeInsets.only(
+                left: isDesktop ? 8 : 8.w,
+                bottom: isDesktop ? 4 : 4.h,
+              ),
+              padding: EdgeInsets.only(
+                left: isDesktop ? 10 : 10.w,
+                top: isDesktop ? 2 : 2.h,
+                bottom: isDesktop ? 2 : 2.h,
+              ),
+              decoration: BoxDecoration(
+                border: Border(
+                  left: BorderSide(
+                    color: colors.outlineVariant.withValues(alpha: 0.6),
+                  ),
+                ),
               ),
               child: SelectableText(
                 text,
@@ -138,9 +150,10 @@ class ChatReasoningCard extends HookWidget {
   }
 }
 
-String _formatDuration(Duration duration) {
+/// 只保留秒数部分，交给 l10n 拼接单位。
+String _formatSeconds(Duration duration) {
   final int ms = duration.inMilliseconds;
-  if (ms < 1000) return '${ms}ms';
+  if (ms < 1000) return (ms / 1000).toStringAsFixed(1);
   final double seconds = ms / 1000;
-  return '${seconds.toStringAsFixed(seconds >= 10 ? 0 : 1)}s';
+  return seconds.toStringAsFixed(seconds >= 10 ? 0 : 1);
 }

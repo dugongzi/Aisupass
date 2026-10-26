@@ -216,6 +216,8 @@ class ChatDatasource {
               },
           ],
         'stream': true,
+        // 让 OpenAI 兼容网关在流末尾补一帧 usage，否则拿不到 token 统计。
+        'stream_options': <String, dynamic>{'include_usage': true},
       },
       AiApiType.openaiResponses => <String, dynamic>{
         'model': config.modelName,
@@ -729,15 +731,20 @@ class _FrameParser {
   }
 
   _Frame _parseOpenAi(Map<String, Object?> payload) {
+    final List<ChatStreamEvent> events = <ChatStreamEvent>[];
+
+    // usage 帧通常只有 usage、没有 choices，必须先于 choices 判断处理。
+    final ChatStreamEvent? usage = _openAiUsage(payload['usage']);
+    if (usage != null) events.add(usage);
+
     final Object? choices = payload['choices'];
     if (choices is! List || choices.isEmpty || choices.first is! Map) {
-      return const _Frame();
+      return _Frame(events: events);
     }
     final Map<String, Object?> choice = Map<String, Object?>.from(
       choices.first as Map,
     );
     final Object? delta = choice['delta'];
-    final List<ChatStreamEvent> events = <ChatStreamEvent>[];
 
     if (delta is Map) {
       final String text = _contentToText(delta['content']);
@@ -830,7 +837,15 @@ class _FrameParser {
 
       case 'response.completed':
       case 'response.incomplete':
-        return const _Frame(terminal: true);
+        final Object? response = payload['response'];
+        final Object? usage = response is Map ? response['usage'] : null;
+        final ChatStreamEvent? usageEvent = _responsesUsage(usage);
+        return _Frame(
+          events: usageEvent == null
+              ? const <ChatStreamEvent>[]
+              : <ChatStreamEvent>[usageEvent],
+          terminal: true,
+        );
 
       default:
         return const _Frame();
@@ -885,9 +900,25 @@ class _FrameParser {
         }
         return const _Frame();
 
+      case 'message_start':
+        // input_tokens 只在起始帧下发，output_tokens 在结束帧下发。
+        final Object? message = payload['message'];
+        final Object? usage = message is Map ? message['usage'] : null;
+        final ChatStreamEvent? usageEvent = _anthropicUsage(usage, prompt: true);
+        return _Frame(
+          events: usageEvent == null
+              ? const <ChatStreamEvent>[]
+              : <ChatStreamEvent>[usageEvent],
+        );
+
       case 'message_delta':
         final Object? delta = payload['delta'];
+        final Object? usage = payload['usage'];
+        final ChatStreamEvent? usageEvent = _anthropicUsage(usage, prompt: false);
         return _Frame(
+          events: usageEvent == null
+              ? const <ChatStreamEvent>[]
+              : <ChatStreamEvent>[usageEvent],
           terminal: delta is Map && delta['stop_reason'] != null,
         );
 
@@ -897,6 +928,42 @@ class _FrameParser {
       default:
         return const _Frame();
     }
+  }
+
+  /// OpenAI 兼容协议的 usage 帧：`prompt_tokens` / `completion_tokens`。
+  ChatStreamEvent? _openAiUsage(Object? usage) {
+    if (usage is! Map) return null;
+    final int prompt = _intOf(usage['prompt_tokens']);
+    final int completion = _intOf(usage['completion_tokens']);
+    if (prompt <= 0 && completion <= 0) return null;
+    return ChatStreamUsage(promptTokens: prompt, completionTokens: completion);
+  }
+
+  /// Responses 协议的 usage：`input_tokens` / `output_tokens`。
+  ChatStreamEvent? _responsesUsage(Object? usage) {
+    if (usage is! Map) return null;
+    final int prompt = _intOf(usage['input_tokens']);
+    final int completion = _intOf(usage['output_tokens']);
+    if (prompt <= 0 && completion <= 0) return null;
+    return ChatStreamUsage(promptTokens: prompt, completionTokens: completion);
+  }
+
+  /// Anthropic 的用量分两帧：起始帧给输入，结束帧给输出。
+  ChatStreamEvent? _anthropicUsage(Object? usage, {required bool prompt}) {
+    if (usage is! Map) return null;
+    final int value = _intOf(prompt ? usage['input_tokens'] : usage['output_tokens']);
+    if (value <= 0) return null;
+    return ChatStreamUsage(
+      promptTokens: prompt ? value : 0,
+      completionTokens: prompt ? 0 : value,
+    );
+  }
+
+  int _intOf(Object? value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
   }
 
   /// OpenAI 的 finish_reason 只有已知取值才代表正常终止。

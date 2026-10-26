@@ -52,6 +52,14 @@ final class ChatToolCallArgumentsDelta extends ChatStreamEvent {
   final String fragment;
 }
 
+/// 本轮响应的 token 用量。部分协议分多次下发，调用方需累加。
+final class ChatStreamUsage extends ChatStreamEvent {
+  const ChatStreamUsage({this.promptTokens = 0, this.completionTokens = 0});
+
+  final int promptTokens;
+  final int completionTokens;
+}
+
 /// 本轮响应正常结束。
 final class ChatStreamFinished extends ChatStreamEvent {
   const ChatStreamFinished({this.finishReason});

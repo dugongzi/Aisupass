@@ -403,7 +403,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatToolResult => '结果';
 
   @override
-  String get chatCopied => '已复制';
+  String get chatCopied => '已复制到剪贴板';
 
   @override
   String get chatNoticeToolLimit => '工具调用次数已达上限，请换个问法继续';
@@ -428,6 +428,96 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get chatSuggestionPlan => '推荐一条可用的提权方案';
+
+  @override
+  String get chatSessions => '会话';
+
+  @override
+  String get chatSessionEmpty => '暂无会话';
+
+  @override
+  String get chatUntitled => '未命名对话';
+
+  @override
+  String get chatRename => '重命名';
+
+  @override
+  String get chatRenameHint => '输入会话名称';
+
+  @override
+  String get chatDeleteSession => '删除会话';
+
+  @override
+  String chatDeleteConfirm(String title) {
+    return '删除后无法恢复，确定删除「$title」吗？';
+  }
+
+  @override
+  String get chatJustNow => '刚刚';
+
+  @override
+  String chatMinutesAgo(int count) {
+    return '$count 分钟前';
+  }
+
+  @override
+  String chatHoursAgo(int count) {
+    return '$count 小时前';
+  }
+
+  @override
+  String chatDaysAgo(int count) {
+    return '$count 天前';
+  }
+
+  @override
+  String chatToolGroupSummary(int count) {
+    return '已执行 $count 个工具';
+  }
+
+  @override
+  String chatToolMoreLines(int count) {
+    return '展开全部 $count 行';
+  }
+
+  @override
+  String get chatToolCollapse => '收起';
+
+  @override
+  String get chatToolReadDevice => '读取设备信息';
+
+  @override
+  String get chatToolCheckRoot => '检查 ROOT 状态';
+
+  @override
+  String get chatToolCheckAdb => '检查 ADB 状态';
+
+  @override
+  String chatThoughtFor(String seconds) {
+    return '思考了 ${seconds}s';
+  }
+
+  @override
+  String chatUsageTokens(int count) {
+    return '$count tokens';
+  }
+
+  @override
+  String chatElapsed(String seconds) {
+    return '耗时 ${seconds}s';
+  }
+
+  @override
+  String get chatActionCopy => '复制';
+
+  @override
+  String get chatActionShare => '分享';
+
+  @override
+  String get chatActionRegenerate => '重新生成';
+
+  @override
+  String get chatShareFailed => '分享失败，请稍后重试';
 
   @override
   String get aiQuickPanelTitle => 'AI 提权助手';

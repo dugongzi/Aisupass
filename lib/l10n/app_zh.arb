@@ -585,6 +585,151 @@
   "@chatSuggestionPlan": {
     "description": "空会话建议提问-提权方案"
   },
+  "chatSessions": "会话",
+  "@chatSessions": {
+    "description": "会话列表标题"
+  },
+  "chatSessionEmpty": "暂无会话",
+  "@chatSessionEmpty": {
+    "description": "会话列表空态"
+  },
+  "chatUntitled": "未命名对话",
+  "@chatUntitled": {
+    "description": "会话没有标题时的占位名"
+  },
+  "chatRename": "重命名",
+  "@chatRename": {
+    "description": "重命名会话"
+  },
+  "chatRenameHint": "输入会话名称",
+  "@chatRenameHint": {
+    "description": "重命名会话输入框占位文案"
+  },
+  "chatDeleteSession": "删除会话",
+  "@chatDeleteSession": {
+    "description": "删除会话菜单项"
+  },
+  "chatDeleteConfirm": "删除后无法恢复，确定删除「{title}」吗？",
+  "@chatDeleteConfirm": {
+    "description": "删除会话的确认文案",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "chatJustNow": "刚刚",
+  "@chatJustNow": {
+    "description": "会话时间的相对描述-刚刚"
+  },
+  "chatMinutesAgo": "{count} 分钟前",
+  "@chatMinutesAgo": {
+    "description": "会话时间的相对描述-分钟",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatHoursAgo": "{count} 小时前",
+  "@chatHoursAgo": {
+    "description": "会话时间的相对描述-小时",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatDaysAgo": "{count} 天前",
+  "@chatDaysAgo": {
+    "description": "会话时间的相对描述-天",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatToolGroupSummary": "已执行 {count} 个工具",
+  "@chatToolGroupSummary": {
+    "description": "同一轮多个工具合并后的摘要行",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatToolMoreLines": "展开全部 {count} 行",
+  "@chatToolMoreLines": {
+    "description": "工具结果过长时的展开提示",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatToolCollapse": "收起",
+  "@chatToolCollapse": {
+    "description": "工具结果展开后的收起提示"
+  },
+  "chatToolReadDevice": "读取设备信息",
+  "@chatToolReadDevice": {
+    "description": "工具动作名-get_device_info"
+  },
+  "chatToolCheckRoot": "检查 ROOT 状态",
+  "@chatToolCheckRoot": {
+    "description": "工具动作名-get_root_status"
+  },
+  "chatToolCheckAdb": "检查 ADB 状态",
+  "@chatToolCheckAdb": {
+    "description": "工具动作名-get_adb_status"
+  },
+  "chatThoughtFor": "思考了 {seconds}s",
+  "@chatThoughtFor": {
+    "description": "思考过程耗时摘要",
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "chatUsageTokens": "{count} tokens",
+  "@chatUsageTokens": {
+    "description": "回答末尾的 token 消耗统计",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatElapsed": "耗时 {seconds}s",
+  "@chatElapsed": {
+    "description": "回答末尾的总耗时",
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "chatActionCopy": "复制",
+  "@chatActionCopy": {
+    "description": "回答末尾操作-复制"
+  },
+  "chatActionShare": "分享",
+  "@chatActionShare": {
+    "description": "回答末尾操作-分享"
+  },
+  "chatActionRegenerate": "重新生成",
+  "@chatActionRegenerate": {
+    "description": "回答末尾操作-重新生成"
+  },
+  "chatCopied": "已复制到剪贴板",
+  "@chatCopied": {
+    "description": "复制回答后的提示"
+  },
+  "chatShareFailed": "分享失败，请稍后重试",
+  "@chatShareFailed": {
+    "description": "调用系统分享失败时的提示"
+  },
   "aiQuickPanelTitle": "AI 提权助手",
   "@aiQuickPanelTitle": {
     "description": "底栏圆球快捷面板标题"
