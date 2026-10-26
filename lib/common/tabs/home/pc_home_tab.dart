@@ -1,8 +1,9 @@
 import 'package:Aisupass/common/widgets/app_ai_activation_card.dart';
 import 'package:Aisupass/common/widgets/app_device_info_card.dart';
 import 'package:Aisupass/common/widgets/app_system_status_cards.dart';
+import 'package:Aisupass/features/ai/presentation/providers/ai_config_query_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 /// 桌面端首页内容。
 ///
@@ -11,21 +12,29 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 /// 品牌名已由左侧导航栏承担，这里不再重复。
 ///
 /// 标题栏与左侧导航由 `DesktopPage` 提供，这里不要自带 Scaffold。
-/// AI 配置功能尚未接入，激活状态暂时固定为已激活。
-class PcHomeTab extends HookWidget {
+/// AI 激活状态来自当前配置的真实连通性检测。
+class PcHomeTab extends HookConsumerWidget {
   const PcHomeTab({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AsyncValue<bool> aiStatusAsync = ref.watch(aiStatusProvider);
+
     return ListView(
       padding: const EdgeInsets.fromLTRB(28, 6, 28, 28),
       children: <Widget>[
         Wrap(
           spacing: 16,
           runSpacing: 16,
-          children: const <Widget>[
-            SizedBox(width: 360, child: AppAiActivationCard(isActivated: true)),
-            SizedBox(width: 360, child: AppSystemStatusCards()),
+          children: <Widget>[
+            SizedBox(
+              width: 360,
+              child: AppAiActivationCard(
+                isActivated: aiStatusAsync.value ?? false,
+                isLoading: !aiStatusAsync.hasValue,
+              ),
+            ),
+            const SizedBox(width: 360, child: AppSystemStatusCards()),
           ],
         ),
         const SizedBox(height: 20),

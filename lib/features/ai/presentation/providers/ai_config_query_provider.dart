@@ -5,7 +5,9 @@ import 'package:Aisupass/features/ai/domain/constants/builtin_ai_config.dart';
 import 'package:Aisupass/features/ai/domain/enums/ai_api_type.dart';
 import 'package:Aisupass/features/ai/domain/models/ai_config.dart';
 import 'package:Aisupass/features/ai/domain/repositories/ai_config_query_repository.dart';
+import 'package:Aisupass/features/ai/presentation/providers/ai_model_query_provider.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'ai_config_query_provider.g.dart';
@@ -85,3 +87,26 @@ Future<AiConfigState> aiConfig(Ref ref) async {
       : configs.first.id;
   return AiConfigState(configs: configs, currentId: currentId);
 }
+
+/// AI 是否可用（首页状态卡与底栏共用）。
+///
+/// 判定依据：当前配置能成功拉到模型列表即视为已激活，
+/// 与配置编辑页的连通性检测同源，不额外发对话请求。
+///
+/// 用非 autoDispose 缓存结果，避免每次进入首页都请求一次；
+/// 配置保存、切换、删除都会失效 [aiConfigProvider]，本 Provider 随之重算。
+final FutureProvider<bool> aiStatusProvider = FutureProvider<bool>((
+  Ref ref,
+) async {
+  try {
+    final AiConfigState state = await ref.watch(aiConfigProvider.future);
+    final AiConfig? config = state.current;
+    if (config == null || config.apiUrl.trim().isEmpty) return false;
+
+    await ref.read(aiModelQueryRepositoryProvider).fetchModels(config);
+    return true;
+  } catch (_) {
+    // 地址、Key、网络任一环节失败都按未激活处理，交由用户去配置页修正。
+    return false;
+  }
+});

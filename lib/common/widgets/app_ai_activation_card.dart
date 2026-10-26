@@ -9,38 +9,46 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 /// 已激活时用渐变描边包一层外发光，图标与标题同步走渐变；
 /// 未激活时降级为中性底色，提示先去配置大模型。
 class AppAiActivationCard extends HookWidget {
-  const AppAiActivationCard({super.key, required this.isActivated});
+  const AppAiActivationCard({
+    super.key,
+    required this.isActivated,
+    this.isLoading = false,
+  });
 
   final bool isActivated;
+
+  /// 检测中：先按中性态展示，避免把「还在检测」误读成「未激活」。
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
     final ColorScheme colorScheme = context.colorScheme;
     final bool isDark = context.isDark;
+    final bool highlight = isActivated && !isLoading;
 
     return Container(
       constraints: BoxConstraints(minHeight: 96.h),
       // 激活态靠 2 的 padding 露出外层渐变，形成描边。
-      padding: isActivated ? EdgeInsets.all(2.w) : EdgeInsets.zero,
+      padding: highlight ? EdgeInsets.all(2.w) : EdgeInsets.zero,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16.r),
-        gradient: isActivated ? aiActivationGradient : null,
-        color: isActivated
+        gradient: highlight ? aiActivationGradient : null,
+        color: highlight
             ? null
             : colorScheme.onSurface.withValues(alpha: isDark ? 0.08 : 0.05),
-        boxShadow: isActivated
+        boxShadow: highlight
             ? buildAiActivationGlowShadows(isDark: isDark)
             : null,
       ),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
         decoration: BoxDecoration(
-          color: isActivated ? colorScheme.surface : Colors.transparent,
-          borderRadius: BorderRadius.circular(isActivated ? 14.r : 16.r),
+          color: highlight ? colorScheme.surface : Colors.transparent,
+          borderRadius: BorderRadius.circular(highlight ? 14.r : 16.r),
         ),
         child: Row(
           children: <Widget>[
-            _buildIcon(context),
+            _buildIcon(context, highlight),
             SizedBox(width: 14.w),
             Expanded(
               child: Column(
@@ -52,15 +60,19 @@ class AppAiActivationCard extends HookWidget {
                     context.l10n.aiTitle,
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
+                    highlighted: highlight,
                   ),
                   SizedBox(height: 4.h),
                   _buildText(
                     context,
-                    isActivated
+                    isLoading
+                        ? context.l10n.statusDetecting
+                        : isActivated
                         ? context.l10n.activated
                         : context.l10n.notActivated,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
+                    highlighted: highlight,
                   ),
                 ],
               ),
@@ -71,12 +83,14 @@ class AppAiActivationCard extends HookWidget {
     );
   }
 
-  Widget _buildIcon(BuildContext context) {
-    final IconData icon = isActivated
+  Widget _buildIcon(BuildContext context, bool highlighted) {
+    final IconData icon = isLoading
+        ? Icons.sync_rounded
+        : isActivated
         ? Icons.check_rounded
         : Icons.error_outline_rounded;
 
-    if (!isActivated) {
+    if (!highlighted) {
       return Icon(
         icon,
         size: 40.sp,
@@ -97,6 +111,7 @@ class AppAiActivationCard extends HookWidget {
     String text, {
     required double fontSize,
     required FontWeight fontWeight,
+    required bool highlighted,
   }) {
     final TextStyle style = TextStyle(
       fontSize: fontSize.sp,
@@ -104,7 +119,7 @@ class AppAiActivationCard extends HookWidget {
       height: 1.2,
     );
 
-    if (!isActivated) {
+    if (!highlighted) {
       return Text(
         text,
         maxLines: 1,

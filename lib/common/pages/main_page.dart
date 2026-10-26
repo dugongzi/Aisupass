@@ -8,6 +8,7 @@ import 'package:Aisupass/common/widgets/app_bottom_center_ball.dart';
 import 'package:Aisupass/common/widgets/toast.dart';
 import 'package:Aisupass/core/extensions/context_extensions.dart';
 import 'package:Aisupass/core/routes/app_route.dart';
+import 'package:Aisupass/features/ai/presentation/providers/ai_config_query_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -86,8 +87,8 @@ class MainPage extends HookConsumerWidget {
             height: _bottomBarHeight,
             fabSize: _centerBallSize,
             fabOffsetY: _centerBallOffsetY,
-            // TODO: 接入 AI 激活状态后改为读取真实状态，当前先固定为已激活。
-            isAiActivated: true,
+            // 与首页 AI 状态卡共用同一份真实状态，检测中按未激活处理。
+            isAiActivated: ref.watch(aiStatusProvider).value ?? false,
           ),
         ),
         // 快捷提权面板叠在 Scaffold 之上，遮罩会同时盖住圆球，
