@@ -167,9 +167,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiConfigDeleted => '配置已删除';
 
   @override
-  String get aiConfigEdit => '编辑';
-
-  @override
   String get aiConfigEditTitle => '编辑配置';
 
   @override
@@ -183,12 +180,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiModelUnset => '未选择模型';
-
-  @override
-  String get aiQuickStart => '快速开始';
-
-  @override
-  String get aiQuickStartHint => '选择服务商可自动填写地址与接口类型';
 
   @override
   String get aiConnectionSection => '连接服务';

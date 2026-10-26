@@ -10,7 +10,6 @@ import 'package:Aisupass/features/ai/domain/models/ai_config.dart';
 import 'package:Aisupass/features/ai/presentation/providers/ai_config_action_provider.dart';
 import 'package:Aisupass/features/ai/presentation/providers/ai_config_query_provider.dart';
 import 'package:Aisupass/features/ai/presentation/providers/ai_model_query_provider.dart';
-import 'package:Aisupass/features/ai/presentation/widgets/ai_brand_icon.dart';
 import 'package:Aisupass/features/ai/presentation/widgets/ai_model_picker.dart';
 import 'package:Aisupass/features/ai/presentation/widgets/ai_section_card.dart';
 import 'package:Aisupass/features/ai/presentation/widgets/ai_test_sheet.dart';
@@ -24,42 +23,6 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
-
-/// 常用服务商预设。名称属于品牌专有名词，不做翻译。
-class _AiPreset {
-  const _AiPreset({
-    required this.label,
-    required this.baseUrl,
-    required this.apiType,
-  });
-
-  final String label;
-  final String baseUrl;
-  final AiApiType apiType;
-}
-
-const List<_AiPreset> _presets = <_AiPreset>[
-  _AiPreset(
-    label: 'OpenAI',
-    baseUrl: 'https://api.openai.com/v1',
-    apiType: AiApiType.openai,
-  ),
-  _AiPreset(
-    label: 'DeepSeek',
-    baseUrl: 'https://api.deepseek.com/v1',
-    apiType: AiApiType.openai,
-  ),
-  _AiPreset(
-    label: 'Moonshot',
-    baseUrl: 'https://api.moonshot.cn/v1',
-    apiType: AiApiType.openai,
-  ),
-  _AiPreset(
-    label: 'Anthropic',
-    baseUrl: 'https://api.anthropic.com/v1',
-    apiType: AiApiType.anthropic,
-  ),
-];
 
 /// 连通性检测状态。
 enum _ConnState { idle, testing, ok, failed }
@@ -76,12 +39,19 @@ class AiConfigEditPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLocalizations l10n = context.l10n;
     final bool isDesktop = isDesktopPlatform;
+    final AiConfigState? configState = ref.watch(aiConfigProvider).value;
     final AiConfig? existing = configId == AppRoute.newConfigId
         ? null
-        : ref.watch(aiConfigProvider).value?.byId(configId);
+        : configState?.byId(configId);
 
     // 内置配置只允许改 API Key，其余字段一律取常量。
     final bool isBuiltinEditing = existing != null && isBuiltinAiConfig(existing);
+    final bool isCurrent =
+        existing != null && configState?.currentId == existing.id;
+
+    // 已保存的配置才需要底部操作；内置配置只能「设为当前」，不能删除。
+    final bool showFooterActions =
+        existing != null && (!isCurrent || !isBuiltinEditing);
 
     final TextEditingController nameController = useTextEditingController(
       text: existing?.name ?? '',
@@ -225,18 +195,6 @@ class AiConfigEditPage extends HookConsumerWidget {
       }
     }
 
-    void applyPreset(_AiPreset preset) {
-      urlController.text = preset.baseUrl;
-      apiType.value = preset.apiType;
-      if (nameController.text.trim().isEmpty) {
-        nameController.text = preset.label;
-      }
-      model.value = '';
-      models.value = const <String>[];
-      connState.value = _ConnState.idle;
-      clearFieldError('url');
-    }
-
     Future<void> handleSave() async {
       final Map<String, String> nextErrors = <String, String>{};
       // 内置配置的名称与地址由常量决定，跳过这两项校验。
@@ -277,6 +235,52 @@ class AiConfigEditPage extends HookConsumerWidget {
         saving.value = false;
         ToastMessage.error(l10n.aiSaveFailed(error.toString()));
       }
+    }
+
+    /// 把当前编辑的配置设为启用项。
+    Future<void> handleSetCurrent() async {
+      final AiConfig? config = existing;
+      if (config == null) return;
+      await ref.read(aiConfigActionsProvider).setCurrent(config.id);
+      if (!context.mounted) return;
+      ToastMessage.success(l10n.aiConfigSwitched);
+    }
+
+    /// 删除当前编辑的配置，成功后返回列表页。
+    Future<void> handleDelete() async {
+      final AiConfig? config = existing;
+      if (config == null) return;
+
+      final bool? confirmed = await showDialog<bool>(
+        context: context,
+        builder: (BuildContext dialogContext) {
+          final ColorScheme scheme = dialogContext.colorScheme;
+          return AlertDialog(
+            title: Text(l10n.aiConfigDelete),
+            content: Text(l10n.aiConfigDeleteConfirm(config.name)),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: Text(l10n.aiCancel),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                style: FilledButton.styleFrom(
+                  backgroundColor: scheme.error,
+                  foregroundColor: scheme.onError,
+                ),
+                child: Text(l10n.aiDelete),
+              ),
+            ],
+          );
+        },
+      );
+      if (confirmed != true || !context.mounted) return;
+
+      await ref.read(aiConfigActionsProvider).remove(config.id);
+      if (!context.mounted) return;
+      ToastMessage.success(l10n.aiConfigDeleted);
+      context.pop();
     }
 
     /// 打开测试窗口；先做最基本的完整性检查。
@@ -350,34 +354,6 @@ class AiConfigEditPage extends HookConsumerWidget {
           child: Text(l10n.aiApiType, style: labelStyle),
         ),
         apiTypeControl,
-      ],
-    );
-
-    final Widget quickStartCard = AiSectionCard(
-      title: l10n.aiQuickStart,
-      icon: Icons.bolt_rounded,
-      children: <Widget>[
-        Text(
-          l10n.aiQuickStartHint,
-          style: TextStyle(
-            fontSize: 11.5.sp,
-            height: 1.4,
-            color: context.colorScheme.onSurfaceVariant,
-          ),
-        ),
-        SizedBox(height: 10.h),
-        Wrap(
-          spacing: 8.w,
-          runSpacing: 8.h,
-          children: <Widget>[
-            for (final _AiPreset preset in _presets)
-              _PresetChip(
-                preset: preset,
-                selected: urlController.text.trim() == preset.baseUrl,
-                onTap: () => applyPreset(preset),
-              ),
-          ],
-        ),
       ],
     );
 
@@ -513,10 +489,6 @@ class AiConfigEditPage extends HookConsumerWidget {
               ? const EdgeInsets.fromLTRB(28, 6, 28, 24)
               : EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 24.h),
           children: <Widget>[
-            if (!isBuiltinEditing) ...<Widget>[
-              quickStartCard,
-              SizedBox(height: isDesktop ? 16 : 16.h),
-            ],
             connectionCard,
             SizedBox(height: isDesktop ? 16 : 16.h),
             modelCard,
@@ -598,19 +570,47 @@ class AiConfigEditPage extends HookConsumerWidget {
               padding: isDesktop
                   ? const EdgeInsets.symmetric(horizontal: 28, vertical: 12)
                   : EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-              child: Row(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  Expanded(
-                    child: _ConnStatus(
-                      state: connState.value,
-                      message: connMessage.value,
-                      count: connCount.value,
+                  if (showFooterActions) ...<Widget>[
+                    Row(
+                      children: <Widget>[
+                        if (!isCurrent)
+                          _FooterAction(
+                            icon: Icons.check_circle_outline_rounded,
+                            label: l10n.aiConfigUse,
+                            onTap: handleSetCurrent,
+                          ),
+                        if (!isCurrent && !isBuiltinEditing)
+                          SizedBox(width: 4.w),
+                        if (!isBuiltinEditing)
+                          _FooterAction(
+                            icon: Icons.delete_outline_rounded,
+                            label: l10n.aiConfigDelete,
+                            color: context.colorScheme.error,
+                            onTap: handleDelete,
+                          ),
+                        const Spacer(),
+                      ],
                     ),
+                    SizedBox(height: 6.h),
+                  ],
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: _ConnStatus(
+                          state: connState.value,
+                          message: connMessage.value,
+                          count: connCount.value,
+                        ),
+                      ),
+                      SizedBox(width: 12.w),
+                      testButton,
+                      SizedBox(width: 8.w),
+                      saveButton,
+                    ],
                   ),
-                  SizedBox(width: 12.w),
-                  testButton,
-                  SizedBox(width: 8.w),
-                  saveButton,
                 ],
               ),
             ),
@@ -667,65 +667,6 @@ class AiConfigEditPage extends HookConsumerWidget {
       value.startsWith('http://') || value.startsWith('https://');
 }
 
-/// 服务商预设小胶囊。
-class _PresetChip extends HookWidget {
-  const _PresetChip({
-    required this.preset,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final _AiPreset preset;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final ColorScheme scheme = context.colorScheme;
-    final bool isDark = context.isDark;
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12.r),
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
-        decoration: BoxDecoration(
-          color: selected
-              ? scheme.primary.withValues(alpha: 0.10)
-              : (isDark
-                    ? scheme.onSurface.withValues(alpha: 0.04)
-                    : scheme.surfaceContainerHighest.withValues(alpha: 0.35)),
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(
-            color: selected
-                ? scheme.primary.withValues(alpha: 0.65)
-                : scheme.outline.withValues(alpha: isDark ? 0.28 : 0.16),
-            width: selected ? 1.2 : 1,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            AiBrandIcon(
-              brand: resolveAiBrand(apiUrl: preset.baseUrl, name: preset.label),
-              size: 20.w,
-            ),
-            SizedBox(width: 8.w),
-            Text(
-              preset.label,
-              style: TextStyle(
-                fontSize: 12.5.sp,
-                fontWeight: FontWeight.w600,
-                color: selected ? scheme.primary : scheme.onSurface,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 /// 模型输入框右侧的小刷新按钮，用于重新拉取模型列表。
 class _RefreshButton extends HookWidget {
   const _RefreshButton({
@@ -776,6 +717,45 @@ class _RefreshButton extends HookWidget {
                     ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 底部栏里的次要操作：设为当前 / 删除。
+class _FooterAction extends HookWidget {
+  const _FooterAction({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color effective = color ?? context.colorScheme.primary;
+
+    return TextButton.icon(
+      onPressed: onTap,
+      icon: Icon(icon, size: 16.sp),
+      label: Text(
+        label,
+        style: TextStyle(fontSize: 12.5.sp, fontWeight: FontWeight.w600),
+      ),
+      style: TextButton.styleFrom(
+        foregroundColor: effective,
+        visualDensity: VisualDensity.compact,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        minimumSize: Size.zero,
+        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8.r),
         ),
       ),
     );

@@ -215,10 +215,6 @@
   "@aiConfigDeleted": {
     "description": "AI 配置删除成功"
   },
-  "aiConfigEdit": "编辑",
-  "@aiConfigEdit": {
-    "description": "编辑 AI 配置"
-  },
   "aiConfigEditTitle": "编辑配置",
   "@aiConfigEditTitle": {
     "description": "AI 配置编辑页标题"
@@ -238,14 +234,6 @@
   "aiModelUnset": "未选择模型",
   "@aiModelUnset": {
     "description": "AI 配置尚未选择模型"
-  },
-  "aiQuickStart": "快速开始",
-  "@aiQuickStart": {
-    "description": "AI 配置编辑页-服务商预设"
-  },
-  "aiQuickStartHint": "选择服务商可自动填写地址与接口类型",
-  "@aiQuickStartHint": {
-    "description": "AI 配置编辑页-服务商预设说明"
   },
   "aiConnectionSection": "连接服务",
   "@aiConnectionSection": {

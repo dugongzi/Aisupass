@@ -404,12 +404,6 @@ abstract class AppLocalizations {
   /// **'配置已删除'**
   String get aiConfigDeleted;
 
-  /// 编辑 AI 配置
-  ///
-  /// In zh, this message translates to:
-  /// **'编辑'**
-  String get aiConfigEdit;
-
   /// AI 配置编辑页标题
   ///
   /// In zh, this message translates to:
@@ -439,18 +433,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'未选择模型'**
   String get aiModelUnset;
-
-  /// AI 配置编辑页-服务商预设
-  ///
-  /// In zh, this message translates to:
-  /// **'快速开始'**
-  String get aiQuickStart;
-
-  /// AI 配置编辑页-服务商预设说明
-  ///
-  /// In zh, this message translates to:
-  /// **'选择服务商可自动填写地址与接口类型'**
-  String get aiQuickStartHint;
 
   /// AI 配置编辑页-连接服务分组
   ///

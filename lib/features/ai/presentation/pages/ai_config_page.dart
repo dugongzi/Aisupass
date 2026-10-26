@@ -1,13 +1,11 @@
 import 'package:Aisupass/common/widgets/loading.dart';
 import 'package:Aisupass/common/widgets/ref_error.dart';
-import 'package:Aisupass/common/widgets/toast.dart';
 import 'package:Aisupass/core/extensions/context_extensions.dart';
 import 'package:Aisupass/core/routes/app_route.dart';
 import 'package:Aisupass/core/themes/ai_activation_theme.dart';
 import 'package:Aisupass/core/utils/platform.dart';
 import 'package:Aisupass/features/ai/domain/constants/builtin_ai_config.dart';
 import 'package:Aisupass/features/ai/domain/models/ai_config.dart';
-import 'package:Aisupass/features/ai/presentation/providers/ai_config_action_provider.dart';
 import 'package:Aisupass/features/ai/presentation/providers/ai_config_query_provider.dart';
 import 'package:Aisupass/features/ai/presentation/widgets/ai_brand_icon.dart';
 import 'package:Aisupass/l10n/app_localizations.dart';
@@ -21,7 +19,7 @@ import 'package:url_launcher/url_launcher.dart';
 /// AI 配置列表页。
 ///
 /// 新建入口统一放在标题栏右上角的「+」图标；
-/// 点击卡片进入编辑页，卡片右上角菜单可切换、编辑与删除。
+/// 点击卡片进入编辑页，切换与删除在编辑页底部操作。
 class AiConfigPage extends HookConsumerWidget {
   const AiConfigPage({super.key});
 
@@ -33,42 +31,6 @@ class AiConfigPage extends HookConsumerWidget {
 
     void openEditor(String id) =>
         context.push(AppRoute.aiConfigEditPath(id));
-
-    Future<void> confirmDelete(AiConfig config) async {
-      final bool? confirmed = await showDialog<bool>(
-        context: context,
-        builder: (BuildContext dialogContext) {
-          final ColorScheme scheme = dialogContext.colorScheme;
-          return AlertDialog(
-            title: Text(l10n.aiConfigDelete),
-            content: Text(l10n.aiConfigDeleteConfirm(config.name)),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(false),
-                child: Text(l10n.aiCancel),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.of(dialogContext).pop(true),
-                style: FilledButton.styleFrom(
-                  backgroundColor: scheme.error,
-                  foregroundColor: scheme.onError,
-                ),
-                child: Text(l10n.aiDelete),
-              ),
-            ],
-          );
-        },
-      );
-      if (confirmed != true || !context.mounted) return;
-
-      await ref.read(aiConfigActionsProvider).remove(config.id);
-      ToastMessage.success(l10n.aiConfigDeleted);
-    }
-
-    Future<void> activate(AiConfig config) async {
-      await ref.read(aiConfigActionsProvider).setCurrent(config.id);
-      ToastMessage.success(l10n.aiConfigSwitched);
-    }
 
     /// 打开内置服务的站点获取 API Key。
     Future<void> openGetKey() => launchUrl(
@@ -86,8 +48,6 @@ class AiConfigPage extends HookConsumerWidget {
               configs: state.configs,
               currentId: state.currentId,
               onEdit: (AiConfig config) => openEditor(config.id),
-              onActivate: activate,
-              onDelete: confirmDelete,
               onGetKey: openGetKey,
             ),
     );
@@ -152,16 +112,12 @@ class _ConfigList extends HookWidget {
     required this.configs,
     required this.currentId,
     required this.onEdit,
-    required this.onActivate,
-    required this.onDelete,
     required this.onGetKey,
   });
 
   final List<AiConfig> configs;
   final String currentId;
   final ValueChanged<AiConfig> onEdit;
-  final ValueChanged<AiConfig> onActivate;
-  final ValueChanged<AiConfig> onDelete;
   final VoidCallback onGetKey;
 
   @override
@@ -219,8 +175,6 @@ class _ConfigList extends HookWidget {
                 config: configs[index],
                 isCurrent: configs[index].id == currentId,
                 onEdit: () => onEdit(configs[index]),
-                onActivate: () => onActivate(configs[index]),
-                onDelete: () => onDelete(configs[index]),
                 onGetKey: onGetKey,
               ),
             ],
@@ -237,16 +191,12 @@ class _ConfigCard extends HookWidget {
     required this.config,
     required this.isCurrent,
     required this.onEdit,
-    required this.onActivate,
-    required this.onDelete,
     required this.onGetKey,
   });
 
   final AiConfig config;
   final bool isCurrent;
   final VoidCallback onEdit;
-  final VoidCallback onActivate;
-  final VoidCallback onDelete;
   final VoidCallback onGetKey;
 
   @override
@@ -301,8 +251,8 @@ class _ConfigCard extends HookWidget {
           onTap: onEdit,
           child: Padding(
             padding: isDesktop
-                ? const EdgeInsets.fromLTRB(16, 14, 8, 14)
-                : EdgeInsets.fromLTRB(14.w, 13.h, 4.w, 13.h),
+                ? const EdgeInsets.fromLTRB(16, 14, 16, 14)
+                : EdgeInsets.fromLTRB(14.w, 13.h, 14.w, 13.h),
             child: Row(
               children: <Widget>[
                 SizedBox(
@@ -389,49 +339,6 @@ class _ConfigCard extends HookWidget {
                     ],
                   ),
                 ),
-                PopupMenuButton<_ConfigAction>(
-                  tooltip: '',
-                  padding: EdgeInsets.zero,
-                  icon: Icon(
-                    Icons.more_horiz_rounded,
-                    size: 20.sp,
-                    color: scheme.onSurfaceVariant,
-                  ),
-                  onSelected: (_ConfigAction action) => switch (action) {
-                    _ConfigAction.activate => onActivate(),
-                    _ConfigAction.edit => onEdit(),
-                    _ConfigAction.delete => onDelete(),
-                  },
-                  itemBuilder: (BuildContext context) =>
-                      <PopupMenuEntry<_ConfigAction>>[
-                        if (!isCurrent)
-                          PopupMenuItem<_ConfigAction>(
-                            value: _ConfigAction.activate,
-                            child: _MenuRow(
-                              icon: Icons.check_circle_outline_rounded,
-                              label: l10n.aiConfigUse,
-                            ),
-                          ),
-                        PopupMenuItem<_ConfigAction>(
-                          value: _ConfigAction.edit,
-                          child: _MenuRow(
-                            icon: Icons.edit_outlined,
-                            label: l10n.aiConfigEdit,
-                          ),
-                        ),
-                        if (!isBuiltin) ...<PopupMenuEntry<_ConfigAction>>[
-                          const PopupMenuDivider(),
-                          PopupMenuItem<_ConfigAction>(
-                            value: _ConfigAction.delete,
-                            child: _MenuRow(
-                              icon: Icons.delete_outline_rounded,
-                              label: l10n.aiConfigDelete,
-                              color: scheme.error,
-                            ),
-                          ),
-                        ],
-                      ],
-                ),
               ],
             ),
           ),
@@ -440,8 +347,6 @@ class _ConfigCard extends HookWidget {
     );
   }
 }
-
-enum _ConfigAction { activate, edit, delete }
 
 /// 卡片上的「当前」标记。
 class _CurrentBadge extends HookWidget {
@@ -537,36 +442,6 @@ class _GetKeyLink extends HookWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-/// 弹出菜单里的一行：图标 + 文案。
-class _MenuRow extends HookWidget {
-  const _MenuRow({required this.icon, required this.label, this.color});
-
-  final IconData icon;
-  final String label;
-  final Color? color;
-
-  @override
-  Widget build(BuildContext context) {
-    final Color effective = color ?? context.colorScheme.onSurface;
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        Icon(icon, size: 18.sp, color: effective),
-        SizedBox(width: 10.w),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 13.sp,
-            fontWeight: FontWeight.w500,
-            color: effective,
-          ),
-        ),
-      ],
     );
   }
 }

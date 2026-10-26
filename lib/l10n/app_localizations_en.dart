@@ -169,9 +169,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiConfigDeleted => 'Configuration deleted';
 
   @override
-  String get aiConfigEdit => 'Edit';
-
-  @override
   String get aiConfigEditTitle => 'Edit Configuration';
 
   @override
@@ -185,13 +182,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiModelUnset => 'No model selected';
-
-  @override
-  String get aiQuickStart => 'Quick Start';
-
-  @override
-  String get aiQuickStartHint =>
-      'Pick a provider to fill in the endpoint and protocol';
 
   @override
   String get aiConnectionSection => 'Connection';
