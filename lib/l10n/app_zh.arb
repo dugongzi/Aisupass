@@ -395,6 +395,86 @@
   "@aiInvalidUrl": {
     "description": "API 地址格式校验"
   },
+  "aiTestTitle": "测试",
+  "@aiTestTitle": {
+    "description": "AI 配置测试窗口标题"
+  },
+  "aiTestHint": "发送一条测试消息，流式查看服务端返回。",
+  "@aiTestHint": {
+    "description": "测试窗口说明"
+  },
+  "aiTestMessageLabel": "测试消息",
+  "@aiTestMessageLabel": {
+    "description": "测试消息输入框标题"
+  },
+  "aiTestMessageDefault": "Hi",
+  "@aiTestMessageDefault": {
+    "description": "测试消息默认内容"
+  },
+  "aiTestSend": "发送",
+  "@aiTestSend": {
+    "description": "发送测试消息"
+  },
+  "aiTestStateStreaming": "进行中",
+  "@aiTestStateStreaming": {
+    "description": "测试请求正在接收返回"
+  },
+  "aiTestStateSuccess": "成功",
+  "@aiTestStateSuccess": {
+    "description": "测试请求成功"
+  },
+  "aiTestStateFailed": "失败",
+  "@aiTestStateFailed": {
+    "description": "测试请求失败"
+  },
+  "aiTestStateUnknown": "未响应",
+  "@aiTestStateUnknown": {
+    "description": "没有拿到 HTTP 状态码"
+  },
+  "aiTestDuration": "耗时",
+  "@aiTestDuration": {
+    "description": "请求耗时标签"
+  },
+  "aiTestReply": "回复",
+  "@aiTestReply": {
+    "description": "从返回中解析出的回复"
+  },
+  "aiTestError": "错误",
+  "@aiTestError": {
+    "description": "测试失败的标签"
+  },
+  "aiTestRaw": "原始返回",
+  "@aiTestRaw": {
+    "description": "服务端原始返回内容"
+  },
+  "aiTestCopy": "复制",
+  "@aiTestCopy": {
+    "description": "复制原始返回"
+  },
+  "aiTestCopied": "已复制到剪贴板",
+  "@aiTestCopied": {
+    "description": "复制成功提示"
+  },
+  "aiTestNoKey": "请先填写 API Key",
+  "@aiTestNoKey": {
+    "description": "测试前缺少 API Key"
+  },
+  "aiTestNoModel": "请先选择模型",
+  "@aiTestNoModel": {
+    "description": "测试前缺少模型"
+  },
+  "aiTestChunks": "段",
+  "@aiTestChunks": {
+    "description": "流式收到的分片数量单位"
+  },
+  "aiTestFirstToken": "首字",
+  "@aiTestFirstToken": {
+    "description": "首段内容到达耗时标签"
+  },
+  "aiTestNotStreamed": "非流式",
+  "@aiTestNotStreamed": {
+    "description": "服务端未按流式返回"
+  },
   "aiErrorAuth": "API Key 无效或无权限（HTTP {code}）",
   "@aiErrorAuth": {
     "description": "模型目录请求-鉴权失败",

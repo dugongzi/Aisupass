@@ -13,6 +13,7 @@ import 'package:Aisupass/features/ai/presentation/providers/ai_model_query_provi
 import 'package:Aisupass/features/ai/presentation/widgets/ai_brand_icon.dart';
 import 'package:Aisupass/features/ai/presentation/widgets/ai_model_picker.dart';
 import 'package:Aisupass/features/ai/presentation/widgets/ai_section_card.dart';
+import 'package:Aisupass/features/ai/presentation/widgets/ai_test_sheet.dart';
 import 'package:Aisupass/features/ai/presentation/widgets/ai_text_field.dart';
 import 'package:Aisupass/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -278,6 +279,27 @@ class AiConfigEditPage extends HookConsumerWidget {
       }
     }
 
+    /// 打开测试窗口；先做最基本的完整性检查。
+    void handleTest() {
+      if (apiKeyController.text.trim().isEmpty) {
+        errors.value = <String, String>{
+          ...errors.value,
+          'key': l10n.aiFieldRequired,
+        };
+        ToastMessage.show(l10n.aiTestNoKey);
+        return;
+      }
+      if (model.value.trim().isEmpty) {
+        errors.value = <String, String>{
+          ...errors.value,
+          'model': l10n.aiTestNoModel,
+        };
+        ToastMessage.show(l10n.aiTestNoModel);
+        return;
+      }
+      showAiTestSheet(context, buildConfig());
+    }
+
     final TextStyle labelStyle = TextStyle(
       fontSize: 12.5.sp,
       fontWeight: FontWeight.w600,
@@ -528,6 +550,19 @@ class AiConfigEditPage extends HookConsumerWidget {
           : Text(l10n.aiSave),
     );
 
+    final Widget testButton = OutlinedButton(
+      onPressed: saving.value ? null : handleTest,
+      style: OutlinedButton.styleFrom(
+        minimumSize: Size(isDesktop ? 88 : 64.w, isDesktop ? 42 : 44.h),
+        padding: EdgeInsets.symmetric(horizontal: isDesktop ? 16 : 10.w),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        textStyle: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w700),
+      ),
+      child: Text(l10n.aiTestTitle),
+    );
+
     final Widget bottomBar = Container(
       decoration: BoxDecoration(
         color: context.colorScheme.surface,
@@ -573,6 +608,8 @@ class AiConfigEditPage extends HookConsumerWidget {
                     ),
                   ),
                   SizedBox(width: 12.w),
+                  testButton,
+                  SizedBox(width: 8.w),
                   saveButton,
                 ],
               ),

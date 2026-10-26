@@ -295,6 +295,66 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiInvalidUrl => '请输入以 http:// 或 https:// 开头的地址';
 
   @override
+  String get aiTestTitle => '测试';
+
+  @override
+  String get aiTestHint => '发送一条测试消息，流式查看服务端返回。';
+
+  @override
+  String get aiTestMessageLabel => '测试消息';
+
+  @override
+  String get aiTestMessageDefault => 'Hi';
+
+  @override
+  String get aiTestSend => '发送';
+
+  @override
+  String get aiTestStateStreaming => '进行中';
+
+  @override
+  String get aiTestStateSuccess => '成功';
+
+  @override
+  String get aiTestStateFailed => '失败';
+
+  @override
+  String get aiTestStateUnknown => '未响应';
+
+  @override
+  String get aiTestDuration => '耗时';
+
+  @override
+  String get aiTestReply => '回复';
+
+  @override
+  String get aiTestError => '错误';
+
+  @override
+  String get aiTestRaw => '原始返回';
+
+  @override
+  String get aiTestCopy => '复制';
+
+  @override
+  String get aiTestCopied => '已复制到剪贴板';
+
+  @override
+  String get aiTestNoKey => '请先填写 API Key';
+
+  @override
+  String get aiTestNoModel => '请先选择模型';
+
+  @override
+  String get aiTestChunks => '段';
+
+  @override
+  String get aiTestFirstToken => '首字';
+
+  @override
+  String get aiTestNotStreamed => '非流式';
+
+  @override
   String aiErrorAuth(int code) {
     return 'API Key 无效或无权限（HTTP $code）';
   }

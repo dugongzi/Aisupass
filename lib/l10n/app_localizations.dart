@@ -644,6 +644,126 @@ abstract class AppLocalizations {
   /// **'请输入以 http:// 或 https:// 开头的地址'**
   String get aiInvalidUrl;
 
+  /// AI 配置测试窗口标题
+  ///
+  /// In zh, this message translates to:
+  /// **'测试'**
+  String get aiTestTitle;
+
+  /// 测试窗口说明
+  ///
+  /// In zh, this message translates to:
+  /// **'发送一条测试消息，流式查看服务端返回。'**
+  String get aiTestHint;
+
+  /// 测试消息输入框标题
+  ///
+  /// In zh, this message translates to:
+  /// **'测试消息'**
+  String get aiTestMessageLabel;
+
+  /// 测试消息默认内容
+  ///
+  /// In zh, this message translates to:
+  /// **'Hi'**
+  String get aiTestMessageDefault;
+
+  /// 发送测试消息
+  ///
+  /// In zh, this message translates to:
+  /// **'发送'**
+  String get aiTestSend;
+
+  /// 测试请求正在接收返回
+  ///
+  /// In zh, this message translates to:
+  /// **'进行中'**
+  String get aiTestStateStreaming;
+
+  /// 测试请求成功
+  ///
+  /// In zh, this message translates to:
+  /// **'成功'**
+  String get aiTestStateSuccess;
+
+  /// 测试请求失败
+  ///
+  /// In zh, this message translates to:
+  /// **'失败'**
+  String get aiTestStateFailed;
+
+  /// 没有拿到 HTTP 状态码
+  ///
+  /// In zh, this message translates to:
+  /// **'未响应'**
+  String get aiTestStateUnknown;
+
+  /// 请求耗时标签
+  ///
+  /// In zh, this message translates to:
+  /// **'耗时'**
+  String get aiTestDuration;
+
+  /// 从返回中解析出的回复
+  ///
+  /// In zh, this message translates to:
+  /// **'回复'**
+  String get aiTestReply;
+
+  /// 测试失败的标签
+  ///
+  /// In zh, this message translates to:
+  /// **'错误'**
+  String get aiTestError;
+
+  /// 服务端原始返回内容
+  ///
+  /// In zh, this message translates to:
+  /// **'原始返回'**
+  String get aiTestRaw;
+
+  /// 复制原始返回
+  ///
+  /// In zh, this message translates to:
+  /// **'复制'**
+  String get aiTestCopy;
+
+  /// 复制成功提示
+  ///
+  /// In zh, this message translates to:
+  /// **'已复制到剪贴板'**
+  String get aiTestCopied;
+
+  /// 测试前缺少 API Key
+  ///
+  /// In zh, this message translates to:
+  /// **'请先填写 API Key'**
+  String get aiTestNoKey;
+
+  /// 测试前缺少模型
+  ///
+  /// In zh, this message translates to:
+  /// **'请先选择模型'**
+  String get aiTestNoModel;
+
+  /// 流式收到的分片数量单位
+  ///
+  /// In zh, this message translates to:
+  /// **'段'**
+  String get aiTestChunks;
+
+  /// 首段内容到达耗时标签
+  ///
+  /// In zh, this message translates to:
+  /// **'首字'**
+  String get aiTestFirstToken;
+
+  /// 服务端未按流式返回
+  ///
+  /// In zh, this message translates to:
+  /// **'非流式'**
+  String get aiTestNotStreamed;
+
   /// 模型目录请求-鉴权失败
   ///
   /// In zh, this message translates to:

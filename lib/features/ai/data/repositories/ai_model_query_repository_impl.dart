@@ -1,5 +1,6 @@
 import 'package:Aisupass/features/ai/data/datasources/ai_model_query_datasource.dart';
 import 'package:Aisupass/features/ai/data/models/ai_config_dto.dart';
+import 'package:Aisupass/features/ai/domain/models/ai_chat_probe_event.dart';
 import 'package:Aisupass/features/ai/domain/models/ai_config.dart';
 import 'package:Aisupass/features/ai/domain/repositories/ai_model_query_repository.dart';
 
@@ -14,4 +15,10 @@ class AiModelQueryRepositoryImpl implements AiModelQueryRepository {
   @override
   Future<List<String>> fetchModels(AiConfig config) =>
       _datasource.fetchModels(AiConfigDto.fromEntity(config));
+
+  @override
+  Stream<AiChatProbeEvent> streamTestMessage(
+    AiConfig config,
+    String message,
+  ) => _datasource.streamTestMessage(AiConfigDto.fromEntity(config), message);
 }

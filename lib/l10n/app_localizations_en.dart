@@ -300,6 +300,67 @@ class AppLocalizationsEn extends AppLocalizations {
       'Enter an address starting with http:// or https://';
 
   @override
+  String get aiTestTitle => 'Test';
+
+  @override
+  String get aiTestHint =>
+      'Send a test message and watch the response stream in.';
+
+  @override
+  String get aiTestMessageLabel => 'Test message';
+
+  @override
+  String get aiTestMessageDefault => 'Hi';
+
+  @override
+  String get aiTestSend => 'Send';
+
+  @override
+  String get aiTestStateStreaming => 'Streaming';
+
+  @override
+  String get aiTestStateSuccess => 'Success';
+
+  @override
+  String get aiTestStateFailed => 'Failed';
+
+  @override
+  String get aiTestStateUnknown => 'No response';
+
+  @override
+  String get aiTestDuration => 'Duration';
+
+  @override
+  String get aiTestReply => 'Reply';
+
+  @override
+  String get aiTestError => 'Error';
+
+  @override
+  String get aiTestRaw => 'Raw response';
+
+  @override
+  String get aiTestCopy => 'Copy';
+
+  @override
+  String get aiTestCopied => 'Copied to clipboard';
+
+  @override
+  String get aiTestNoKey => 'Enter the API key first';
+
+  @override
+  String get aiTestNoModel => 'Select a model first';
+
+  @override
+  String get aiTestChunks => 'chunks';
+
+  @override
+  String get aiTestFirstToken => 'first token';
+
+  @override
+  String get aiTestNotStreamed => 'not streamed';
+
+  @override
   String aiErrorAuth(int code) {
     return 'Invalid API key or insufficient permission (HTTP $code)';
   }
