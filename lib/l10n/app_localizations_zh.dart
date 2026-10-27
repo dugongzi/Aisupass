@@ -436,6 +436,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatSessionEmpty => '暂无会话';
 
   @override
+  String get chatGenerating => '正在生成…';
+
+  @override
+  String chatSessionReady(String title) {
+    return '「$title」已生成完成';
+  }
+
+  @override
   String get chatUntitled => '未命名对话';
 
   @override

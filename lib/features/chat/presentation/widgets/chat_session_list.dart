@@ -22,6 +22,10 @@ class ChatSessionList extends HookConsumerWidget {
     final bool isDesktop = isDesktopPlatform;
     final ColorScheme colors = context.colorScheme;
     final ChatSessionsState sessions = ref.watch(chatSessionsProvider);
+    // 只关心「哪些会话在接收流」，避免正文刷新时连带重建整个列表。
+    final Set<String> running = ref.watch(
+      chatJobsProvider.select((ChatJobsState jobs) => jobs.running),
+    );
     final ChatController controller = ref.read(chatControllerProvider.notifier);
 
     Future<void> handleCreate() async {
@@ -188,6 +192,7 @@ class ChatSessionList extends HookConsumerWidget {
                     return _SessionTile(
                       session: session,
                       selected: session.id == sessions.currentId,
+                      running: running.contains(session.id),
                       onTap: () => handleSelect(session),
                       onLongPress: (Offset position) =>
                           handleMenu(session, position),
@@ -204,12 +209,16 @@ class _SessionTile extends StatelessWidget {
   const _SessionTile({
     required this.session,
     required this.selected,
+    required this.running,
     required this.onTap,
     required this.onLongPress,
   });
 
   final ChatSession session;
   final bool selected;
+
+  /// 该会话是否正在接收流（含切走后仍在后台执行的情况）。
+  final bool running;
   final VoidCallback onTap;
   final ValueChanged<Offset> onLongPress;
 
@@ -263,18 +272,82 @@ class _SessionTile extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: isDesktop ? 2 : 2.h),
-                Text(
-                  formatSessionTime(context, session.updatedAt),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: isDesktop ? 10.5 : 10.5.sp,
-                    color: colors.onSurfaceVariant.withValues(alpha: 0.8),
-                  ),
+                Row(
+                  children: <Widget>[
+                    if (running) ...<Widget>[
+                      _StreamingDot(
+                        color: colors.primary,
+                        size: isDesktop ? 6 : 6.r,
+                      ),
+                      SizedBox(width: isDesktop ? 5 : 5.w),
+                      Flexible(
+                        child: Text(
+                          context.l10n.chatGenerating,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: isDesktop ? 10.5 : 10.5.sp,
+                            fontWeight: FontWeight.w500,
+                            color: colors.primary,
+                          ),
+                        ),
+                      ),
+                    ] else
+                      Flexible(
+                        child: Text(
+                          formatSessionTime(context, session.updatedAt),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: isDesktop ? 10.5 : 10.5.sp,
+                            color: colors.onSurfaceVariant.withValues(
+                              alpha: 0.8,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 会话正在接收流时的呼吸圆点。
+class _StreamingDot extends HookWidget {
+  const _StreamingDot({required this.color, required this.size});
+
+  final Color color;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final AnimationController controller = useAnimationController(
+      duration: const Duration(milliseconds: 800),
+    );
+
+    useEffect(() {
+      controller.repeat(reverse: true);
+      return null;
+    }, <Object?>[controller]);
+
+    final CurvedAnimation curve = CurvedAnimation(
+      parent: controller,
+      curve: Curves.easeInOut,
+    );
+
+    return FadeTransition(
+      opacity: Tween<double>(begin: 0.28, end: 1).animate(curve),
+      child: ScaleTransition(
+        scale: Tween<double>(begin: 0.7, end: 1).animate(curve),
+        child: Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
       ),
     );

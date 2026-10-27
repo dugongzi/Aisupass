@@ -265,6 +265,19 @@
   },
   "chatSessions": "Conversations",
   "chatSessionEmpty": "No conversations",
+  "chatGenerating": "Generating…",
+  "@chatGenerating": {
+    "description": "Status of a conversation that is still streaming"
+  },
+  "chatSessionReady": "\"{title}\" is ready",
+  "@chatSessionReady": {
+    "description": "Notice shown when a background conversation finishes",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "chatUntitled": "Untitled",
   "chatRename": "Rename",
   "chatRenameHint": "Enter a conversation name",

@@ -443,6 +443,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatSessionEmpty => 'No conversations';
 
   @override
+  String get chatGenerating => 'Generating…';
+
+  @override
+  String chatSessionReady(String title) {
+    return '\"$title\" is ready';
+  }
+
+  @override
   String get chatUntitled => 'Untitled';
 
   @override

@@ -1,11 +1,14 @@
+import 'package:Aisupass/common/widgets/toast.dart';
 import 'package:Aisupass/core/extensions/context_extensions.dart';
 import 'package:Aisupass/core/routes/app_route.dart';
 import 'package:Aisupass/core/utils/platform.dart';
 import 'package:Aisupass/features/ai/domain/models/ai_config.dart';
 import 'package:Aisupass/features/ai/presentation/providers/ai_config_query_provider.dart';
 import 'package:Aisupass/features/ai/presentation/widgets/ai_brand_icon.dart';
+import 'package:Aisupass/features/chat/domain/models/chat_session.dart';
 import 'package:Aisupass/features/chat/domain/models/chat_turn.dart';
 import 'package:Aisupass/features/chat/presentation/providers/chat_provider.dart';
+import 'package:Aisupass/features/chat/presentation/providers/chat_sessions_provider.dart';
 import 'package:Aisupass/features/chat/presentation/widgets/chat_empty_state.dart';
 import 'package:Aisupass/features/chat/presentation/widgets/chat_input_bar.dart';
 import 'package:Aisupass/features/chat/presentation/widgets/chat_message.dart';
@@ -100,6 +103,27 @@ class ChatPage extends HookConsumerWidget {
       controller.send(text);
       WidgetsBinding.instance.addPostFrameCallback((_) => jumpToLatest());
     }
+
+    // 后台会话跑完时给一次轻提示；用户正停留在该会话时由正文自己更新，不打扰。
+    ref.listen<ChatJobsState>(chatJobsProvider, (
+      ChatJobsState? previous,
+      ChatJobsState next,
+    ) {
+      final String? id = next.completed;
+      if (id == null || id == previous?.completed) return;
+
+      String title = '';
+      for (final ChatSession session in ref.read(chatSessionsProvider).sessions) {
+        if (session.id == id) {
+          title = session.title.trim();
+          break;
+        }
+      }
+      ToastMessage.success(
+        l10n.chatSessionReady(title.isEmpty ? l10n.chatUntitled : title),
+      );
+      ref.read(chatJobsProvider.notifier).acknowledge(id);
+    });
 
     Future<void> startNewSession() async {
       await controller.startNewSession();

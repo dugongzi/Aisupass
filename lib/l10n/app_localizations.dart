@@ -914,6 +914,18 @@ abstract class AppLocalizations {
   /// **'暂无会话'**
   String get chatSessionEmpty;
 
+  /// 会话列表里正在接收流的会话状态
+  ///
+  /// In zh, this message translates to:
+  /// **'正在生成…'**
+  String get chatGenerating;
+
+  /// 后台会话生成完成后的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'「{title}」已生成完成'**
+  String chatSessionReady(String title);
+
   /// 会话没有标题时的占位名
   ///
   /// In zh, this message translates to:

@@ -593,6 +593,19 @@
   "@chatSessionEmpty": {
     "description": "会话列表空态"
   },
+  "chatGenerating": "正在生成…",
+  "@chatGenerating": {
+    "description": "会话列表里正在接收流的会话状态"
+  },
+  "chatSessionReady": "「{title}」已生成完成",
+  "@chatSessionReady": {
+    "description": "后台会话生成完成后的提示",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "chatUntitled": "未命名对话",
   "@chatUntitled": {
     "description": "会话没有标题时的占位名"
