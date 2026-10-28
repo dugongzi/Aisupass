@@ -555,10 +555,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Escalate using currently known exploits';
 
   @override
-  String get manualQuickEscalateComingSoon =>
-      'Manual escalation is coming soon';
-
-  @override
   String get languageTitle => 'Language';
 
   @override
@@ -580,4 +576,273 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get commonRetry => 'Retry';
+
+  @override
+  String get escalationTitle => 'Escalation';
+
+  @override
+  String get escalationSubtitle =>
+      'Probe device capabilities and run escalation chains';
+
+  @override
+  String get escalationSectionDevice => 'Device';
+
+  @override
+  String get escalationSectionChains => 'Capability Matrix';
+
+  @override
+  String get escalationSectionTimeline => 'Timeline';
+
+  @override
+  String get escalationAvailable => 'Available';
+
+  @override
+  String get escalationUnavailable => 'Unavailable';
+
+  @override
+  String get escalationStart => 'Start';
+
+  @override
+  String get escalationCancel => 'Cancel';
+
+  @override
+  String get escalationRetry => 'Retry';
+
+  @override
+  String get escalationNoAvailableChain =>
+      'No escalation chain is available on this device';
+
+  @override
+  String get escalationPlatformUnsupported =>
+      'Escalation is not supported on this platform';
+
+  @override
+  String get escalationConfirmTitle => 'Run escalation?';
+
+  @override
+  String get escalationConfirmBody =>
+      'This may modify system state and leave residue on failure.';
+
+  @override
+  String get escalationDangerLow => 'Low risk';
+
+  @override
+  String get escalationDangerMedium => 'Medium risk';
+
+  @override
+  String get escalationDangerHigh => 'High risk';
+
+  @override
+  String get escalationResidualWarning =>
+      'A previous run left residual state; clean it up first';
+
+  @override
+  String get escalationHostConnecting => 'Connecting to privilege host…';
+
+  @override
+  String get escalationHostDisconnected => 'Privilege host disconnected';
+
+  @override
+  String get escalationPairingStart => 'Pair via wireless debugging';
+
+  @override
+  String get escalationPairingNotice =>
+      'Enter the code in the notification shade without switching apps — leaving this screen invalidates the system pairing dialog.';
+
+  @override
+  String get escalationPairingWaiting =>
+      'Waiting for the pairing code in notifications…';
+
+  @override
+  String get escalationExportRecord => 'Export records';
+
+  @override
+  String get escalationExportEmpty => 'No records to export';
+
+  @override
+  String get escalationRecordEmpty => 'No runs yet';
+
+  @override
+  String get escalationChainRootCheckName => 'Existing root check';
+
+  @override
+  String get escalationChainRootCheckDesc =>
+      'Detect whether root access is already available';
+
+  @override
+  String get escalationChainKernelModuleName => 'Kernel module';
+
+  @override
+  String get escalationChainKernelModuleDesc =>
+      'Gain privileges by loading a kernel module';
+
+  @override
+  String get escalationChainPayloadName => 'Payload chain';
+
+  @override
+  String get escalationChainPayloadDesc => 'Escalate using a bundled payload';
+
+  @override
+  String get escalationChainKernelExploitName => 'Kernel exploit';
+
+  @override
+  String get escalationChainKernelExploitDesc =>
+      'Gain temporary privileges via a kernel vulnerability';
+
+  @override
+  String get escalationChainPageCacheName => 'PageCache';
+
+  @override
+  String get escalationChainPageCacheDesc =>
+      'Escalate by writing through PageCache';
+
+  @override
+  String get escalationChainFakeName => 'Demo chain';
+
+  @override
+  String get escalationChainFakeDesc =>
+      'Demo only; does not modify system state';
+
+  @override
+  String get escalationStageProbe => 'Probe';
+
+  @override
+  String get escalationStagePrepare => 'Prepare';
+
+  @override
+  String get escalationStageExecute => 'Execute';
+
+  @override
+  String get escalationStageVerify => 'Verify';
+
+  @override
+  String get escalationStageCleanup => 'Cleanup';
+
+  @override
+  String get escalationOutcomeSuccess => 'Succeeded';
+
+  @override
+  String get escalationOutcomePartial => 'Partially succeeded';
+
+  @override
+  String get escalationOutcomeFailed => 'Failed';
+
+  @override
+  String get escalationOutcomeUnsafe => 'Unsafe state';
+
+  @override
+  String get escalationOutcomeUnsupported => 'Unsupported';
+
+  @override
+  String get escalationOutcomeNotStarted => 'Not started';
+
+  @override
+  String get escalationDeviceSdk => 'Android SDK';
+
+  @override
+  String get escalationDeviceAbi => 'ABI';
+
+  @override
+  String get escalationDeviceKernel => 'Kernel';
+
+  @override
+  String get escalationDeviceSelinux => 'SELinux';
+
+  @override
+  String get escalationDeviceManufacturer => 'Manufacturer';
+
+  @override
+  String get escalationDeviceModel => 'Model';
+
+  @override
+  String get escalationReasonPlatformUnsupported =>
+      'This chain is not supported on the current platform';
+
+  @override
+  String get escalationReasonAndroidTooOld => 'Android version is too old';
+
+  @override
+  String get escalationReasonDeviceNotSupported =>
+      'Device is not in the supported list';
+
+  @override
+  String get escalationReasonProbeTimeout => 'Probe timed out';
+
+  @override
+  String get escalationReasonProbeFailed => 'Probe failed';
+
+  @override
+  String get escalationReasonNoRootBinary => 'No su binary found';
+
+  @override
+  String get escalationReasonNoSelinuxContext => 'No usable SELinux context';
+
+  @override
+  String get escalationReasonSelinuxEnforcing => 'SELinux is enforcing';
+
+  @override
+  String get escalationReasonShellUnavailable => 'Shell is unavailable';
+
+  @override
+  String get escalationReasonShellDenied => 'Shell execution was denied';
+
+  @override
+  String get escalationReasonShellTimeout => 'Shell execution timed out';
+
+  @override
+  String get escalationReasonPayloadMissing => 'Payload file is missing';
+
+  @override
+  String get escalationReasonPayloadMismatch =>
+      'Payload does not match this device';
+
+  @override
+  String get escalationReasonCatalogCorrupted => 'Asset catalog is corrupted';
+
+  @override
+  String get escalationReasonKernelNotSupported => 'Kernel is not supported';
+
+  @override
+  String get escalationReasonKernelModuleLoadFailed =>
+      'Failed to load the kernel module';
+
+  @override
+  String get escalationReasonKernelVersionMismatch => 'Kernel version mismatch';
+
+  @override
+  String get escalationReasonExecuteTimeout => 'Execution timed out';
+
+  @override
+  String get escalationReasonExecuteFailed => 'Execution failed';
+
+  @override
+  String get escalationReasonVerifyFailedAtExternal =>
+      'External state verification failed';
+
+  @override
+  String get escalationReasonVerifyTimeout => 'Verification timed out';
+
+  @override
+  String get escalationReasonCleanupFailed => 'Cleanup failed';
+
+  @override
+  String get escalationReasonEnforceRestoreFailed =>
+      'Failed to restore SELinux state';
+
+  @override
+  String get escalationReasonResidualLeft => 'Residual state left behind';
+
+  @override
+  String get escalationReasonHostDisconnected => 'Privilege host disconnected';
+
+  @override
+  String get escalationReasonHostAuthFailed =>
+      'Privilege host authentication failed';
+
+  @override
+  String get escalationReasonHostPairingFailed =>
+      'Privilege host pairing failed';
+
+  @override
+  String get escalationReasonUnknown => 'Unknown reason';
 }

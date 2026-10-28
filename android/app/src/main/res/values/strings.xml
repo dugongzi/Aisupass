@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 无线调试配对：配对码输入通知。
+         之所以走通知栏，是因为切屏会让系统「使用配对码配对设备」对话框失效。 -->
+    <string name="pairing_channel_name">Wireless debugging pairing</string>
+    <string name="pairing_channel_description">Accepts the six-digit pairing code without leaving the current screen.</string>
+    <string name="pairing_notification_title">Enter pairing code</string>
+    <string name="pairing_notification_text">Open Developer options - Wireless debugging - Pair device with pairing code. Keep that dialog open, pull down the notification shade and enter the six-digit code.</string>
+    <string name="pairing_notification_action">Enter code</string>
+    <string name="pairing_notification_hint">6-digit code</string>
+    <string name="pairing_notification_received">Code received, connecting…</string>
+    <string name="pairing_notification_device_found">Device found, enter the six-digit code</string>
+    <string name="pairing_notification_empty_code">No code received. Tap to enter it again</string>
+    <string name="pairing_notification_dialog_closed">Pairing service not found: the pairing dialog may have been closed and that code expired. Reopen “Pair device with pairing code” in Settings, then enter the new code</string>
+</resources>

@@ -1,0 +1,49 @@
+package org.supass.ai_su_pass.core.shell
+
+/**
+ * shell 通道的健康状态。
+ *
+ * 与「命令能不能跑」分开：状态是**探测结论**，不产生任何副作用；
+ * 只有 [READY] 才值得往下走执行流程。
+ */
+internal enum class ShellStatus {
+    /** 通道已连接，可以执行命令。 */
+    READY,
+
+    /** 尚未连接（未配对或设备侧断开）。 */
+    NOT_CONNECTED,
+}
+
+/**
+ * shell 命令通道（L1）。
+ *
+ * 抽象出来的目的：宿主实现可以换（自建 ADB 连接 / 已 root 的 su），
+ * 但链实现只认这个接口，不关心身份从哪来。
+ *
+ * 实现方约束：
+ * 1. [exec] 必须带超时，超时先杀进程再返回，不允许无限等待；
+ * 2. 任何失败都以 [ShellResult] 返回，不抛异常；
+ * 3. [status] 与 [uid] **不得执行任何命令**，只能读本地/连接状态。
+ */
+internal interface ShellChannel {
+
+    /** 通道来源标识，写进证据便于排障（如 `adb`）。 */
+    val source: String
+
+    /** 通道健康状态，零副作用。 */
+    fun status(): ShellStatus
+
+    /** 当前身份 uid：`0` = root，`2000` = shell，`-1` = 未知/不可用。零副作用。 */
+    val uid: Long
+
+    /** 阻塞执行一条命令；调用方负责放到后台线程。 */
+    fun exec(command: String, timeoutMs: Long = DEFAULT_TIMEOUT_MS): ShellResult
+
+    companion object {
+        /** 默认超时：普通只读命令足够，危险原语由调用方显式放大。 */
+        const val DEFAULT_TIMEOUT_MS = 10_000L
+
+        /** 合法的特权身份：root 或 shell。 */
+        fun isPrivileged(uid: Long): Boolean = uid == 0L || uid == 2000L
+    }
+}

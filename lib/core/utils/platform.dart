@@ -9,3 +9,7 @@ bool get isDesktopPlatform =>
     (defaultTargetPlatform == TargetPlatform.windows ||
         defaultTargetPlatform == TargetPlatform.macOS ||
         defaultTargetPlatform == TargetPlatform.linux);
+
+/// 是否运行在 Android 平台；无线调试配对等仅 Android 可用的能力靠它把关。
+bool get isAndroidPlatform =>
+    !kIsWeb && defaultTargetPlatform == TargetPlatform.android;

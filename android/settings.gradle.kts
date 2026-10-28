@@ -14,6 +14,8 @@ pluginManagement {
         google()
         mavenCentral()
         gradlePluginPortal()
+        // libadb-android / sun-security-android 只发布在 JitPack。
+        maven { url = uri("https://jitpack.io") }
     }
 }
 

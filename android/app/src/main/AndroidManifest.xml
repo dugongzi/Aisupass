@@ -1,4 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- AI 对话与模型列表请求依赖网络访问 -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- 无线调试配对：NsdManager(mDNS) 发现 adb-tls-pairing / adb-tls-connect 服务 -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <!-- 配对码输入通知：配对码必须在通知栏输入（切屏会让系统配对对话框失效），
+         API 33+ 无此权限时 notify() 会被静默丢弃，整条配对路径开不了头 -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
         android:label="Aisupass"
         android:name="${applicationName}"

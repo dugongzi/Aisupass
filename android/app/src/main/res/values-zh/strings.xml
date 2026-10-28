@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 无线调试配对：配对码输入通知。
+         之所以走通知栏，是因为切屏会让系统「使用配对码配对设备」对话框失效。 -->
+    <string name="pairing_channel_name">无线调试配对</string>
+    <string name="pairing_channel_description">不离开当前屏幕即可输入六位配对码。</string>
+    <string name="pairing_notification_title">输入配对码</string>
+    <string name="pairing_notification_text">打开「开发者选项 → 无线调试 → 使用配对码配对设备」，保持该弹窗不要关闭，下拉通知栏输入六位配对码。</string>
+    <string name="pairing_notification_action">输入配对码</string>
+    <string name="pairing_notification_hint">六位配对码</string>
+    <string name="pairing_notification_received">已收到配对码，正在连接…</string>
+    <string name="pairing_notification_device_found">已找到设备，请输入六位配对码</string>
+    <string name="pairing_notification_empty_code">未收到配对码，请重新输入</string>
+    <string name="pairing_notification_dialog_closed">没有找到配对服务：配对弹窗可能已关闭，刚才的配对码已失效。请回到系统设置重新打开「使用配对码配对设备」，再输入新的配对码</string>
+</resources>

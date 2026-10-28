@@ -12,6 +12,13 @@ import 'package:Aisupass/features/chat/domain/models/chat_tool.dart';
 import 'package:Aisupass/features/chat/domain/models/chat_turn.dart';
 import 'package:Aisupass/features/chat/domain/repositories/chat_repository.dart';
 import 'package:Aisupass/features/chat/presentation/providers/chat_sessions_provider.dart';
+import 'package:Aisupass/features/escalation/domain/enums/escalation_reason.dart';
+import 'package:Aisupass/features/escalation/domain/models/escalation_capability.dart';
+import 'package:Aisupass/features/escalation/domain/models/escalation_capability_matrix.dart';
+import 'package:Aisupass/features/escalation/domain/models/escalation_run_record.dart';
+import 'package:Aisupass/features/escalation/domain/models/escalation_step_record.dart';
+import 'package:Aisupass/features/escalation/presentation/providers/escalation_query_provider.dart';
+import 'package:Aisupass/features/escalation/presentation/providers/escalation_record_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -128,6 +135,21 @@ const Map<String, dynamic> _noArgumentsSchema = <String, dynamic>{
   'additionalProperties': false,
 };
 
+/// 指定提权链的工具参数 Schema。
+const Map<String, dynamic> _chainArgumentSchema = <String, dynamic>{
+  'type': 'object',
+  'properties': <String, dynamic>{
+    'chain': <String, dynamic>{
+      'type': 'string',
+      'description':
+          'Chain id, one of: rootCheck, kernelModule, payload, '
+          'kernelExploit, pageCache, fake.',
+    },
+  },
+  'required': <String>['chain'],
+  'additionalProperties': false,
+};
+
 /// 提供给模型的本地工具清单。
 ///
 /// 工具只读取设备环境，不执行任何提权动作，保证对话阶段零副作用。
@@ -173,6 +195,99 @@ final Provider<List<ChatToolDefinition>> chatToolsProvider =
             return jsonEncode(<String, bool>{
               'usb': status.usb,
               'wifi': status.wifi,
+            });
+          },
+        ),
+        ChatToolDefinition(
+          name: 'get_escalation_capabilities',
+          description:
+              'Read the read-only escalation capability matrix of the current '
+              'device: a hardware fingerprint plus one entry per escalation '
+              'chain with availability, reason codes and raw evidence.',
+          parameters: _noArgumentsSchema,
+          execute: (Map<String, dynamic> arguments) async {
+            final EscalationCapabilityMatrix matrix = await ref.read(
+              escalationCapabilityMatrixProvider.future,
+            );
+            return jsonEncode(<String, Object?>{
+              'fingerprint': <String, Object?>{
+                'androidSdk': matrix.fingerprint.androidSdk,
+                'abi': matrix.fingerprint.abi,
+                'kernelVersion': matrix.fingerprint.kernelVersion,
+                'selinuxEnforcing': matrix.fingerprint.selinuxEnforcing,
+              },
+              'chains': <Map<String, Object?>>[
+                for (final EscalationCapability capability
+                    in matrix.orderedCapabilities)
+                  <String, Object?>{
+                    'chain': capability.chain.name,
+                    'available': capability.available,
+                    'reasons': <String>[
+                      for (final EscalationReason reason in capability.reasons)
+                        reason.code,
+                    ],
+                    'evidence': capability.evidence,
+                  },
+              ],
+              'firstAvailable': matrix.firstAvailable?.chain.name,
+            });
+          },
+        ),
+        ChatToolDefinition(
+          name: 'get_chain_status',
+          description:
+              'Read the read-only availability status of one escalation chain, '
+              'including reason codes and raw evidence. Returns '
+              '{"error": "unknownChain"} when the chain id is not recognized.',
+          parameters: _chainArgumentSchema,
+          execute: (Map<String, dynamic> arguments) async {
+            final String chainName = (arguments['chain'] as String?) ?? '';
+            final EscalationCapabilityMatrix matrix = await ref.read(
+              escalationCapabilityMatrixProvider.future,
+            );
+            final EscalationCapability? capability = matrix.capabilityOf(
+              chainName,
+            );
+            if (capability == null) {
+              return jsonEncode(<String, Object?>{'error': 'unknownChain'});
+            }
+            return jsonEncode(<String, Object?>{
+              'chain': capability.chain.name,
+              'available': capability.available,
+              'reasons': <String>[
+                for (final EscalationReason reason in capability.reasons)
+                  reason.code,
+              ],
+              'evidence': capability.evidence,
+            });
+          },
+        ),
+        ChatToolDefinition(
+          name: 'get_last_execution',
+          description:
+              'Read the most recent escalation run summary, including chain, '
+              'final outcome, duration, residual flag and per-stage ok flags. '
+              'Returns {"empty": true} when no run has been recorded.',
+          parameters: _noArgumentsSchema,
+          execute: (Map<String, dynamic> arguments) async {
+            final List<EscalationRunRecord> records = await ref.read(
+              escalationRecordsProvider.future,
+            );
+            if (records.isEmpty) {
+              return jsonEncode(<String, Object?>{'empty': true});
+            }
+            final EscalationRunRecord record = records.first;
+            return jsonEncode(<String, Object?>{
+              'runId': record.runId,
+              'chain': record.chain.name,
+              'outcome': record.outcome.name,
+              'startedAtMs': record.startedAtMs,
+              'durationMs': record.durationMs,
+              'residual': record.residual,
+              'steps': <Map<String, Object?>>[
+                for (final EscalationStepRecord step in record.steps)
+                  <String, Object?>{'stage': step.stage.name, 'ok': step.ok},
+              ],
             });
           },
         ),

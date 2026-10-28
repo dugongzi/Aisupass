@@ -1,0 +1,14 @@
+targets:
+  $default:
+    builders:
+      freezed:
+        options:
+          # Dart 3.13 起构造器参数不再允许 final 修饰符。
+          # freezed 3.x 在 make_collections_unmodifiable=true（默认）时，
+          # 会把 List/Map/Set 参数生成为 `final List<T> xxx` 并配合私有字段 `_xxx`，
+          # 从而触发 extraneous_modifier（Can't have modifier 'final' here）。
+          # 关闭后集合参数改用 `this.xxx = const []` 形式，字段仍为 final，
+          # ==/hashCode 依旧走 DeepCollectionEquality，语义不变。
+          # 注意：freezed 3.2.5 起要求 analyzer >=9.0.0，与 riverpod_generator 3.x
+          # （analyzer <9.0.0）冲突，因此不能通过升级 freezed 修复。
+          make_collections_unmodifiable: false

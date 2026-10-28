@@ -162,4 +162,4 @@ final class AiConfigProvider
   }
 }
 
-String _$aiConfigHash() => r'919a393e3591ee631c14f2326577ff59906648c4';
+String _$aiConfigHash() => r'ef0d0ed20d89603ecdb4fa362699853ca2d2a93a';

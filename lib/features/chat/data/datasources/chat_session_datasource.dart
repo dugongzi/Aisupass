@@ -8,8 +8,7 @@ import 'package:Aisupass/features/chat/domain/models/chat_session.dart';
 /// 整表以 JSON 字符串存一个键，当前会话 id 单独存一个键；
 /// 会话数量级在几十条以内，整表覆盖写足够，无需分片。
 class ChatSessionDatasource {
-  const ChatSessionDatasource({required PreferencesStore preferences})
-    : _preferences = preferences;
+  const ChatSessionDatasource({required this._preferences});
 
   /// 会话列表的存储键，值为 JSON 数组字符串。
   static const String listKey = 'chat_sessions';

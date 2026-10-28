@@ -19,6 +19,7 @@ class AiQuickPanelOverlay extends HookWidget {
     required this.onAiEscalate,
     required this.onManualEscalate,
     this.isActivated = false,
+    this.hasResidual = false,
   });
 
   /// 面板是否展开。
@@ -26,6 +27,9 @@ class AiQuickPanelOverlay extends HookWidget {
 
   /// AI 是否已激活：未激活时描边与外发光退回普通中性色。
   final bool isActivated;
+
+  /// 上次提权是否留下残留：为 true 时在「手动提权」条目右上角显示红点。
+  final bool hasResidual;
 
   /// 面板底端（水滴尖端）距屏幕底部的距离。
   final double bottomOffset;
@@ -109,6 +113,7 @@ class AiQuickPanelOverlay extends HookWidget {
                             constraints: BoxConstraints(maxWidth: maxWidth),
                             child: _AiQuickPanel(
                               isActivated: isActivated,
+                              hasResidual: hasResidual,
                               onAiEscalate: onAiEscalate,
                               onManualEscalate: onManualEscalate,
                             ),
@@ -131,12 +136,16 @@ class AiQuickPanelOverlay extends HookWidget {
 class _AiQuickPanel extends HookWidget {
   const _AiQuickPanel({
     required this.isActivated,
+    required this.hasResidual,
     required this.onAiEscalate,
     required this.onManualEscalate,
   });
 
   /// AI 是否已激活。
   final bool isActivated;
+
+  /// 上次提权是否留下残留。
+  final bool hasResidual;
   final VoidCallback onAiEscalate;
   final VoidCallback onManualEscalate;
 
@@ -249,6 +258,7 @@ class _AiQuickPanel extends HookWidget {
               icon: Icons.terminal_rounded,
               title: context.l10n.manualQuickEscalateTitle,
               description: context.l10n.manualQuickEscalateDesc,
+              showDot: hasResidual,
               onTap: onManualEscalate,
             ),
           ],
@@ -269,6 +279,7 @@ class _AiQuickActionTile extends HookWidget {
     required this.title,
     required this.description,
     required this.onTap,
+    this.showDot = false,
   });
 
   /// 是否为主操作（AI 提权）。
@@ -276,6 +287,9 @@ class _AiQuickActionTile extends HookWidget {
   final IconData icon;
   final String title;
   final String description;
+
+  /// 是否在条目右上角显示提示红点。
+  final bool showDot;
   final VoidCallback onTap;
 
   @override
@@ -293,63 +307,85 @@ class _AiQuickActionTile extends HookWidget {
         onTapCancel: () => pressed.value = false,
         onTapUp: (_) => pressed.value = false,
         onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 140),
-          curve: Curves.easeOut,
-          padding: EdgeInsets.fromLTRB(12.w, 11.h, 12.w, 11.h),
-          color: pressed.value
-              ? colorScheme.onSurface.withValues(alpha: isDark ? 0.06 : 0.05)
-              : Colors.transparent,
-          child: Row(
-            children: <Widget>[
-              Icon(
-                icon,
-                size: 20.sp,
-                color: isPrimary
-                    ? colorScheme.primary
-                    : colorScheme.onSurface.withValues(alpha: 0.55),
-              ),
-              SizedBox(width: 10.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w700,
-                        height: 1.2,
-                        color: colorScheme.onSurface.withValues(alpha: 0.90),
-                      ),
-                    ),
-                    SizedBox(height: 2.h),
-                    Text(
-                      description,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.w500,
-                        height: 1.35,
-                        color: colorScheme.onSurface.withValues(
-                          alpha: isPrimary ? 0.55 : 0.45,
+        child: Stack(
+          children: <Widget>[
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 140),
+              curve: Curves.easeOut,
+              padding: EdgeInsets.fromLTRB(12.w, 11.h, 12.w, 11.h),
+              color: pressed.value
+                  ? colorScheme.onSurface.withValues(
+                      alpha: isDark ? 0.06 : 0.05,
+                    )
+                  : Colors.transparent,
+              child: Row(
+                children: <Widget>[
+                  Icon(
+                    icon,
+                    size: 20.sp,
+                    color: isPrimary
+                        ? colorScheme.primary
+                        : colorScheme.onSurface.withValues(alpha: 0.55),
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w700,
+                            height: 1.2,
+                            color: colorScheme.onSurface.withValues(
+                              alpha: 0.90,
+                            ),
+                          ),
                         ),
-                      ),
+                        SizedBox(height: 2.h),
+                        Text(
+                          description,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w500,
+                            height: 1.35,
+                            color: colorScheme.onSurface.withValues(
+                              alpha: isPrimary ? 0.55 : 0.45,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
+                  SizedBox(width: 8.w),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 17.sp,
+                    color: colorScheme.onSurface.withValues(alpha: 0.28),
+                  ),
+                ],
+              ),
+            ),
+            // 上次提权留下残留时，在条目右上角点一颗红点提示需要处理。
+            if (showDot)
+              Positioned(
+                top: 8.h,
+                right: 8.w,
+                child: Container(
+                  width: 6.sp,
+                  height: 6.sp,
+                  decoration: BoxDecoration(
+                    color: colorScheme.error,
+                    shape: BoxShape.circle,
+                  ),
                 ),
               ),
-              SizedBox(width: 8.w),
-              Icon(
-                Icons.chevron_right_rounded,
-                size: 17.sp,
-                color: colorScheme.onSurface.withValues(alpha: 0.28),
-              ),
-            ],
-          ),
+          ],
         ),
       ),
     );

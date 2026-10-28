@@ -4,8 +4,7 @@ import 'package:Aisupass/features/chat/domain/repositories/chat_session_reposito
 
 /// 对话会话仓储实现，直接透传给数据源。
 class ChatSessionRepositoryImpl implements ChatSessionRepository {
-  const ChatSessionRepositoryImpl({required ChatSessionDatasource datasource})
-    : _datasource = datasource;
+  const ChatSessionRepositoryImpl({required this._datasource});
 
   final ChatSessionDatasource _datasource;
 
