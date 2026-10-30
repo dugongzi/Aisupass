@@ -15,17 +15,10 @@ import 'package:device_info_plus/device_info_plus.dart';
 class EscalationQueryDatasource {
   EscalationQueryDatasource({
     required this._native,
-    this._rootStatusReader,
     DeviceInfoPlugin? deviceInfo,
   }) : _deviceInfo = deviceInfo ?? DeviceInfoPlugin();
 
   final pigeon.EscalationNative _native;
-
-  /// 现有 `rootStatusProvider` 的读取入口。
-  ///
-  /// rootCheck 链的可用性由这里决定，原生只提供静态证据；
-  /// 未注入时按「无 Root」处理，保证桌面端与单测可用。
-  final Future<bool> Function()? _rootStatusReader;
 
   final DeviceInfoPlugin _deviceInfo;
 
@@ -78,79 +71,20 @@ class EscalationQueryDatasource {
     final List<pigeon.ChainProbe>? probes = await _probeAll();
     if (probes == null) return _unsupportedMatrix(fingerprint);
 
-    final bool hasRoot = await _readRootStatus();
-
     final List<EscalationCapability> capabilities = <EscalationCapability>[];
     for (final pigeon.ChainProbe probe in probes) {
       final EscalationCapability? capability =
           EscalationCapabilityDto.fromPigeon(probe).toEntity();
       if (capability == null) continue;
-      capabilities.add(_applyRootStatus(capability, hasRoot));
+      capabilities.add(capability);
     }
     if (capabilities.isEmpty) return _unsupportedMatrix(fingerprint);
 
     return EscalationCapabilityMatrix(
       fingerprint: fingerprint,
-      capabilities: _withDemoChain(capabilities),
+      capabilities: capabilities,
       probedAtMs: DateTime.now().millisecondsSinceEpoch,
     );
-  }
-
-  /// rootCheck 的可用性改由现有 `rootStatusProvider` 决定。
-  ///
-  /// 原生只回静态证据（su 路径、KernelSU/Magisk 标记、SELinux 状态等），
-  /// 不给结论；判定权集中在 Dart，避免与首页 ROOT 状态出现两套口径。
-  EscalationCapability _applyRootStatus(
-    EscalationCapability capability,
-    bool hasRoot,
-  ) {
-    if (capability.chain != EscalationChain.rootCheck) return capability;
-    return capability.copyWith(
-      available: hasRoot,
-      reasons: hasRoot
-          ? const <EscalationReason>[]
-          : const <EscalationReason>[EscalationReason.noRootBinary],
-    );
-  }
-
-  /// 读取现有 ROOT 状态；未注入读取器或读取失败都按「无 Root」处理。
-  Future<bool> _readRootStatus() async {
-    final Future<bool> Function()? reader = _rootStatusReader;
-    if (reader == null) return false;
-    try {
-      return await reader();
-    } catch (_) {
-      return false;
-    }
-  }
-
-  /// M0 演示链的固定能力结论。
-  ///
-  /// 原生骨架对所有链都回 `available = false`，但 fake 链不改变任何系统状态，
-  /// 由 Dart 侧显式标记为可用，保证无外部资产时也能走完整演示流程。
-  static const EscalationCapability _demoCapability = EscalationCapability(
-    chain: EscalationChain.fake,
-    available: true,
-    reasons: <EscalationReason>[],
-    evidence: <String, String>{'demo': 'true'},
-  );
-
-  /// 用演示链覆盖原生结论，并保证 fake 行一定存在。
-  List<EscalationCapability> _withDemoChain(
-    List<EscalationCapability> capabilities,
-  ) {
-    final List<EscalationCapability> result = <EscalationCapability>[];
-    bool hasDemo = false;
-    for (final EscalationCapability capability in capabilities) {
-      if (capability.chain == EscalationChain.fake) {
-        result.add(_demoCapability);
-        hasDemo = true;
-      } else {
-        result.add(capability);
-      }
-    }
-    if (!hasDemo) result.add(_demoCapability);
-    return result;
   }
 
   Future<List<pigeon.ChainProbe>?> _probeAll() async {

@@ -142,8 +142,8 @@ const Map<String, dynamic> _chainArgumentSchema = <String, dynamic>{
     'chain': <String, dynamic>{
       'type': 'string',
       'description':
-          'Chain id, one of: rootCheck, kernelModule, payload, '
-          'kernelExploit, pageCache, fake.',
+          'Chain id, one of: shellChannel, kernelModule, payload, '
+          'kernelExploit, pageCache.',
     },
   },
   'required': <String>['chain'],

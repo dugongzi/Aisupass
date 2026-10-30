@@ -10,23 +10,21 @@ import 'package:Aisupass/l10n/app_localizations.dart';
 /// 不会出现「某个原因码在界面上没有文案」的静默缺漏。
 String escalationChainName(AppLocalizations l10n, EscalationChain chain) =>
     switch (chain) {
-      EscalationChain.rootCheck => l10n.escalationChainRootCheckName,
+      EscalationChain.shellChannel => l10n.escalationChainShellChannelName,
       EscalationChain.kernelModule => l10n.escalationChainKernelModuleName,
       EscalationChain.payload => l10n.escalationChainPayloadName,
       EscalationChain.kernelExploit => l10n.escalationChainKernelExploitName,
       EscalationChain.pageCache => l10n.escalationChainPageCacheName,
-      EscalationChain.fake => l10n.escalationChainFakeName,
     };
 
 /// 链的一句话说明。
 String escalationChainDesc(AppLocalizations l10n, EscalationChain chain) =>
     switch (chain) {
-      EscalationChain.rootCheck => l10n.escalationChainRootCheckDesc,
+      EscalationChain.shellChannel => l10n.escalationChainShellChannelDesc,
       EscalationChain.kernelModule => l10n.escalationChainKernelModuleDesc,
       EscalationChain.payload => l10n.escalationChainPayloadDesc,
       EscalationChain.kernelExploit => l10n.escalationChainKernelExploitDesc,
       EscalationChain.pageCache => l10n.escalationChainPageCacheDesc,
-      EscalationChain.fake => l10n.escalationChainFakeDesc,
     };
 
 /// 危险等级文案：0 低、1 中、2 高。

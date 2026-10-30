@@ -45,7 +45,9 @@ class SupassBinderProvider : ContentProvider() {
             return reject("no binder in extras")
         }
 
-        val attached = SupassBinderHolder.attach(candidate)
+        // 把内核给出的真实调用方 uid 一并登记：宿主后续判定「有没有特权身份」
+        // 就靠它，不需要再额外 ping 一次。
+        val attached = SupassBinderHolder.attach(candidate, callingUid.toLong())
         if (!attached) {
             Log.w(TAG, "reject sendBinder: binder attach failed")
             return reject("binder attach failed")

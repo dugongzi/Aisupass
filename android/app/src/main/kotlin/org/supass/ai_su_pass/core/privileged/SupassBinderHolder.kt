@@ -20,19 +20,36 @@ internal object SupassBinderHolder {
 
     private const val TAG = SupassProtocol.TAG
 
+    /** 与 `ShellChannel.uid` 的约定一致：-1 = 未知。 */
+    private const val UNKNOWN_UID = -1L
+
     private val lock = Any()
 
     @Volatile
     private var binder: IBinder? = null
+
+    /**
+     * 登记时记录的对端 uid。
+     *
+     * 来源是 Provider 里的 `Binder.getCallingUid()`——那是内核给出的真实调用方身份，
+     * 比事后 ping 回来的值更权威，而且不需要额外 IPC。没有它，`BinderShellChannel`
+     * 只能依赖点火握手时缓存的 uid；一旦 Binder 走了别的路径推进来（或缓存被重置），
+     * `uid` 就会一直是 -1，探测阶段会把「已连接」误判成「没有特权身份」。
+     */
+    @Volatile
+    private var binderUid: Long = UNKNOWN_UID
 
     private var deathRecipient: IBinder.DeathRecipient? = null
 
     private val listeners = CopyOnWriteArrayList<(IBinder?) -> Unit>()
 
     /** 接收特权进程推来的 Binder；返回 false 表示代理已死或登记失败。 */
-    fun attach(candidate: IBinder): Boolean {
+    fun attach(candidate: IBinder, uid: Long = UNKNOWN_UID): Boolean {
         synchronized(lock) {
-            if (binder === candidate) return true
+            if (binder === candidate) {
+                if (uid > 0L) binderUid = uid
+                return true
+            }
             releaseLocked()
 
             val recipient = IBinder.DeathRecipient {
@@ -40,6 +57,7 @@ internal object SupassBinderHolder {
                 synchronized(lock) {
                     if (binder === candidate) {
                         binder = null
+                        binderUid = UNKNOWN_UID
                         deathRecipient = null
                     }
                 }
@@ -54,6 +72,7 @@ internal object SupassBinderHolder {
                 return false
             }
             binder = candidate
+            binderUid = uid
             deathRecipient = recipient
         }
 
@@ -61,6 +80,9 @@ internal object SupassBinderHolder {
         notifyListeners(candidate)
         return true
     }
+
+    /** 登记时记下的对端 uid；没有 Binder 时恒为 -1。零副作用，不发任何 IPC。 */
+    fun attachedUid(): Long = if (binder == null) UNKNOWN_UID else binderUid
 
     /** 取当前可用代理；已死或已被替换时返回 null，并顺手清理陈旧引用。 */
     fun current(): IBinder? {
@@ -70,6 +92,7 @@ internal object SupassBinderHolder {
         synchronized(lock) {
             if (binder === candidate) {
                 binder = null
+                binderUid = UNKNOWN_UID
                 deathRecipient = null
             }
         }
@@ -96,6 +119,7 @@ internal object SupassBinderHolder {
         val old = binder
         val recipient = deathRecipient
         binder = null
+        binderUid = UNKNOWN_UID
         deathRecipient = null
         if (old != null && recipient != null) {
             runCatching { old.unlinkToDeath(recipient, 0) }

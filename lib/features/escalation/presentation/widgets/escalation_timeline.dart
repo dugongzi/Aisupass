@@ -14,17 +14,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 /// `probe/prepare/execute/verify/cleanup` 始终固定渲染，
 /// 未到达的阶段用 `--` 占位，避免运行过程中列表高度反复跳动。
 class EscalationTimeline extends StatelessWidget {
-  const EscalationTimeline({
-    super.key,
-    required this.steps,
-    required this.isRunning,
-  });
+  const EscalationTimeline({super.key, required this.steps});
 
   /// 已到达的阶段记录，按原生推送顺序排列。
   final List<EscalationStepRecord> steps;
-
-  /// 当前是否仍在运行；运行中未到达的阶段统一显示为待执行。
-  final bool isRunning;
 
   @override
   Widget build(BuildContext context) {

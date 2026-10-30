@@ -9,8 +9,7 @@ import 'package:Aisupass/generated/escalation.g.dart' as pigeon;
 /// 轮询节奏固定 500ms，累计超过 120s 强制收尾并向原生发送取消，
 /// 避免原生迟迟不返回结束态时页面无限等待。
 ///
-/// 所有链（含演示链）一律走原生：演示链的价值就在于它是端到端的探针，
-/// 一旦 Dart 侧自己模拟，管道断了也看不出来。
+/// 所有链一律走原生：Dart 侧不做任何模拟，管道断了就必须当场暴露。
 class EscalationActionDatasource {
   EscalationActionDatasource({required this._native});
 
@@ -91,8 +90,8 @@ class EscalationActionDatasource {
   Stream<pigeon.RunSnapshot> watchPairing(String sessionId) {
     final _RunPoller poller = _RunPoller(
       runId: sessionId,
-      // 原生以 `payload` 标识配对会话（配对只为给该链铺出 shell）。
-      chain: EscalationChain.payload,
+      // 原生以 `shellChannel` 标识配对会话（配对只为铺出 L1 通道）。
+      chain: EscalationChain.shellChannel,
       fetch: _native.pollPairing,
       abort: null,
       timeout: pairingTimeout,
@@ -124,12 +123,11 @@ class EscalationActionDatasource {
 
   static pigeon.EscalationChainId _toPigeonChain(EscalationChain chain) =>
       switch (chain) {
-        EscalationChain.rootCheck => pigeon.EscalationChainId.rootCheck,
+        EscalationChain.shellChannel => pigeon.EscalationChainId.shellChannel,
         EscalationChain.kernelModule => pigeon.EscalationChainId.kernelModule,
         EscalationChain.payload => pigeon.EscalationChainId.payload,
         EscalationChain.kernelExploit => pigeon.EscalationChainId.kernelExploit,
         EscalationChain.pageCache => pigeon.EscalationChainId.pageCache,
-        EscalationChain.fake => pigeon.EscalationChainId.fake,
       };
 }
 

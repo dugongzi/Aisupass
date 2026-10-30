@@ -195,11 +195,19 @@ class FlutterError (
 /**
  * 提权链标识。
  *
- * 顺序即破坏性优先级：越靠前越安全，链选择时取第一个可用的链。
+ * 本枚举只放**提权动作**。「设备当前是否已有 Root」属于环境信息，不是一条链，
+ * 因此不在此列——把检测当成链会让提权页在没提权时先去测一遍 root。
+ *
+ * 顺序即破坏性优先级：越靠前越安全。
  */
 enum class EscalationChainId(val raw: Int) {
-  /** 检测设备当前是否已具备 Root 权限，零破坏。 */
-  ROOT_CHECK(0),
+  /**
+   * L1 通道自检：只验证「能否以 shell(2000) 执行命令并写盘」，不涉及任何提权。
+   *
+   * 它是 `kernelModule` / `payload` / `kernelExploit` / `pageCache` 的共同前提，
+   * 因此单独成链，不冒用任何提权链的名字。
+   */
+  SHELL_CHANNEL(0),
   /** 通过加载内核模块提权。 */
   KERNEL_MODULE(1),
   /** 使用本地载荷完成提权。 */
@@ -207,9 +215,7 @@ enum class EscalationChainId(val raw: Int) {
   /** 利用内核漏洞获得临时提权。 */
   KERNEL_EXPLOIT(3),
   /** 通过 PageCache 写入提权。 */
-  PAGE_CACHE(4),
-  /** 纯演示链，不改变任何系统状态。 */
-  FAKE(5);
+  PAGE_CACHE(4);
 
   companion object {
     fun ofRaw(raw: Int): EscalationChainId? {

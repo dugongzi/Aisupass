@@ -4,11 +4,18 @@ import org.supass.ai_su_pass.core.shell.ShellChannel
 import org.supass.ai_su_pass.core.shell.ShellStatus
 
 /**
- * shell 通道链（L1）—— 全部高权限链的地基。
+ * L1 通道自检链。
  *
- * 目标很窄：确认「能不能以 uid 2000 / 0 跑命令，并且文件系统可写」。
- * 这一条不通，`kernelModule`（ksud）、`kernelExploit`（起 helper）、
- * `pageCache`（起进程）都无从谈起，所以它的 `verify` 是后面三条链的准入条件。
+ * **本链不提权**。它只回答一个问题：现在能不能以 shell(2000) 的身份执行命令、
+ * 读内核态信息、并在 `/data/local/tmp` 写盘。答案全部来自真实命令输出，
+ * 不做任何推断。
+ *
+ * 为什么单独成链：`kernelModule` / `payload` / `kernelExploit` / `pageCache`
+ * 全部建立在这条通道之上。通道不通时它们必然失败，而失败原因会混进各自链的
+ * 证据里，看起来像是那几条链本身的问题。把通道单独测出来，问题就归位了。
+ *
+ * 与 `payload` 链的区别：载荷链（手册 §3.1）是 `LD_PRELOAD` 注入按机型编译的
+ * `.so`，把进程 uid 改成 0；本链一个载荷文件都不读，结束时 uid 仍是 2000。
  *
  * 验收四条（手册 §2.5）：
  * 1. `id` 输出 uid ∈ {2000, 0}；
@@ -16,13 +23,13 @@ import org.supass.ai_su_pass.core.shell.ShellStatus
  * 3. `/proc/self/status` 的 `Uid` 与 `Seccomp` 可读（证明能看自己内核态信息）；
  * 4. `/data/local/tmp` 可写可读可删（证明有可执行目录的写权限）。
  */
-internal class PayloadChainHandler(
+internal class ShellChannelHandler(
     private val shell: ShellChannel,
     /** ADB 点火通道是否活着；只读连接状态，不下发命令。 */
     private val adbReady: () -> Boolean = { false },
 ) : EscalationChainHandler {
 
-    override val chain: EscalationChainId = EscalationChainId.PAYLOAD
+    override val chain: EscalationChainId = EscalationChainId.SHELL_CHANNEL
 
     override fun probe(): ChainProbe {
         // 只读状态，不跑任何命令：零副作用。
@@ -173,9 +180,15 @@ internal class PayloadChainHandler(
         session.finish()
     }
 
-    /** 通道状态到原因码；Dart 侧按 `unsupported` / `shellDenied` 分别提示。 */
+    /**
+     * 通道状态到原因码；Dart 侧按 `unsupported` / `shellDenied` 分别提示。
+     *
+     * `READY` 却走到这里，说明「Binder 活着但没有合法的特权身份」——这是身份问题，
+     * 不是平台不支持。以前一律回 `platformUnsupported`，页面就打出「当前平台不支持」，
+     * 用户看到的是一个与事实相反的结论（同一台设备刚才还能跑）。
+     */
     private fun reasonOf(status: ShellStatus): String = when (status) {
-        ShellStatus.READY -> EscalationReasons.PLATFORM_UNSUPPORTED
+        ShellStatus.READY -> EscalationReasons.SHELL_DENIED
         ShellStatus.NOT_CONNECTED -> EscalationReasons.SHELL_UNAVAILABLE
     }
 

@@ -138,9 +138,15 @@ internal class EscalationRunRegistry(
         }
     }
 
-    /** 未知运行的兜底快照：标记 `synthetic` 与 `unknownRun`，便于排障。 */
+    /**
+     * 未知运行的兜底快照：标记 `unknownRun`，便于排障。
+     *
+     * `chain` 字段只是快照的必填占位，用零破坏的 `shellChannel`，
+     * 避免把不存在的链当作真实归属。
+     */
     private fun unknownRun(runId: String): RunSnapshot {
-        val session = EscalationRunSession(runId, EscalationChainId.FAKE, RUN_TIMEOUT_MS)
+        val session =
+            EscalationRunSession(runId, EscalationChainId.SHELL_CHANNEL, RUN_TIMEOUT_MS)
         session.finishWith(EscalationReasons.PROBE_FAILED)
         return session.snapshot().let {
             it.copy(

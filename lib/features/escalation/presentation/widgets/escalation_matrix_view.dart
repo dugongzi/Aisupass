@@ -10,24 +10,30 @@ import 'package:flutter/material.dart';
 ///
 /// 按破坏性优先级渲染全部链（顺序由 [EscalationChain.priority] 决定），
 /// 让用户清楚「先试哪条、为什么轮不到后面」。
+///
+/// 这里是页面唯一的选链入口：点哪条链，下面的执行就只跑哪条链。
 class EscalationMatrixView extends StatelessWidget {
   const EscalationMatrixView({
     super.key,
     required this.matrix,
     this.selectedChain,
+    this.onSelect,
   });
 
   /// 探测得到的完整矩阵。
   final EscalationCapabilityMatrix matrix;
 
-  /// 页面当前选中的链。
+  /// 当前选中的链。
   final EscalationChain? selectedChain;
+
+  /// 点选某条链；为 `null` 时整体只读（如运行进行中）。
+  final ValueChanged<EscalationChain>? onSelect;
 
   @override
   Widget build(BuildContext context) {
     final ColorScheme colors = context.colorScheme;
-    final List<EscalationCapability> capabilities =
-        matrix.orderedCapabilities;
+    final List<EscalationCapability> capabilities = matrix.orderedCapabilities;
+    final ValueChanged<EscalationChain>? select = onSelect;
 
     final List<Widget> children = <Widget>[];
     for (int i = 0; i < capabilities.length; i += 1) {
@@ -40,10 +46,12 @@ class EscalationMatrixView extends StatelessWidget {
           ),
         );
       }
+      final EscalationCapability capability = capabilities[i];
       children.add(
         EscalationChainTile(
-          capability: capabilities[i],
-          selected: capabilities[i].chain == selectedChain,
+          capability: capability,
+          selected: capability.chain == selectedChain,
+          onTap: select == null ? null : () => select(capability.chain),
         ),
       );
     }

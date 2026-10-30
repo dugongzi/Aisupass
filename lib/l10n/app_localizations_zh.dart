@@ -578,6 +578,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get escalationSectionDevice => '设备信息';
 
   @override
+  String get escalationSectionConnection => '连接';
+
+  @override
   String get escalationSectionChains => '能力矩阵';
 
   @override
@@ -695,10 +698,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get escalationRecordEmpty => '暂无执行记录';
 
   @override
-  String get escalationChainRootCheckName => '现有 Root 检查';
+  String get escalationChainShellChannelName => 'L1 通道自检';
 
   @override
-  String get escalationChainRootCheckDesc => '检测设备当前是否已具备 Root 权限';
+  String get escalationChainShellChannelDesc =>
+      '验证能否以 shell(2000) 执行命令并写盘，不涉及提权';
 
   @override
   String get escalationChainKernelModuleName => '内核模块';
@@ -723,12 +727,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get escalationChainPageCacheDesc => '通过 PageCache 写入获得提权';
-
-  @override
-  String get escalationChainFakeName => '演示链';
-
-  @override
-  String get escalationChainFakeDesc => '仅用于演示流程，不改变系统状态';
 
   @override
   String get escalationStageProbe => '探测';

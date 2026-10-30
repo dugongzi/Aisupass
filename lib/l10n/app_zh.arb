@@ -812,6 +812,10 @@
   "@escalationSectionDevice": {
     "description": "提权页-设备信息分区标题"
   },
+  "escalationSectionConnection": "连接",
+  "@escalationSectionConnection": {
+    "description": "提权页-连接分区标题"
+  },
   "escalationSectionChains": "能力矩阵",
   "@escalationSectionChains": {
     "description": "提权页-能力矩阵分区标题"
@@ -968,13 +972,13 @@
   "@escalationRecordEmpty": {
     "description": "执行记录为空提示"
   },
-  "escalationChainRootCheckName": "现有 Root 检查",
-  "@escalationChainRootCheckName": {
-    "description": "提权链名称-rootCheck"
+  "escalationChainShellChannelName": "L1 通道自检",
+  "@escalationChainShellChannelName": {
+    "description": "提权链名称-shellChannel"
   },
-  "escalationChainRootCheckDesc": "检测设备当前是否已具备 Root 权限",
-  "@escalationChainRootCheckDesc": {
-    "description": "提权链说明-rootCheck"
+  "escalationChainShellChannelDesc": "验证能否以 shell(2000) 执行命令并写盘，不涉及提权",
+  "@escalationChainShellChannelDesc": {
+    "description": "提权链说明-shellChannel"
   },
   "escalationChainKernelModuleName": "内核模块",
   "@escalationChainKernelModuleName": {
@@ -1007,14 +1011,6 @@
   "escalationChainPageCacheDesc": "通过 PageCache 写入获得提权",
   "@escalationChainPageCacheDesc": {
     "description": "提权链说明-pageCache"
-  },
-  "escalationChainFakeName": "演示链",
-  "@escalationChainFakeName": {
-    "description": "提权链名称-fake"
-  },
-  "escalationChainFakeDesc": "仅用于演示流程，不改变系统状态",
-  "@escalationChainFakeDesc": {
-    "description": "提权链说明-fake"
   },
   "escalationStageProbe": "探测",
   "@escalationStageProbe": {

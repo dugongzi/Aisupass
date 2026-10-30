@@ -8,13 +8,14 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 能力矩阵中的一行：链名、说明、可用性与危险等级。
 ///
-/// 不可用时整体置灰，并在说明下方给出首个原因码文案；
-/// 选中行用主色浅底标识，未选中的行保持透明。
+/// 可用链可点选，选中行用主色浅底 + 左侧色条标识；
+/// 不可用链整体置灰、不可点，并在说明下方给出首个原因码文案。
 class EscalationChainTile extends StatelessWidget {
   const EscalationChainTile({
     super.key,
     required this.capability,
     this.selected = false,
+    this.onTap,
   });
 
   /// 当前链的探测结论。
@@ -22,6 +23,9 @@ class EscalationChainTile extends StatelessWidget {
 
   /// 是否为页面当前选中的链。
   final bool selected;
+
+  /// 点选当前链；为 `null` 时不可点（不可用链或流程进行中）。
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -44,95 +48,119 @@ class EscalationChainTile extends StatelessWidget {
       _ => colors.error,
     };
 
-    return Container(
-      decoration: BoxDecoration(
-        color: selected
-            ? colors.primary.withValues(alpha: isDark ? 0.16 : 0.07)
-            : Colors.transparent,
-        border: Border(
-          left: BorderSide(
-            color: selected ? colors.primary : Colors.transparent,
-            width: isDesktop ? 3 : 3.w,
-          ),
-        ),
-      ),
-      padding: EdgeInsets.symmetric(
-        horizontal: isDesktop ? 14 : 14.w,
-        vertical: isDesktop ? 12 : 12.h,
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Padding(
-            padding: EdgeInsets.only(top: isDesktop ? 1 : 1.h),
-            child: Icon(
-              available
-                  ? Icons.check_circle_rounded
-                  : Icons.remove_circle_outline_rounded,
-              size: isDesktop ? 18 : 18.sp,
-              color: available
-                  ? colors.primary
-                  : colors.onSurfaceVariant.withValues(alpha: 0.45),
+    // 前导图标承担「能不能选、选没选中」这一个语义：
+    // 可用未选是空心圆，已选是实心圆，不可用是不可选标记。
+    // 可用性本身由右侧徽标说明，不在同一行重复两遍。
+    final IconData leadingIcon;
+    final Color leadingColor;
+    if (!available) {
+      leadingIcon = Icons.remove_circle_outline_rounded;
+      leadingColor = colors.onSurfaceVariant.withValues(alpha: 0.45);
+    } else if (selected) {
+      leadingIcon = Icons.radio_button_checked_rounded;
+      leadingColor = colors.primary;
+    } else {
+      leadingIcon = Icons.radio_button_unchecked_rounded;
+      leadingColor = colors.onSurfaceVariant.withValues(alpha: 0.6);
+    }
+
+    return Material(
+      color: Colors.transparent,
+      child: Ink(
+        decoration: BoxDecoration(
+          color: selected
+              ? colors.primary.withValues(alpha: isDark ? 0.16 : 0.07)
+              : Colors.transparent,
+          border: Border(
+            left: BorderSide(
+              color: selected ? colors.primary : Colors.transparent,
+              width: isDesktop ? 3 : 3.w,
             ),
           ),
-          SizedBox(width: isDesktop ? 10 : 10.w),
-          Expanded(
-            child: Column(
+        ),
+        child: InkWell(
+          // 不可用链完全不接收点击：点上去没有任何反应，
+          // 比「点了才弹一句不可用」更不容易让人误以为选中了它。
+          onTap: available ? onTap : null,
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: isDesktop ? 14 : 14.w,
+              vertical: isDesktop ? 12 : 12.h,
+            ),
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text(
-                  escalationChainName(l10n, capability.chain),
-                  style: TextStyle(
-                    fontSize: isDesktop ? 13.5 : 13.5.sp,
-                    fontWeight: FontWeight.w600,
-                    color: titleColor,
+                Padding(
+                  padding: EdgeInsets.only(top: isDesktop ? 1 : 1.h),
+                  child: Icon(
+                    leadingIcon,
+                    size: isDesktop ? 18 : 18.sp,
+                    color: leadingColor,
                   ),
                 ),
-                SizedBox(height: isDesktop ? 2 : 2.h),
-                Text(
-                  escalationChainDesc(l10n, capability.chain),
-                  style: TextStyle(
-                    fontSize: isDesktop ? 11.5 : 11.5.sp,
-                    height: 1.35,
-                    color: descColor,
+                SizedBox(width: isDesktop ? 10 : 10.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        escalationChainName(l10n, capability.chain),
+                        style: TextStyle(
+                          fontSize: isDesktop ? 13.5 : 13.5.sp,
+                          fontWeight: FontWeight.w600,
+                          color: titleColor,
+                        ),
+                      ),
+                      SizedBox(height: isDesktop ? 2 : 2.h),
+                      Text(
+                        escalationChainDesc(l10n, capability.chain),
+                        style: TextStyle(
+                          fontSize: isDesktop ? 11.5 : 11.5.sp,
+                          height: 1.35,
+                          color: descColor,
+                        ),
+                      ),
+                      if (!available) ...<Widget>[
+                        SizedBox(height: isDesktop ? 4 : 4.h),
+                        Text(
+                          escalationReasonText(l10n, capability.primaryReason),
+                          style: TextStyle(
+                            fontSize: isDesktop ? 11 : 11.sp,
+                            height: 1.35,
+                            color: colors.error.withValues(alpha: 0.78),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
-                if (!available) ...<Widget>[
-                  SizedBox(height: isDesktop ? 4 : 4.h),
-                  Text(
-                    escalationReasonText(l10n, capability.primaryReason),
-                    style: TextStyle(
-                      fontSize: isDesktop ? 11 : 11.sp,
-                      height: 1.35,
-                      color: colors.error.withValues(alpha: 0.78),
+                SizedBox(width: isDesktop ? 10 : 10.w),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: <Widget>[
+                    _ChainBadge(
+                      text: available
+                          ? l10n.escalationAvailable
+                          : l10n.escalationUnavailable,
+                      color: available
+                          ? colors.primary
+                          : colors.onSurfaceVariant,
                     ),
-                  ),
-                ],
+                    SizedBox(height: isDesktop ? 6 : 6.h),
+                    Text(
+                      escalationDangerText(l10n, capability.chain.dangerLevel),
+                      style: TextStyle(
+                        fontSize: isDesktop ? 10.5 : 10.5.sp,
+                        fontWeight: FontWeight.w500,
+                        color: dangerColor,
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
-          SizedBox(width: isDesktop ? 10 : 10.w),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: <Widget>[
-              _ChainBadge(
-                text: available
-                    ? l10n.escalationAvailable
-                    : l10n.escalationUnavailable,
-                color: available ? colors.primary : colors.onSurfaceVariant,
-              ),
-              SizedBox(height: isDesktop ? 6 : 6.h),
-              Text(
-                escalationDangerText(l10n, capability.chain.dangerLevel),
-                style: TextStyle(
-                  fontSize: isDesktop ? 10.5 : 10.5.sp,
-                  fontWeight: FontWeight.w500,
-                  color: dangerColor,
-                ),
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }

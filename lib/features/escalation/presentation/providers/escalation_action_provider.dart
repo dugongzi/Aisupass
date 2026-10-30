@@ -199,8 +199,8 @@ class EscalationRunController extends _$EscalationRunController {
     state = EscalationRunState(
       phase: EscalationRunPhase.running,
       runId: '',
-      // 配对不是提权链；原生以 `payload` 标识该会话，页面不展示此字段。
-      chain: EscalationChain.payload,
+      // 配对不是提权链；原生以 `shellChannel` 标识该会话，页面不展示此字段。
+      chain: EscalationChain.shellChannel,
       steps: const <EscalationStepRecord>[],
       outcome: null,
       reasons: const <EscalationReason>[],
@@ -383,13 +383,17 @@ class EscalationRunController extends _$EscalationRunController {
   }
 
   /// 汇总各阶段原因码并去重，顺序保持首次出现的位置。
-  List<EscalationReason> _collectReasons(List<EscalationStepRecord> steps) {
-    final List<EscalationReason> reasons = <EscalationReason>[];
-    for (final EscalationStepRecord step in steps) {
-      for (final EscalationReason reason in step.reasons) {
-        if (!reasons.contains(reason)) reasons.add(reason);
-      }
+  List<EscalationReason> _collectReasons(List<EscalationStepRecord> steps) =>
+      dedupeReasons(steps);
+}
+
+/// 汇总各阶段原因码并去重，顺序保持首次出现的位置。
+List<EscalationReason> dedupeReasons(List<EscalationStepRecord> steps) {
+  final List<EscalationReason> reasons = <EscalationReason>[];
+  for (final EscalationStepRecord step in steps) {
+    for (final EscalationReason reason in step.reasons) {
+      if (!reasons.contains(reason)) reasons.add(reason);
     }
-    return List<EscalationReason>.unmodifiable(reasons);
   }
+  return List<EscalationReason>.unmodifiable(reasons);
 }

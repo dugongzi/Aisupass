@@ -588,6 +588,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get escalationSectionDevice => 'Device';
 
   @override
+  String get escalationSectionConnection => 'Connection';
+
+  @override
   String get escalationSectionChains => 'Capability Matrix';
 
   @override
@@ -717,11 +720,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get escalationRecordEmpty => 'No runs yet';
 
   @override
-  String get escalationChainRootCheckName => 'Existing root check';
+  String get escalationChainShellChannelName => 'L1 channel check';
 
   @override
-  String get escalationChainRootCheckDesc =>
-      'Detect whether root access is already available';
+  String get escalationChainShellChannelDesc =>
+      'Verify shell (uid 2000) command execution and tmp write — no escalation';
 
   @override
   String get escalationChainKernelModuleName => 'Kernel module';
@@ -749,13 +752,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get escalationChainPageCacheDesc =>
       'Escalate by writing through PageCache';
-
-  @override
-  String get escalationChainFakeName => 'Demo chain';
-
-  @override
-  String get escalationChainFakeDesc =>
-      'Demo only; does not modify system state';
 
   @override
   String get escalationStageProbe => 'Probe';

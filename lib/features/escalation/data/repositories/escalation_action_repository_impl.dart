@@ -81,8 +81,8 @@ class EscalationActionRepositoryImpl implements EscalationActionRepository {
     if (!started.accepted) {
       yield EscalationRunRecord(
         runId: started.runId,
-        // 原生以 `payload` 标识配对会话，与 datasource 的轮询保持一致。
-        chain: EscalationChain.payload,
+        // 原生以 `shellChannel` 标识配对会话，与 datasource 的轮询保持一致。
+        chain: EscalationChain.shellChannel,
         outcome: _outcomeForRejection(started.reasons),
         steps: const <EscalationStepRecord>[],
         startedAtMs: startedAtMs,

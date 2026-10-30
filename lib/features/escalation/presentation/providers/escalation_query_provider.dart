@@ -1,4 +1,3 @@
-import 'package:Aisupass/core/providers/system_status_provider.dart';
 import 'package:Aisupass/features/escalation/data/datasources/escalation_query_datasource.dart';
 import 'package:Aisupass/features/escalation/data/repositories/escalation_query_repository_impl.dart';
 import 'package:Aisupass/features/escalation/domain/models/escalation_capability_matrix.dart';
@@ -16,14 +15,9 @@ part 'escalation_query_provider.g.dart';
 pigeon.EscalationNative escalationNative(Ref ref) => pigeon.EscalationNative();
 
 /// 提权只读数据源。
-///
-/// rootCheck 的可用性复用现有 [rootStatusProvider]，原生只提供静态证据。
 @riverpod
 EscalationQueryDatasource escalationQueryDatasource(Ref ref) {
-  return EscalationQueryDatasource(
-    native: ref.watch(escalationNativeProvider),
-    rootStatusReader: () => ref.read(rootStatusProvider.future),
-  );
+  return EscalationQueryDatasource(native: ref.watch(escalationNativeProvider));
 }
 
 /// 提权只读仓储。

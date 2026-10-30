@@ -55,8 +55,22 @@ internal class BinderShellChannel(
     override fun status(): ShellStatus =
         if (SupassBinderHolder.current() != null) ShellStatus.READY else ShellStatus.NOT_CONNECTED
 
+    /**
+     * 当前身份：优先用 Provider 登记时记下的真实调用方 uid。
+     *
+     * `cachedUid` 只在点火握手（[verify]）里写入，只要 Binder 是通过别的路径
+     * 推进来的（或缓存被重置过），它就会停在 -1。以前只看 `cachedUid`，
+     * 结果 `probe` 会得到「已连接 + 身份未知」，判定为不可用，页面直接报
+     * 「不支持」——用户点重试只能看到秒失败。
+     *
+     * 仍然零副作用：两个来源都只读本地字段，不发 IPC。
+     */
     override val uid: Long
-        get() = if (status() == ShellStatus.READY) cachedUid else UNKNOWN_UID
+        get() {
+            if (status() != ShellStatus.READY) return UNKNOWN_UID
+            val attached = SupassBinderHolder.attachedUid()
+            return if (attached > 0L) attached else cachedUid
+        }
 
     /**
      * 预热：确保特权进程已拉起并把 Binder 推过来，返回是否可用。

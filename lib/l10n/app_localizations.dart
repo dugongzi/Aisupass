@@ -1154,6 +1154,12 @@ abstract class AppLocalizations {
   /// **'设备信息'**
   String get escalationSectionDevice;
 
+  /// 提权页-连接分区标题
+  ///
+  /// In zh, this message translates to:
+  /// **'连接'**
+  String get escalationSectionConnection;
+
   /// 提权页-能力矩阵分区标题
   ///
   /// In zh, this message translates to:
@@ -1388,17 +1394,17 @@ abstract class AppLocalizations {
   /// **'暂无执行记录'**
   String get escalationRecordEmpty;
 
-  /// 提权链名称-rootCheck
+  /// 提权链名称-shellChannel
   ///
   /// In zh, this message translates to:
-  /// **'现有 Root 检查'**
-  String get escalationChainRootCheckName;
+  /// **'L1 通道自检'**
+  String get escalationChainShellChannelName;
 
-  /// 提权链说明-rootCheck
+  /// 提权链说明-shellChannel
   ///
   /// In zh, this message translates to:
-  /// **'检测设备当前是否已具备 Root 权限'**
-  String get escalationChainRootCheckDesc;
+  /// **'验证能否以 shell(2000) 执行命令并写盘，不涉及提权'**
+  String get escalationChainShellChannelDesc;
 
   /// 提权链名称-kernelModule
   ///
@@ -1447,18 +1453,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'通过 PageCache 写入获得提权'**
   String get escalationChainPageCacheDesc;
-
-  /// 提权链名称-fake
-  ///
-  /// In zh, this message translates to:
-  /// **'演示链'**
-  String get escalationChainFakeName;
-
-  /// 提权链说明-fake
-  ///
-  /// In zh, this message translates to:
-  /// **'仅用于演示流程，不改变系统状态'**
-  String get escalationChainFakeDesc;
 
   /// 执行阶段-probe
   ///

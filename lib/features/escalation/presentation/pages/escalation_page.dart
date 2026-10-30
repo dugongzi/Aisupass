@@ -4,6 +4,7 @@ import 'package:Aisupass/common/widgets/loading.dart';
 import 'package:Aisupass/common/widgets/ref_error.dart';
 import 'package:Aisupass/core/extensions/context_extensions.dart';
 import 'package:Aisupass/core/utils/platform.dart';
+import 'package:Aisupass/features/escalation/domain/enums/escalation_chain.dart';
 import 'package:Aisupass/features/escalation/domain/enums/escalation_outcome.dart';
 import 'package:Aisupass/features/escalation/domain/enums/escalation_stage.dart';
 import 'package:Aisupass/features/escalation/domain/models/escalation_capability.dart';
@@ -13,6 +14,7 @@ import 'package:Aisupass/features/escalation/presentation/providers/escalation_a
 import 'package:Aisupass/features/escalation/presentation/providers/escalation_query_provider.dart';
 import 'package:Aisupass/features/escalation/presentation/providers/escalation_record_provider.dart';
 import 'package:Aisupass/features/escalation/presentation/widgets/escalation_confirm_dialog.dart';
+import 'package:Aisupass/features/escalation/presentation/widgets/escalation_connection_panel.dart';
 import 'package:Aisupass/features/escalation/presentation/widgets/escalation_header.dart';
 import 'package:Aisupass/features/escalation/presentation/widgets/escalation_matrix_view.dart';
 import 'package:Aisupass/features/escalation/presentation/widgets/escalation_outcome_card.dart';
@@ -94,6 +96,11 @@ class EscalationPage extends HookConsumerWidget {
 }
 
 /// 页面主体：矩阵加载完成后才渲染，避免探测期间出现空壳按钮。
+///
+/// 页面固定三段，顺序即操作顺序：
+/// 1. 连接：宿主状态 + **唯一**动作（配对 / 重试点火 / 断开）；
+/// 2. 选链：能力矩阵，点哪条就只跑哪条，不再由「优先级最高」替用户决定；
+/// 3. 执行：时间线 + 结论卡，底部按钮只负责「开始 / 取消」当前选中的链。
 class _EscalationBody extends HookConsumerWidget {
   const _EscalationBody({required this.matrix});
 
@@ -108,7 +115,8 @@ class _EscalationBody extends HookConsumerWidget {
 
     final bool hostAlive =
         ref.watch(escalationHostStatusProvider).value?.alive ?? false;
-    final bool hasResidual = ref.watch(escalationResidualProvider).value ?? false;
+    final bool hasResidual =
+        ref.watch(escalationResidualProvider).value ?? false;
     final EscalationRunState runState = ref.watch(
       escalationRunControllerProvider,
     );
@@ -130,12 +138,79 @@ class _EscalationBody extends HookConsumerWidget {
       return timer.cancel;
     }, <Object?>[hostAlive]);
 
-    // M0 默认链：按破坏性优先级取首个可用链，全不可用时按钮禁用。
-    final EscalationCapability? selected = matrix.firstAvailable;
-    final double gap = isDesktop ? 12 : 12.h;
+    // 选链：用户点过就按用户点的算；没点过、或点过的那条已经不可用，
+    // 才退回优先级最高的可用链作为初始值。这里只是「初始值」，
+    // 不再像以前那样直接决定主按钮跑哪条链。
+    final ValueNotifier<EscalationChain?> picked = useState<EscalationChain?>(
+      null,
+    );
+    final EscalationChain? pickedChain = picked.value;
+    final EscalationChain? selectedChain =
+        pickedChain != null &&
+            (matrix.capabilityOf(pickedChain.name)?.available ?? false)
+        ? pickedChain
+        : matrix.firstAvailable?.chain;
+    final EscalationCapability? selected = selectedChain == null
+        ? null
+        : matrix.capabilityOf(selectedChain.name);
 
-    /// 主按钮动作：运行中取消，其余情况先确认再启动。
-    Future<void> onPrimaryPressed() async {
+    /// 配对码是否已被系统接受。
+    ///
+    /// `PROBE` 阶段一旦带上成功证据，就说明码已经换完了，剩下的只是发现并连接
+    /// 调试端口（最坏十几秒）。不区分这两段的话，用户提交码之后页面仍显示
+    /// 「等待输入配对码」，看起来就像卡死了。
+    final bool codeAccepted =
+        runState.pairing &&
+        runState.steps.any(
+          (EscalationStepRecord step) =>
+              step.stage == EscalationStage.probe && step.ok,
+        );
+    final String pairingStatusLabel = codeAccepted
+        ? l10n.escalationPairingConnecting
+        : l10n.escalationPairingWaiting;
+
+    /// 配对会话正在进行（码还没换完，或正在建链）。
+    final bool pairingRunning = runState.isRunning && runState.pairing;
+    /// 配对已完成、正在拉起常驻特权进程。
+    final bool igniting =
+        runState.pairing && runState.ignitePhase == EscalationIgnitePhase.running;
+    /// 配对成功但特权进程没起来；入口留在连接段单独重试。
+    final bool igniteFailed =
+        runState.pairing && runState.ignitePhase == EscalationIgnitePhase.failed;
+
+    /// 连接段动作是否可点：配对/点火进行中、或提权链正在跑时一律禁掉，
+    /// 避免两条写操作同时下发。
+    final bool connectionIdle = !runState.isRunning && !igniting;
+
+    /// 断开入口的进行态：只用于防重入与按钮文案，不参与任何判定。
+    final ValueNotifier<bool> disconnecting = useState(false);
+
+    /// 配对入口：配对码在通知栏输入；配对（建链）成功后由控制器异步点火。
+    Future<void> onPairingPressed() async {
+      // 没有通知权限，配对码输入框根本弹不出来。
+      // 被拒也继续发起：原生会立刻以配对失败收尾，时间线上有记录，
+      // 好过点了按钮毫无反应。
+      await Permission.notification.request();
+      if (!context.mounted) return;
+      await ref.read(escalationRunControllerProvider.notifier).startPairing();
+    }
+
+    /// 断开宿主持久进程：特权进程退出后 `hostAlive` 立刻翻回 false，
+    /// 配对入口随之重新出现。
+    Future<void> onDisconnectPressed() async {
+      if (disconnecting.value) return;
+      disconnecting.value = true;
+      try {
+        await ref
+            .read(escalationRunControllerProvider.notifier)
+            .disconnectHost();
+      } finally {
+        if (context.mounted) disconnecting.value = false;
+      }
+    }
+
+    /// 执行段动作：运行中取消，其余情况先确认再启动**选中**的那条链。
+    Future<void> onExecutePressed() async {
       if (runState.isRunning) {
         await ref.read(escalationRunControllerProvider.notifier).cancel();
         return;
@@ -158,100 +233,81 @@ class _EscalationBody extends HookConsumerWidget {
           .start(capability.chain);
     }
 
-    /// 配对入口：配对码在通知栏输入；配对（建链）成功后由控制器异步点火。
-    Future<void> onPairingPressed() async {
-      // 没有通知权限，配对码输入框根本弹不出来。
-      // 被拒也继续发起：原生会立刻以配对失败收尾，时间线上有记录，
-      // 好过点了按钮毫无反应。
-      await Permission.notification.request();
-      if (!context.mounted) return;
-      await ref.read(escalationRunControllerProvider.notifier).startPairing();
-    }
+    // ---- 连接段：状态 + 唯一动作 ----
+    late final String connectionStatus;
+    late final String connectionActionLabel;
+    late final IconData connectionActionIcon;
+    late final VoidCallback? connectionAction;
+    late final String? connectionHint;
 
-    /// 断开入口的进行态：只用于防重入与按钮文案，不参与任何判定。
-    final ValueNotifier<bool> disconnecting = useState(false);
-
-    /// 断开宿主持久进程：特权进程退出后 `hostAlive` 立刻翻回 false，
-    /// 配对入口随之重新出现。
-    Future<void> onDisconnectPressed() async {
-      if (disconnecting.value) return;
-      disconnecting.value = true;
-      try {
-        await ref
-            .read(escalationRunControllerProvider.notifier)
-            .disconnectHost();
-      } finally {
-        if (context.mounted) disconnecting.value = false;
-      }
-    }
-
-    // 配对真的失败，才把主按钮变成「重新配对」：点火失败不是配对失败，
-    // 让用户重跑一遍配对纯属浪费——系统那边其实已经配过了。
-    final bool pairingFailed =
-        runState.isFinished &&
-        runState.pairing &&
-        runState.outcome != EscalationOutcome.success;
-
-    /// 配对成功后的点火进度；与配对结论分开，避免「配对成功却显示失败」。
-    final bool igniting =
-        runState.pairing &&
-        runState.ignitePhase == EscalationIgnitePhase.running;
-    final bool igniteFailed =
-        runState.pairing &&
-        runState.ignitePhase == EscalationIgnitePhase.failed;
-
-    /// 配对码是否已被系统接受。
-    ///
-    /// `PROBE` 阶段一旦带上成功证据，就说明码已经换完了，剩下的只是发现并连接
-    /// 调试端口（最坏十几秒）。不区分这两段的话，用户提交码之后页面仍显示
-    /// 「等待输入配对码」，看起来就像卡死了。
-    final bool codeAccepted =
-        runState.pairing &&
-        runState.steps.any(
-          (EscalationStepRecord step) =>
-              step.stage == EscalationStage.probe && step.ok,
-        );
-    final String pairingStatusLabel = codeAccepted
-        ? l10n.escalationPairingConnecting
-        : l10n.escalationPairingWaiting;
-
-    late final String primaryLabel;
-    late final IconData primaryIcon;
-    late final VoidCallback? primaryAction;
-    if (runState.isRunning) {
-      // 配对进行中不给取消：取消只断开页面订阅，原生线程仍要等满输码窗口。
-      primaryLabel = runState.pairing
-          ? pairingStatusLabel
-          : l10n.escalationCancel;
-      primaryIcon = runState.pairing
-          ? Icons.notifications_active_outlined
-          : Icons.stop_circle_outlined;
-      primaryAction = runState.pairing ? null : onPrimaryPressed;
+    if (pairingRunning) {
+      connectionStatus = pairingStatusLabel;
+      connectionActionLabel = pairingStatusLabel;
+      connectionActionIcon = Icons.notifications_active_outlined;
+      connectionAction = null;
+      connectionHint = l10n.escalationPairingNotice;
     } else if (igniting) {
-      primaryLabel = l10n.escalationIgniteRunning;
-      primaryIcon = Icons.hourglass_top_rounded;
-      primaryAction = null;
+      connectionStatus = l10n.escalationIgniteRunning;
+      connectionActionLabel = l10n.escalationIgniteRunning;
+      connectionActionIcon = Icons.hourglass_top_rounded;
+      connectionAction = null;
+      connectionHint = null;
     } else if (igniteFailed) {
-      // 只重跑点火，不重跑配对。
-      primaryLabel = l10n.escalationIgniteRetry;
-      primaryIcon = Icons.refresh_rounded;
-      primaryAction = () =>
+      connectionStatus = l10n.escalationIgniteFailed;
+      connectionActionLabel = l10n.escalationIgniteRetry;
+      connectionActionIcon = Icons.refresh_rounded;
+      // 只重跑点火，不重跑配对：系统那边其实已经配过了。
+      connectionAction = () =>
           ref.read(escalationRunControllerProvider.notifier).retryIgnite();
-    } else if (pairingFailed) {
-      primaryLabel = l10n.escalationPairingStart;
-      primaryIcon = Icons.wifi_tethering_rounded;
-      primaryAction = onPairingPressed;
-    } else if (runState.isFinished) {
-      primaryLabel = l10n.escalationRetry;
-      primaryIcon = Icons.refresh_rounded;
-      primaryAction = selected != null ? onPrimaryPressed : null;
+      connectionHint = null;
+    } else if (hostAlive) {
+      connectionStatus = l10n.escalationHostReady;
+      connectionActionLabel = disconnecting.value
+          ? l10n.escalationHostDisconnecting
+          : l10n.escalationHostDisconnect;
+      connectionActionIcon = Icons.link_off_rounded;
+      connectionAction = connectionIdle && !disconnecting.value
+          ? onDisconnectPressed
+          : null;
+      connectionHint = l10n.escalationHostDisconnectHint;
     } else {
-      primaryLabel = l10n.escalationStart;
-      primaryIcon = Icons.bolt_rounded;
-      primaryAction = selected != null ? onPrimaryPressed : null;
+      connectionStatus = l10n.escalationHostNotStarted;
+      connectionActionLabel = l10n.escalationPairingStart;
+      connectionActionIcon = Icons.wifi_tethering_rounded;
+      connectionAction = connectionIdle ? onPairingPressed : null;
+      connectionHint = l10n.escalationPairingNotice;
     }
 
-    /// 配对进行中不给取消：取消只会断开页面订阅，原生线程仍要等满用户输码窗口。
+    // ---- 执行段：底部固定按钮，只负责开始/取消当前选中的链 ----
+    late final String executeLabel;
+    late final IconData executeIcon;
+    late final VoidCallback? executeAction;
+    if (runState.isRunning) {
+      if (runState.pairing) {
+        // 配对进行中不给取消：取消只断开页面订阅，原生线程仍要等满输码窗口。
+        executeLabel = pairingStatusLabel;
+        executeIcon = Icons.notifications_active_outlined;
+        executeAction = null;
+      } else {
+        executeLabel = l10n.escalationCancel;
+        executeIcon = Icons.stop_circle_outlined;
+        executeAction = onExecutePressed;
+      }
+    } else if (igniting) {
+      executeLabel = l10n.escalationIgniteRunning;
+      executeIcon = Icons.hourglass_top_rounded;
+      executeAction = null;
+    } else if (runState.isFinished && !runState.pairing) {
+      executeLabel = l10n.escalationRetry;
+      executeIcon = Icons.refresh_rounded;
+      executeAction = selected != null ? onExecutePressed : null;
+    } else {
+      executeLabel = l10n.escalationStart;
+      executeIcon = Icons.bolt_rounded;
+      executeAction = selected != null ? onExecutePressed : null;
+    }
+
+    /// 配对运行中不给取消：取消只会断开页面订阅，原生线程仍要等满用户输码窗口。
     final bool cancellable = runState.isRunning && !runState.pairing;
 
     /// 失败原始原因，写进结论卡。
@@ -276,9 +332,13 @@ class _EscalationBody extends HookConsumerWidget {
       EscalationRunPhase.finished => _resultLine(l10n, runState),
     };
 
+    final double gap = isDesktop ? 12 : 12.h;
+
     return Center(
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: isDesktop ? 760 : double.infinity),
+        constraints: BoxConstraints(
+          maxWidth: isDesktop ? 760 : double.infinity,
+        ),
         child: Column(
           children: <Widget>[
             Expanded(
@@ -295,16 +355,31 @@ class _EscalationBody extends HookConsumerWidget {
                     SizedBox(height: gap),
                     const EscalationResidualBanner(),
                   ],
+                  // 连接段只存在于 Android：其他平台既没有无线调试，也没有宿主。
+                  if (isAndroidPlatform) ...<Widget>[
+                    SizedBox(height: gap),
+                    EscalationConnectionPanel(
+                      connected: hostAlive,
+                      statusText: connectionStatus,
+                      actionLabel: connectionActionLabel,
+                      actionIcon: connectionActionIcon,
+                      onAction: connectionAction,
+                      detail: igniteFailed ? runState.igniteDetail : null,
+                      hint: connectionHint,
+                    ),
+                  ],
                   SizedBox(height: gap),
                   EscalationMatrixView(
                     matrix: matrix,
-                    selectedChain: selected?.chain,
+                    selectedChain: selectedChain,
+                    // 运行中禁掉选链：改选中项不会改变已在跑的那条链，
+                    // 只会让页面显示的和实际在跑的对不上。
+                    onSelect: runState.isRunning
+                        ? null
+                        : (EscalationChain chain) => picked.value = chain,
                   ),
                   SizedBox(height: gap),
-                  EscalationTimeline(
-                    steps: runState.steps,
-                    isRunning: runState.isRunning,
-                  ),
+                  EscalationTimeline(steps: runState.steps),
                   if (runState.outcome != null) ...<Widget>[
                     SizedBox(height: gap),
                     EscalationOutcomeCard(
@@ -329,8 +404,8 @@ class _EscalationBody extends HookConsumerWidget {
                 ],
               ),
             ),
-            // 操作区固定在底部：六条链的矩阵会把整页撑出屏幕，
-            // 之前把按钮放在 ListView 末尾，用户滑不到就等于「没有按钮」。
+            // 操作区固定在底部：能力矩阵会把整页撑出屏幕，
+            // 放在 ListView 末尾就等于「没有按钮」。
             Material(
               color: colors.surface,
               elevation: 8,
@@ -381,13 +456,10 @@ class _EscalationBody extends HookConsumerWidget {
                       SizedBox(
                         height: isDesktop ? 46 : 46.h,
                         child: FilledButton.icon(
-                          onPressed: primaryAction,
-                          icon: Icon(
-                            primaryIcon,
-                            size: isDesktop ? 18 : 18.sp,
-                          ),
+                          onPressed: executeAction,
+                          icon: Icon(executeIcon, size: isDesktop ? 18 : 18.sp),
                           label: Text(
-                            primaryLabel,
+                            executeLabel,
                             style: TextStyle(
                               fontSize: isDesktop ? 14 : 14.sp,
                               fontWeight: FontWeight.w600,
@@ -408,109 +480,6 @@ class _EscalationBody extends HookConsumerWidget {
                           ),
                         ),
                       ),
-                      // 配对失败 / 正在点火时不重复给「无线调试配对」入口：
-                      // 前者主按钮已经变成重新配对，后者正在拉起特权进程。
-                      if (!hostAlive &&
-                          isAndroidPlatform &&
-                          !pairingFailed &&
-                          !igniting)
-                          ...<Widget>[
-                        SizedBox(height: isDesktop ? 8 : 8.h),
-                        SizedBox(
-                          height: isDesktop ? 44 : 44.h,
-                          child: OutlinedButton.icon(
-                            onPressed: runState.isRunning
-                                ? null
-                                : onPairingPressed,
-                            icon: Icon(
-                              Icons.wifi_tethering_rounded,
-                              size: isDesktop ? 18 : 18.sp,
-                            ),
-                            label: Text(
-                              l10n.escalationPairingStart,
-                              style: TextStyle(
-                                fontSize: isDesktop ? 13.5 : 13.5.sp,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: colors.primary,
-                              side: BorderSide(
-                                color: colors.primary.withValues(alpha: 0.45),
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                  isDesktop ? 10 : 12.r,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: isDesktop ? 6 : 6.h),
-                        // 必须写在按钮旁边：用户一旦为了输码切回本 App，系统的配对弹窗就作废了。
-                        Text(
-                          l10n.escalationPairingNotice,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: isDesktop ? 11 : 11.sp,
-                            height: 1.3,
-                            color: colors.onSurfaceVariant.withValues(
-                              alpha: 0.8,
-                            ),
-                          ),
-                        ),
-                      ],
-                      // 已就绪时给出口的出口：没有这一项，用户只能去开发者选项
-                      // 关无线调试或手动 kill 进程，页面才会自己翻回未就绪。
-                      if (hostAlive && isAndroidPlatform && !igniting)
-                        ...<Widget>[
-                          SizedBox(height: isDesktop ? 8 : 8.h),
-                          SizedBox(
-                            height: isDesktop ? 44 : 44.h,
-                            child: OutlinedButton.icon(
-                              onPressed:
-                                  runState.isRunning || disconnecting.value
-                                  ? null
-                                  : onDisconnectPressed,
-                              icon: Icon(
-                                Icons.link_off_rounded,
-                                size: isDesktop ? 18 : 18.sp,
-                              ),
-                              label: Text(
-                                disconnecting.value
-                                    ? l10n.escalationHostDisconnecting
-                                    : l10n.escalationHostDisconnect,
-                                style: TextStyle(
-                                  fontSize: isDesktop ? 13.5 : 13.5.sp,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: colors.error,
-                                side: BorderSide(
-                                  color: colors.error.withValues(alpha: 0.45),
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    isDesktop ? 10 : 12.r,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: isDesktop ? 6 : 6.h),
-                          Text(
-                            l10n.escalationHostDisconnectHint,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: isDesktop ? 11 : 11.sp,
-                              height: 1.3,
-                              color: colors.onSurfaceVariant.withValues(
-                                alpha: 0.8,
-                              ),
-                            ),
-                          ),
-                        ],
                     ],
                   ),
                 ),
@@ -528,9 +497,8 @@ class _EscalationBody extends HookConsumerWidget {
   /// 而不是对着手机屏幕一个字一个字抄。
   void _copy(BuildContext context, String text) {
     Clipboard.setData(ClipboardData(text: text));
-    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-      SnackBar(content: Text(context.l10n.escalationCopied)),
-    );
+    ScaffoldMessenger.maybeOf(context)
+        ?.showSnackBar(SnackBar(content: Text(context.l10n.escalationCopied)));
   }
 
   /// 结束态的一行结论：配对会话用「配对成功 / 配对失败」，不再混用「提权」。
@@ -553,9 +521,10 @@ class _EscalationBody extends HookConsumerWidget {
         EscalationIgnitePhase.ready => l10n.escalationPairingSucceeded,
         // 点火失败没有阶段记录，原因来自 `igniteDetail`；直接写在这一行，
         // 用户不用滑到结论卡，也不用翻 logcat。
-        EscalationIgnitePhase.failed => runState.igniteDetail == null
-            ? l10n.escalationIgniteFailed
-            : '${l10n.escalationIgniteFailed} · ${runState.igniteDetail}',
+        EscalationIgnitePhase.failed =>
+          runState.igniteDetail == null
+              ? l10n.escalationIgniteFailed
+              : '${l10n.escalationIgniteFailed} · ${runState.igniteDetail}',
         EscalationIgnitePhase.idle => l10n.escalationPairingSucceeded,
       };
     }

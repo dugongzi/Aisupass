@@ -24,12 +24,14 @@ import java.util.concurrent.TimeUnit
  *   只负责配对流与点火。`hostStatus` / `warmUpHost` 读的是同一个实例，
  *   保证页面看到的身份与实际执行一致；
  * - 运行状态全部托管给 [EscalationRunRegistry]，这里不保存任何运行会话；
- * - 配对会话单独存 [pairingSessions]：配对不是一条提权链，只是给 `payload` 链铺路。
+ * - 配对会话单独存 [pairingSessions]：配对不是一条提权链，只是给 `shellChannel`
+ *   及其后的高权限链铺出 L1 通道。
  *
  * 各方法现状：
- * - `probeAll`：`rootCheck` 只回静态证据（可用性由 Dart 侧 `rootStatusProvider` 判定），
- *   其余链走注册表，未注册即 `platformUnsupported`；
- * - `startRun` / `pollRun` / `cancelRun`：已接注册表，可用链为 `payload` 与 `fake`；
+ * - `probeAll`：`payload` 尚未实现，明确回 `payloadMissing`；其余链走注册表，
+ *   未注册即 `platformUnsupported`；
+ * - `startRun` / `pollRun` / `cancelRun`：已接注册表，当前**唯一可执行**的是
+ *   `shellChannel`（L1 通道自检，不提权）；
  * - `hostStatus`：反映特权进程 Binder 的存活状态；
  * - `warmUpHost`：未就绪时走一次 ADB 点火，把常驻进程拉起来并等 Binder 推回；
  *   未配对时无法点火，只能靠通知栏走一次配对码流程；
@@ -74,8 +76,11 @@ class EscalationNativeImpl(private val context: Context) : EscalationNative {
         listOf(
             // adbReady 只读连接状态：Binder 未就绪但 ADB 活着时，本链仍判可用，
             // 真正的点火由 startRun 触发（见下方 warmUp）。
-            PayloadChainHandler(shell) { adb.status() == ShellStatus.READY },
-            FakeChainHandler(),
+            //
+            // 只注册通道自检：它是当前唯一真实可跑的实现。载荷 / 内核模块 /
+            // 内核漏洞 / 页缓存都还没有实现，注册一个空壳只会让页面显示「可用」
+            // 然后跑出一份假证据。
+            ShellChannelHandler(shell) { adb.status() == ShellStatus.READY },
         ),
     )
 
@@ -87,8 +92,19 @@ class EscalationNativeImpl(private val context: Context) : EscalationNative {
         executor.execute {
             val probes = EscalationChainId.values().map { chain ->
                 when (chain) {
-                    // rootCheck 不下发任何执行动作，只回静态证据。
-                    EscalationChainId.ROOT_CHECK -> RootCheckProbe.probe()
+                    // 载荷链尚未实现：手册 §3.1 要求按 model + build id + uname -r + abi
+                    // 四项全等匹配的 libksu_*.so，当前 assets/escalation/payloads 一条都没有。
+                    // 必须回 `payloadMissing` 而不是 `platformUnsupported`：设备可能完全支持，
+                    // 缺的是我们自己的资产，两者对用户的含义完全不同。
+                    EscalationChainId.PAYLOAD -> ChainProbe(
+                        chain = chain,
+                        available = false,
+                        reasons = listOf(EscalationReasons.PAYLOAD_MISSING),
+                        evidence = mapOf(
+                            "implemented" to "false",
+                            "requiredAsset" to "libksu_*.so（按机型 + 内核 + abi 匹配）",
+                        ),
+                    )
                     // 其余链由注册表分发；未注册即 platformUnsupported。
                     else -> registry.probe(chain)
                 }
@@ -103,12 +119,28 @@ class EscalationNativeImpl(private val context: Context) : EscalationNative {
         callback: (Result<StartRunResult>) -> Unit,
     ) {
         executor.execute {
-            // 先确保特权进程在跑，再交给注册表执行。
-            // payload 链的第一阶段就要求通道 READY，而点火发生在 exec() 内部，
-            // 不在这里预热就会死锁：要执行得先就绪，要就绪得先执行。
-            // 目前只有 payload 依赖 shell；kernelModule / kernelExploit / pageCache
-            // 上线时同属这一类，加进来即可。
+            // 载荷链尚未实现：受理了也只会跑出一份没有任何载荷参与的假成功。
+            // 明确拒绝并回原因码，Dart 侧走「拒绝受理」分支。
             if (chain == EscalationChainId.PAYLOAD) {
+                mainHandler.post {
+                    callback(
+                        Result.success(
+                            StartRunResult(
+                                accepted = false,
+                                runId = "",
+                                reasons = listOf(EscalationReasons.PAYLOAD_MISSING),
+                            ),
+                        ),
+                    )
+                }
+                return@execute
+            }
+
+            // 先确保特权进程在跑，再交给注册表执行。
+            // 通道自检的第一阶段就要求通道 READY，而点火发生在 exec() 内部，
+            // 不在这里预热就会死锁：要执行得先就绪，要就绪得先执行。
+            // kernelModule / kernelExploit / pageCache 上线时同属这一类，加进来即可。
+            if (chain == EscalationChainId.SHELL_CHANNEL) {
                 binderShell.warmUp()
             }
             val result = registry.startRun(chain, args)
@@ -207,8 +239,8 @@ class EscalationNativeImpl(private val context: Context) : EscalationNative {
         val job = PairingJob(
             session = EscalationRunSession(
                 runId = "pair-${UUID.randomUUID()}",
-                // 配对自身不是提权链，唯一目的是给 `payload` 链铺出 shell，故借用该链标识。
-                chain = EscalationChainId.PAYLOAD,
+                // 配对自身不是提权链，唯一目的是铺出 L1 通道，故借用 `shellChannel` 标识。
+                chain = EscalationChainId.SHELL_CHANNEL,
                 // 通知模式要等用户去系统设置里操作，窗口必须比手动模式宽得多。
                 timeoutMs = if (notificationMode) NOTIFICATION_TIMEOUT_MS else PAIRING_TIMEOUT_MS,
             ),
@@ -488,7 +520,7 @@ class EscalationNativeImpl(private val context: Context) : EscalationNative {
     /** 查不到的会话（例如进程被重启过）回一个终态快照，避免 Dart 一直轮询。 */
     private fun unknownPairingSnapshot(sessionId: String): RunSnapshot = RunSnapshot(
         runId = sessionId,
-        chain = EscalationChainId.PAYLOAD,
+        chain = EscalationChainId.SHELL_CHANNEL,
         phase = EscalationStage.DONE,
         steps = listOf(
             RunStep(
