@@ -32,6 +32,23 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- 特权进程回推 Binder 的落点（M1-3）。
+             方向：app_process 拉起的进程主动 call()，不是 App 去取。
+             - exported=true：调用方是 uid=2000 的 shell 域进程，不是本应用；
+             - multiprocess=false + directBootAware=true：保证与 UI 同进程且在
+               直接启动阶段（用户尚未解锁）也能被 call 到；
+             - permission 只是第一道拦截，call() 里必须再用 Binder.getCallingUid()
+               判一次 {0, 2000}。
+             - 权限选 DUMP 而不是 INTERACT_ACROSS_USERS_FULL：后者是 system 签名权限，
+               uid 2000 的 shell 并没有被授予，provider 解析阶段就会被拒；DUMP 是
+               shell 明确持有的系统权限，而普通第三方应用拿不到，拦截效果相同。 -->
+        <provider
+            android:name=".core.privileged.SupassBinderProvider"
+            android:authorities="${applicationId}.adbhelper"
+            android:exported="true"
+            android:multiprocess="false"
+            android:directBootAware="true"
+            android:permission="android.permission.DUMP" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

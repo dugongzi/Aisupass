@@ -18,6 +18,8 @@ import org.supass.ai_su_pass.core.shell.ShellStatus
  */
 internal class PayloadChainHandler(
     private val shell: ShellChannel,
+    /** ADB 点火通道是否活着；只读连接状态，不下发命令。 */
+    private val adbReady: () -> Boolean = { false },
 ) : EscalationChainHandler {
 
     override val chain: EscalationChainId = EscalationChainId.PAYLOAD
@@ -26,7 +28,13 @@ internal class PayloadChainHandler(
         // 只读状态，不跑任何命令：零副作用。
         val status = shell.status()
         val uid = shell.uid
-        val available = status == ShellStatus.READY && ShellChannel.isPrivileged(uid)
+        val binderReady = status == ShellStatus.READY && ShellChannel.isPrivileged(uid)
+        // Binder 还没推过来、但 ADB 活着 —— 点火就能起来，必须判为可用。
+        // 否则「可用性要求 Binder 已就绪」与「点火只能由用户点启动触发」互相锁死，
+        // 页面上这条链永远是灰的，用户根本没有机会把特权进程拉起来。
+        // 这里只是读连接状态，仍属零副作用；真正的点火发生在 startRun 里。
+        val canIgnite = !binderReady && adbReady()
+        val available = binderReady || canIgnite
         return ChainProbe(
             chain = chain,
             available = available,
@@ -35,6 +43,7 @@ internal class PayloadChainHandler(
                 "channelSource" to shell.source,
                 "channelStatus" to status.name.lowercase(),
                 "channelUid" to uid.toString(),
+                "needsWarmUp" to canIgnite.toString(),
             ),
         )
     }

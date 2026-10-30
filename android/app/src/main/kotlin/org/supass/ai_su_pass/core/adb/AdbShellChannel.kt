@@ -150,10 +150,19 @@ internal class AdbShellChannel(
             // 超时：先关流让读线程退出，再收尸；不重试，避免把危险命令跑第二遍。
             runCatching { streamRef.get()?.close() }
             worker.join(STREAM_JOIN_MS)
+            val text = currentText(sink)
+            // 后台进程即使把 stdout/stderr 都重定向走，也可能有残留 fd 让 pty 不闭合，
+            // 于是「命令早就跑完、退出码也回显了，流却等不到 EOF」。这种情况下
+            // 标记其实就在输出里，丢掉它只会把结论错报成「没跑起来」。
+            val parsed = parseExit(text)
             return ShellResult(
-                exitCode = EXIT_NOT_STARTED,
-                stdout = currentText(sink),
-                stderr = "",
+                exitCode = parsed.exitCode,
+                stdout = parsed.stdout,
+                stderr = if (parsed.exitCode == EXIT_NOT_STARTED) {
+                    "timeout ${timeoutMs}ms, no exit marker"
+                } else {
+                    ""
+                },
                 durationMs = SystemClock.elapsedRealtime() - startedAt,
                 timedOut = true,
             )
@@ -161,8 +170,8 @@ internal class AdbShellChannel(
 
         val text = currentText(sink)
         val failure = openFailure.get()
-        val markerIndex = text.lastIndexOf(EXIT_MARKER)
-        if (markerIndex < 0) {
+        val parsed = parseExit(text)
+        if (parsed.exitCode == EXIT_NOT_STARTED) {
             // 退出码标记缺失说明命令根本没在 adbd 那边跑起来（流打开失败、设备掉线、
             // shell 被拒）。这里原本完全静默，上层只看到 exitCode=-1，无从判断原因。
             Log.w(
@@ -179,19 +188,30 @@ internal class AdbShellChannel(
             )
         }
 
-        val exitCode = text.substring(markerIndex + EXIT_MARKER.length)
-            .trim()
-            .toIntOrNull() ?: EXIT_NOT_STARTED
-        val stdout = text.substring(0, markerIndex).replace("\r\n", "\n")
-
         return ShellResult(
-            exitCode = exitCode,
-            stdout = stdout,
+            exitCode = parsed.exitCode,
+            stdout = parsed.stdout,
             stderr = "",
             durationMs = SystemClock.elapsedRealtime() - startedAt,
             timedOut = false,
         )
     }
+
+    /**
+     * 从流输出里剥出退出码与真正的 stdout。
+     *
+     * 标记缺失时返回 [EXIT_NOT_STARTED]，且 stdout 原样返回（保留现场）。
+     */
+    private fun parseExit(text: String): ExitParse {
+        val markerIndex = text.lastIndexOf(EXIT_MARKER)
+        if (markerIndex < 0) return ExitParse(EXIT_NOT_STARTED, text)
+        val exitCode = text.substring(markerIndex + EXIT_MARKER.length)
+            .trim()
+            .toIntOrNull() ?: return ExitParse(EXIT_NOT_STARTED, text)
+        return ExitParse(exitCode, text.substring(0, markerIndex).replace("\r\n", "\n"))
+    }
+
+    private class ExitParse(val exitCode: Int, val stdout: String)
 
     /**
      * 包一层外层 shell，顺带把退出码打进输出。

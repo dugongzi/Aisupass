@@ -101,7 +101,7 @@ int _deepHash(Object? value) {
 ///
 /// 顺序即破坏性优先级：越靠前越安全，链选择时取第一个可用的链。
 enum EscalationChainId {
-  /// 检测设备是否已具备持久 Root 能力，零破坏。
+  /// 检测设备当前是否已具备 Root 权限，零破坏。
   rootCheck,
   /// 通过加载内核模块提权。
   kernelModule,
@@ -436,6 +436,57 @@ class HostStatus {
   int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
 }
 
+/// 预热（点火）结果。
+///
+/// 只回两个事实：特权进程是否就绪，以及没就绪时的具体原因。
+/// 原因必须回给页面——让它去翻 logcat 才知道为什么没起来，等于没有反馈。
+class WarmUpResult {
+  WarmUpResult({
+    required this.ready,
+    required this.detail,
+  });
+
+  /// 常驻特权进程是否已就绪（Binder 已推回并通过协议校验）。
+  bool ready;
+
+  /// 未就绪时的原因（短字符串）；就绪时为空串。
+  String detail;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      ready,
+      detail,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static WarmUpResult decode(Object result) {
+    result as List<Object?>;
+    return WarmUpResult(
+      ready: result[0]! as bool,
+      detail: result[1]! as String,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! WarmUpResult || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(ready, other.ready) && _deepEquals(detail, other.detail);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+}
+
 
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
@@ -465,6 +516,9 @@ class _PigeonCodec extends StandardMessageCodec {
     }    else if (value is HostStatus) {
       buffer.putUint8(135);
       writeValue(buffer, value.encode());
+    }    else if (value is WarmUpResult) {
+      buffer.putUint8(136);
+      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -489,6 +543,8 @@ class _PigeonCodec extends StandardMessageCodec {
         return RunSnapshot.decode(readValue(buffer)!);
       case 135:
         return HostStatus.decode(readValue(buffer)!);
+      case 136:
+        return WarmUpResult.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -613,9 +669,32 @@ class EscalationNative {
     return pigeonVar_replyValue! as HostStatus;
   }
 
-  /// 预热宿主进程。
-  Future<bool> warmUpHost() async {
+  /// 预热宿主进程：会真的点火，并回传未就绪的原因。
+  Future<WarmUpResult> warmUpHost() async {
     final pigeonVar_channelName = 'dev.flutter.pigeon.Aisupass.EscalationNative.warmUpHost$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
+    return pigeonVar_replyValue! as WarmUpResult;
+  }
+
+  /// 断开宿主持久进程：让特权进程自行退出，Binder 随之失效。
+  ///
+  /// 返回是否已发出断开指令；当前本来就没有可用宿主时返回 false
+  /// （那已经是断开状态，不算失败）。
+  Future<bool> shutdownHost() async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.Aisupass.EscalationNative.shutdownHost$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,

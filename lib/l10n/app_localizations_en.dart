@@ -654,6 +654,60 @@ class AppLocalizationsEn extends AppLocalizations {
       'Waiting for the pairing code in notifications…';
 
   @override
+  String get escalationPairingConnecting =>
+      'Code accepted, establishing the debug connection…';
+
+  @override
+  String get escalationPairingSucceeded =>
+      'Paired, privileged process is ready';
+
+  @override
+  String get escalationPairingFailed => 'Pairing failed';
+
+  @override
+  String get escalationIgniteStarting =>
+      'Paired, starting the privileged process…';
+
+  @override
+  String get escalationIgniteRunning => 'Starting the privileged process…';
+
+  @override
+  String get escalationIgniteRetry => 'Retry starting privileged process';
+
+  @override
+  String get escalationIgniteFailed =>
+      'Paired, but the privileged process did not start';
+
+  @override
+  String get escalationHostReady => 'Host ready (uid=2000)';
+
+  @override
+  String get escalationHostNotStarted =>
+      'Host not started, it will launch after pairing';
+
+  @override
+  String get escalationHostDisconnect => 'Disconnect host';
+
+  @override
+  String get escalationHostDisconnecting => 'Disconnecting…';
+
+  @override
+  String get escalationHostDisconnectHint =>
+      'The privileged process exits after disconnecting; pair again to relaunch it';
+
+  @override
+  String get escalationRunning => 'Running';
+
+  @override
+  String get escalationFailureDetail => 'Reason';
+
+  @override
+  String get escalationCopy => 'Copy';
+
+  @override
+  String get escalationCopied => 'Copied to clipboard';
+
+  @override
   String get escalationExportRecord => 'Export records';
 
   @override

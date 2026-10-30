@@ -152,15 +152,18 @@ class EscalationActionRepositoryImpl implements EscalationActionRepository {
 
   /// 配对会话的结论。
   ///
-  /// 只认 `PREPARE` 阶段的 `ok`：那一步是配对成功后重新发现 `adb-tls-connect`
-  /// 端点并建链的结果，也是唯一的外部状态证据。走到一半就结束（用户没输码、
-  /// 端点发现失败）一律按失败收尾，不做任何「可能已经好了」的猜测。
+  /// 只认一个事实：`PREPARE` 阶段建链成功（系统配对 + `adb-tls-connect` 通了，
+  /// 拿到了 uid=2000 的 shell）。**点火不在这个会话里**——常驻特权进程起没起
+  /// 是另一件事，由页面在配对成功后单独调用 `warmUpHost` 触发并单独展示。
+  ///
+  /// 之前把点火也算进配对结论，会导致配对明明成功、只是点火失败，页面却报
+  /// 「配对失败」；同时同步等点火还会让页面卡在「等待输入配对码」十几秒。
   EscalationOutcome _judgePairing(pigeon.RunSnapshot snapshot) {
     if (snapshot.steps.isEmpty) return EscalationOutcome.notStarted;
+
     for (final pigeon.RunStep step in snapshot.steps) {
-      if (step.stage == pigeon.EscalationStage.prepare) {
-        return step.ok ? EscalationOutcome.success : EscalationOutcome.failed;
-      }
+      if (step.stage != pigeon.EscalationStage.prepare) continue;
+      return step.ok ? EscalationOutcome.success : EscalationOutcome.failed;
     }
     return EscalationOutcome.failed;
   }

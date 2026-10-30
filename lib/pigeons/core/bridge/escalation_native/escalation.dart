@@ -145,6 +145,20 @@ class HostStatus {
   int reconnectAttempts;
 }
 
+/// 预热（点火）结果。
+///
+/// 只回两个事实：特权进程是否就绪，以及没就绪时的具体原因。
+/// 原因必须回给页面——让它去翻 logcat 才知道为什么没起来，等于没有反馈。
+class WarmUpResult {
+  WarmUpResult({required this.ready, required this.detail});
+
+  /// 常驻特权进程是否已就绪（Binder 已推回并通过协议校验）。
+  bool ready;
+
+  /// 未就绪时的原因（短字符串）；就绪时为空串。
+  String detail;
+}
+
 /// 提权原生接口。
 ///
 /// 契约原则：
@@ -176,9 +190,16 @@ abstract class EscalationNative {
   @async
   HostStatus hostStatus();
 
-  /// 预热宿主进程。
+  /// 预热宿主进程：会真的点火，并回传未就绪的原因。
   @async
-  bool warmUpHost();
+  WarmUpResult warmUpHost();
+
+  /// 断开宿主持久进程：让特权进程自行退出，Binder 随之失效。
+  ///
+  /// 返回是否已发出断开指令；当前本来就没有可用宿主时返回 false
+  /// （那已经是断开状态，不算失败）。
+  @async
+  bool shutdownHost();
 
   /// 发起宿主配对。
   @async

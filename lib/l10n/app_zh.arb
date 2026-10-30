@@ -892,6 +892,70 @@
   "@escalationPairingWaiting": {
     "description": "提权页-通知栏配对进行中提示"
   },
+  "escalationPairingConnecting": "配对码已收到，正在建立调试连接…",
+  "@escalationPairingConnecting": {
+    "description": "提权页-配对码已交换成功、正在连接调试端口"
+  },
+  "escalationPairingSucceeded": "配对成功，特权进程已就绪",
+  "@escalationPairingSucceeded": {
+    "description": "提权页-配对会话成功结论"
+  },
+  "escalationPairingFailed": "配对失败",
+  "@escalationPairingFailed": {
+    "description": "提权页-配对会话失败结论"
+  },
+  "escalationIgniteStarting": "配对成功，正在启动特权进程…",
+  "@escalationIgniteStarting": {
+    "description": "提权页-配对成功且点火进行中的结论"
+  },
+  "escalationIgniteRunning": "正在启动特权进程…",
+  "@escalationIgniteRunning": {
+    "description": "提权页-点火进行中的主按钮文案"
+  },
+  "escalationIgniteRetry": "重试启动特权进程",
+  "@escalationIgniteRetry": {
+    "description": "提权页-点火失败后的重试按钮"
+  },
+  "escalationIgniteFailed": "配对成功，但特权进程未启动",
+  "@escalationIgniteFailed": {
+    "description": "提权页-配对成功但点火失败的结论"
+  },
+  "escalationHostReady": "宿主已就绪（uid=2000）",
+  "@escalationHostReady": {
+    "description": "提权页-空闲态状态行：特权进程已就绪"
+  },
+  "escalationHostNotStarted": "宿主未启动，配对成功后会自动拉起",
+  "@escalationHostNotStarted": {
+    "description": "提权页-空闲态状态行：特权进程未启动"
+  },
+  "escalationHostDisconnect": "断开宿主",
+  "@escalationHostDisconnect": {
+    "description": "提权页-已就绪时提供的断开入口按钮"
+  },
+  "escalationHostDisconnecting": "正在断开…",
+  "@escalationHostDisconnecting": {
+    "description": "提权页-断开请求发出后按钮上的过渡文案"
+  },
+  "escalationHostDisconnectHint": "断开后特权进程会退出，需要重新配对才能再拉起",
+  "@escalationHostDisconnectHint": {
+    "description": "提权页-断开按钮下方的说明"
+  },
+  "escalationRunning": "执行中",
+  "@escalationRunning": {
+    "description": "提权页-运行中状态行前缀"
+  },
+  "escalationFailureDetail": "失败原因",
+  "@escalationFailureDetail": {
+    "description": "提权页-失败阶段的具体原因标签"
+  },
+  "escalationCopy": "复制",
+  "@escalationCopy": {
+    "description": "提权页-复制失败原因按钮的提示"
+  },
+  "escalationCopied": "已复制到剪贴板",
+  "@escalationCopied": {
+    "description": "提权页-复制失败原因成功后的提示"
+  },
   "escalationExportRecord": "导出记录",
   "@escalationExportRecord": {
     "description": "导出执行记录按钮"

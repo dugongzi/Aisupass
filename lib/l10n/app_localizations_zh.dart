@@ -638,6 +638,54 @@ class AppLocalizationsZh extends AppLocalizations {
   String get escalationPairingWaiting => '等待通知栏输入配对码…';
 
   @override
+  String get escalationPairingConnecting => '配对码已收到，正在建立调试连接…';
+
+  @override
+  String get escalationPairingSucceeded => '配对成功，特权进程已就绪';
+
+  @override
+  String get escalationPairingFailed => '配对失败';
+
+  @override
+  String get escalationIgniteStarting => '配对成功，正在启动特权进程…';
+
+  @override
+  String get escalationIgniteRunning => '正在启动特权进程…';
+
+  @override
+  String get escalationIgniteRetry => '重试启动特权进程';
+
+  @override
+  String get escalationIgniteFailed => '配对成功，但特权进程未启动';
+
+  @override
+  String get escalationHostReady => '宿主已就绪（uid=2000）';
+
+  @override
+  String get escalationHostNotStarted => '宿主未启动，配对成功后会自动拉起';
+
+  @override
+  String get escalationHostDisconnect => '断开宿主';
+
+  @override
+  String get escalationHostDisconnecting => '正在断开…';
+
+  @override
+  String get escalationHostDisconnectHint => '断开后特权进程会退出，需要重新配对才能再拉起';
+
+  @override
+  String get escalationRunning => '执行中';
+
+  @override
+  String get escalationFailureDetail => '失败原因';
+
+  @override
+  String get escalationCopy => '复制';
+
+  @override
+  String get escalationCopied => '已复制到剪贴板';
+
+  @override
   String get escalationExportRecord => '导出记录';
 
   @override

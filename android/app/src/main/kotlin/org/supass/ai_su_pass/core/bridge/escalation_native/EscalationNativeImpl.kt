@@ -8,6 +8,7 @@ import android.util.Log
 import org.supass.ai_su_pass.core.adb.AdbConnectionManager
 import org.supass.ai_su_pass.core.adb.AdbShellChannel
 import org.supass.ai_su_pass.core.adb.PairingNotification
+import org.supass.ai_su_pass.core.shell.BinderShellChannel
 import org.supass.ai_su_pass.core.shell.ShellChannel
 import org.supass.ai_su_pass.core.shell.ShellStatus
 import java.util.UUID
@@ -19,8 +20,9 @@ import java.util.concurrent.TimeUnit
  * 提权原生实现：只做线程切换与委托，不承载任何链逻辑。
  *
  * 装配关系：
- * - shell 通道只有一路：[AdbShellChannel]（应用内无线调试自配对）；
- *   `hostStatus` / `warmUpHost` 读的是同一个实例，保证页面看到的身份与实际执行一致；
+ * - 执行通道：[BinderShellChannel]（常驻特权进程的 Binder）；ADB 退居幕后，
+ *   只负责配对流与点火。`hostStatus` / `warmUpHost` 读的是同一个实例，
+ *   保证页面看到的身份与实际执行一致；
  * - 运行状态全部托管给 [EscalationRunRegistry]，这里不保存任何运行会话；
  * - 配对会话单独存 [pairingSessions]：配对不是一条提权链，只是给 `payload` 链铺路。
  *
@@ -28,8 +30,9 @@ import java.util.concurrent.TimeUnit
  * - `probeAll`：`rootCheck` 只回静态证据（可用性由 Dart 侧 `rootStatusProvider` 判定），
  *   其余链走注册表，未注册即 `platformUnsupported`；
  * - `startRun` / `pollRun` / `cancelRun`：已接注册表，可用链为 `payload` 与 `fake`；
- * - `hostStatus`：反映 ADB 通道的可用状态；
- * - `warmUpHost`：通道就绪即 true；未配对时只能靠通知栏走一次配对码流程；
+ * - `hostStatus`：反映特权进程 Binder 的存活状态；
+ * - `warmUpHost`：未就绪时走一次 ADB 点火，把常驻进程拉起来并等 Binder 推回；
+ *   未配对时无法点火，只能靠通知栏走一次配对码流程；
  * - `startPairing` / `pollPairing`：无线调试自配对，两阶段推进
  *   （`PROBE` = 交换配对码，`PREPARE` = mDNS 发现连接端点并建链）。
  *
@@ -55,12 +58,23 @@ class EscalationNativeImpl(private val context: Context) : EscalationNative {
      */
     private val pairingNotification = PairingNotification(context)
 
-    /** 上层唯一认的通道；ADB 未连接时，链侧按「不可用」返回。 */
-    private val shell: ShellChannel = adb
+    /**
+     * 执行通道：命令走常驻特权进程的 Binder，不再压在 ADB 连接上。
+     *
+     * ADB 只保留两个职责：配对流（见 [adb] 的 pairing 方法）与点火
+     * （[BinderShellChannel] 内部用 ADB 跑一次 [SupassLauncher]）。
+     * 这样用户关掉无线调试后，已起的特权进程仍然能执行命令。
+     */
+    private val binderShell = BinderShellChannel(adb, context)
+
+    /** 上层唯一认的通道；特权进程起不来且 ADB 也断时，链侧按「不可用」返回。 */
+    private val shell: ShellChannel = binderShell
 
     private val registry = EscalationRunRegistry(
         listOf(
-            PayloadChainHandler(shell),
+            // adbReady 只读连接状态：Binder 未就绪但 ADB 活着时，本链仍判可用，
+            // 真正的点火由 startRun 触发（见下方 warmUp）。
+            PayloadChainHandler(shell) { adb.status() == ShellStatus.READY },
             FakeChainHandler(),
         ),
     )
@@ -89,6 +103,14 @@ class EscalationNativeImpl(private val context: Context) : EscalationNative {
         callback: (Result<StartRunResult>) -> Unit,
     ) {
         executor.execute {
+            // 先确保特权进程在跑，再交给注册表执行。
+            // payload 链的第一阶段就要求通道 READY，而点火发生在 exec() 内部，
+            // 不在这里预热就会死锁：要执行得先就绪，要就绪得先执行。
+            // 目前只有 payload 依赖 shell；kernelModule / kernelExploit / pageCache
+            // 上线时同属这一类，加进来即可。
+            if (chain == EscalationChainId.PAYLOAD) {
+                binderShell.warmUp()
+            }
             val result = registry.startRun(chain, args)
             mainHandler.post { callback(Result.success(result)) }
         }
@@ -111,24 +133,38 @@ class EscalationNativeImpl(private val context: Context) : EscalationNative {
         executor.execute {
             val status = shell.status()
             val hostStatus = HostStatus(
-                // ADB 通道就绪即视为宿主存活。
+                // 特权进程的 Binder 活着才算宿主存活；ADB 连接只用于点火。
                 alive = status == ShellStatus.READY,
                 // 未就绪时 uid 是 -1，Dart 侧按 0 = 未知处理。
                 uid = shell.uid.coerceAtLeast(0L),
-                reconnectAttempts = 0L,
+                // 真实重拉次数：连续失败 3 次后通道会停手，这个值能解释「为什么不再重试」。
+                reconnectAttempts = binderShell.relaunchAttempts,
             )
             mainHandler.post { callback(Result.success(hostStatus)) }
         }
     }
 
-    override fun warmUpHost(callback: (Result<Boolean>) -> Unit) {
+    override fun warmUpHost(callback: (Result<WarmUpResult>) -> Unit) {
         executor.execute {
-            val ready = when (shell.status()) {
-                ShellStatus.READY -> true
-                // ADB 未连接：没有可弹的授权框，只能由用户走通知栏配对码流程。
-                ShellStatus.NOT_CONNECTED -> false
-            }
-            mainHandler.post { callback(Result.success(ready)) }
+            // 这里会真的点火：名字叫「预热」，就该把特权进程拉起来。
+            // 只读状态的版本会让调用方拿到 true 却仍然没有 Binder，等于谎报。
+            val ready = binderShell.warmUp()
+            // 失败原因必须一起回给页面：让用户为了知道「为什么没起来」
+            // 去翻 logcat，等于没有反馈。
+            val result = WarmUpResult(
+                ready = ready,
+                detail = if (ready) "" else (binderShell.lastFailure ?: ""),
+            )
+            mainHandler.post { callback(Result.success(result)) }
+        }
+    }
+
+    override fun shutdownHost(callback: (Result<Boolean>) -> Unit) {
+        executor.execute {
+            // 只发指令，不等对端真的消失：被杀的就是回复方，事务必然中断。
+            // 页面拿到 true 后立刻回查 hostStatus()，那里以 pingBinder() 为准。
+            val sent = binderShell.shutdown()
+            mainHandler.post { callback(Result.success(sent)) }
         }
     }
 
@@ -421,6 +457,15 @@ class EscalationNativeImpl(private val context: Context) : EscalationNative {
                     )
                 },
             )
+
+            // 配对只负责「建链」这一件事：系统配对成功 + `adb-tls-connect`
+            // 建链成功，这里立刻收尾，页面才能秒看到「配对成功」。
+            //
+            // 点火（拉起常驻特权进程）**必须**放在配对会话之外：它最坏要等
+            // 十几秒（adb exec 10s + 等 Binder 5s）。塞在这里有两个后果：
+            // ① 期间页面一直停在「等待输入配对码」，用户以为卡住；
+            // ② 点火失败会把整场配对判成失败，用户明明配对成功却看到「配对失败」。
+            // 点火改由页面在配对成功后单独调用 `warmUpHost` 触发，成败单独展示。
             session.finish()
         } catch (t: Throwable) {
             // 库内部任何未预料的异常都收敛成结构化原因，绝不向 Pigeon 抛。

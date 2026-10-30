@@ -198,7 +198,7 @@ class FlutterError (
  * 顺序即破坏性优先级：越靠前越安全，链选择时取第一个可用的链。
  */
 enum class EscalationChainId(val raw: Int) {
-  /** 检测设备是否已具备持久 Root 能力，零破坏。 */
+  /** 检测设备当前是否已具备 Root 权限，零破坏。 */
   ROOT_CHECK(0),
   /** 通过加载内核模块提权。 */
   KERNEL_MODULE(1),
@@ -515,6 +515,53 @@ data class HostStatus (
     return result
   }
 }
+
+/**
+ * 预热（点火）结果。
+ *
+ * 只回两个事实：特权进程是否就绪，以及没就绪时的具体原因。
+ * 原因必须回给页面——让它去翻 logcat 才知道为什么没起来，等于没有反馈。
+ *
+ * Generated class from Pigeon that represents data sent in messages.
+ */
+data class WarmUpResult (
+  /** 常驻特权进程是否已就绪（Binder 已推回并通过协议校验）。 */
+  val ready: Boolean,
+  /** 未就绪时的原因（短字符串）；就绪时为空串。 */
+  val detail: String
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): WarmUpResult {
+      val ready = pigeonVar_list[0] as Boolean
+      val detail = pigeonVar_list[1] as String
+      return WarmUpResult(ready, detail)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      ready,
+      detail,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as WarmUpResult
+    return EscalationNativePigeonUtils.deepEquals(this.ready, other.ready) && EscalationNativePigeonUtils.deepEquals(this.detail, other.detail)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + EscalationNativePigeonUtils.deepHash(this.ready)
+    result = 31 * result + EscalationNativePigeonUtils.deepHash(this.detail)
+    return result
+  }
+}
 private open class EscalationNativePigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
@@ -553,6 +600,11 @@ private open class EscalationNativePigeonCodec : StandardMessageCodec() {
           HostStatus.fromList(it)
         }
       }
+      136.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          WarmUpResult.fromList(it)
+        }
+      }
       else -> super.readValueOfType(type, buffer)
     }
   }
@@ -586,6 +638,10 @@ private open class EscalationNativePigeonCodec : StandardMessageCodec() {
         stream.write(135)
         writeValue(stream, value.toList())
       }
+      is WarmUpResult -> {
+        stream.write(136)
+        writeValue(stream, value.toList())
+      }
       else -> super.writeValue(stream, value)
     }
   }
@@ -613,8 +669,15 @@ interface EscalationNative {
   fun cancelRun(runId: String, callback: (Result<Unit>) -> Unit)
   /** 查询宿主连接状态。 */
   fun hostStatus(callback: (Result<HostStatus>) -> Unit)
-  /** 预热宿主进程。 */
-  fun warmUpHost(callback: (Result<Boolean>) -> Unit)
+  /** 预热宿主进程：会真的点火，并回传未就绪的原因。 */
+  fun warmUpHost(callback: (Result<WarmUpResult>) -> Unit)
+  /**
+   * 断开宿主持久进程：让特权进程自行退出，Binder 随之失效。
+   *
+   * 返回是否已发出断开指令；当前本来就没有可用宿主时返回 false
+   * （那已经是断开状态，不算失败）。
+   */
+  fun shutdownHost(callback: (Result<Boolean>) -> Unit)
   /** 发起宿主配对。 */
   fun startPairing(host: String, port: Long, code: String, callback: (Result<StartRunResult>) -> Unit)
   /** 轮询配对进度。 */
@@ -729,7 +792,25 @@ interface EscalationNative {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.Aisupass.EscalationNative.warmUpHost$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
-            api.warmUpHost{ result: Result<Boolean> ->
+            api.warmUpHost{ result: Result<WarmUpResult> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(EscalationNativePigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(EscalationNativePigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.Aisupass.EscalationNative.shutdownHost$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.shutdownHost{ result: Result<Boolean> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(EscalationNativePigeonUtils.wrapError(error))

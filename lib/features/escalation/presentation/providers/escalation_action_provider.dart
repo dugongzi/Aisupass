@@ -11,6 +11,7 @@ import 'package:Aisupass/features/escalation/domain/models/escalation_step_recor
 import 'package:Aisupass/features/escalation/domain/repositories/escalation_action_repository.dart';
 import 'package:Aisupass/features/escalation/presentation/providers/escalation_query_provider.dart';
 import 'package:Aisupass/features/escalation/presentation/providers/escalation_record_provider.dart';
+import 'package:Aisupass/generated/escalation.g.dart' as pigeon;
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -28,6 +29,25 @@ enum EscalationRunPhase {
   finished,
 }
 
+/// 配对成功后的点火进度。
+///
+/// 配对（建链）和点火（拉起常驻特权进程）是两件独立的事：配对会话一结束就
+/// 会给出「配对成功」，点火在它之后单独跑，所以需要单独的状态来表达
+/// 「正在拉 / 已就绪 / 没拉起来」，不能让配对结论替它背锅。
+enum EscalationIgnitePhase {
+  /// 没触发过点火（非配对会话，或配对本身就失败了）。
+  idle,
+
+  /// 正在点火。
+  running,
+
+  /// 常驻特权进程已就绪（Binder 已推回并通过协议校验）。
+  ready,
+
+  /// 点火失败；可在页面上单独重试，不影响「配对成功」的结论。
+  failed,
+}
+
 /// 页面上的单次提权运行状态。
 ///
 /// 由 `EscalationRunController` 依据仓储推送的记录逐帧更新，
@@ -42,6 +62,8 @@ class EscalationRunState {
     required this.outcome,
     required this.reasons,
     this.pairing = false,
+    this.ignitePhase = EscalationIgnitePhase.idle,
+    this.igniteDetail,
   });
 
   /// 空闲态：无运行、无结论。
@@ -52,7 +74,9 @@ class EscalationRunState {
       steps = const <EscalationStepRecord>[],
       outcome = null,
       reasons = const <EscalationReason>[],
-      pairing = false;
+      pairing = false,
+      ignitePhase = EscalationIgnitePhase.idle,
+      igniteDetail = null;
 
   final EscalationRunPhase phase;
 
@@ -76,6 +100,15 @@ class EscalationRunState {
   /// 配对码在通知栏输入，页面上的主按钮此时不提供取消——取消只会在 UI 侧
   /// 断开订阅，原生线程仍会等满用户输码窗口，给出可点击的取消反而是误导。
   final bool pairing;
+
+  /// 配对成功后的点火进度；与 [pairing] 配合展示，不参与配对结论判定。
+  final EscalationIgnitePhase ignitePhase;
+
+  /// 点火失败的具体原因（原生回传的短字符串）。
+  ///
+  /// 为空时页面只说「特权进程未启动」；有值时直接把它写出来，
+  /// 用户不必去翻 logcat 才知道卡在哪。
+  final String? igniteDetail;
 
   /// 是否正在运行。
   bool get isRunning => phase == EscalationRunPhase.running;
@@ -185,6 +218,17 @@ class EscalationRunController extends _$EscalationRunController {
         );
   }
 
+  /// 断开宿主持久进程：让特权进程自行退出，页面随即回落到「未就绪」。
+  ///
+  /// 不是「取消运行」：运行中被禁掉由页面负责，这里只处理断开这件事。
+  /// 断开只是解除常驻连接，不改变配对结论，所以不动 [state]，
+  /// 只失效状态类 provider，让 `hostAlive` 立刻重查。
+  Future<void> disconnectHost() async {
+    await ref.read(escalationNativeProvider).shutdownHost();
+    ref.invalidate(escalationHostStatusProvider);
+    ref.invalidate(escalationCapabilityMatrixProvider);
+  }
+
   /// 取消当前运行并回到空闲态。
   ///
   /// 取消不产生结论：原生可能已经写入一半状态，这里不臆断成功或失败，
@@ -217,6 +261,11 @@ class EscalationRunController extends _$EscalationRunController {
       return;
     }
 
+    // 配对建链成功不等于特权进程已经在跑：点火的成败单独展示，
+    // 所以这里只负责在配对成功后把它异步拉起来，不参与配对结论。
+    final bool paired =
+        state.pairing && record.outcome == EscalationOutcome.success;
+
     state = EscalationRunState(
       phase: EscalationRunPhase.finished,
       runId: record.runId,
@@ -224,10 +273,77 @@ class EscalationRunController extends _$EscalationRunController {
       steps: record.steps,
       outcome: record.outcome,
       reasons: _collectReasons(record.steps),
-      // 结束帧必须把配对标记归零：否则主按钮永远停在「等待通知栏输入配对码」
-      // 且保持禁用，用户看到的结局就是「输完码没下文」。
-      pairing: false,
+      // 保留配对标记：是否配对只影响按钮「运行中不可点」与文案，
+      // 结束帧若清零，页面就分不清「提权失败」和「配对失败」，
+      // 会把失败原因说成另一件事。
+      pairing: state.pairing,
+      ignitePhase: paired
+          ? EscalationIgnitePhase.running
+          : EscalationIgnitePhase.idle,
     );
+    if (paired) unawaited(_igniteHost());
+  }
+
+  /// 配对成功后点火，并把结果写回 [EscalationRunState.ignitePhase]。
+  ///
+  /// 与配对串行分开的原因：点火最坏要等十几秒（adb 执行 + 等 Binder 回推），
+  /// 同步塞进配对会话会让页面一直停在「等待输入配对码」，还会因为点火失败
+  /// 把整场配对判成失败。
+  Future<void> _igniteHost() async {
+    bool ready = false;
+    String? detail;
+    try {
+      final pigeon.WarmUpResult result = await ref
+          .read(escalationNativeProvider)
+          .warmUpHost();
+      ready = result.ready;
+      // 原生给的是原始 stderr/stdout 片段，可能带换行；页面只有一行位置，
+      // 先压成单行，避免把操作区顶高。
+      final String trimmed = result.detail.trim().replaceAll(
+        RegExp(r'\s+'),
+        ' ',
+      );
+      detail = trimmed.isEmpty ? null : trimmed;
+    } catch (error) {
+      // 原生契约是「失败走返回值」，这里只为兜住通道层异常，并把异常
+      // 类型写进原因——页面需要的是「为什么没起来」这个事实。
+      ready = false;
+      detail = error.runtimeType.toString();
+    }
+    if (state.pairing) {
+      state = EscalationRunState(
+        phase: state.phase,
+        runId: state.runId,
+        chain: state.chain,
+        steps: state.steps,
+        outcome: state.outcome,
+        reasons: state.reasons,
+        pairing: state.pairing,
+        ignitePhase: ready
+            ? EscalationIgnitePhase.ready
+            : EscalationIgnitePhase.failed,
+        igniteDetail: ready ? null : detail,
+      );
+    }
+    // 身份与能力矩阵都可能刚变了（uid 变成 2000 / 通道从 ADB 切到 Binder）。
+    ref.invalidate(escalationHostStatusProvider);
+    ref.invalidate(escalationCapabilityMatrixProvider);
+  }
+
+  /// 点火失败后单独重试；配对结论不变，只重跑点火这一段。
+  Future<void> retryIgnite() async {
+    if (state.ignitePhase == EscalationIgnitePhase.running) return;
+    state = EscalationRunState(
+      phase: state.phase,
+      runId: state.runId,
+      chain: state.chain,
+      steps: state.steps,
+      outcome: state.outcome,
+      reasons: state.reasons,
+      pairing: state.pairing,
+      ignitePhase: EscalationIgnitePhase.running,
+    );
+    await _igniteHost();
   }
 
   /// 流正常结束；此时仓储已把记录落盘，可以安全刷新读取侧。
@@ -252,14 +368,18 @@ class EscalationRunController extends _$EscalationRunController {
       steps: state.steps,
       outcome: EscalationOutcome.failed,
       reasons: const <EscalationReason>[EscalationReason.executeFailed],
-      // 同上：异常收尾也要退出配对态，页面才能重新发起。
-      pairing: false,
+      // 同上：异常收尾也保留配对标记，页面才能说是「配对过程中断」。
+      pairing: state.pairing,
     );
   }
 
   void _invalidateRecords() {
     ref.invalidate(escalationRecordsProvider);
     ref.invalidate(escalationResidualProvider);
+    // 运行结束后宿主状态与能力矩阵都可能变了（配对成功会让 uid 变 2000）。
+    // 不刷新的话页面会一直停在「宿主未启动」，用户看到的反馈自相矛盾。
+    ref.invalidate(escalationHostStatusProvider);
+    ref.invalidate(escalationCapabilityMatrixProvider);
   }
 
   /// 汇总各阶段原因码并去重，顺序保持首次出现的位置。

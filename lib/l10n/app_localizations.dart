@@ -1274,6 +1274,102 @@ abstract class AppLocalizations {
   /// **'等待通知栏输入配对码…'**
   String get escalationPairingWaiting;
 
+  /// 提权页-配对码已交换成功、正在连接调试端口
+  ///
+  /// In zh, this message translates to:
+  /// **'配对码已收到，正在建立调试连接…'**
+  String get escalationPairingConnecting;
+
+  /// 提权页-配对会话成功结论
+  ///
+  /// In zh, this message translates to:
+  /// **'配对成功，特权进程已就绪'**
+  String get escalationPairingSucceeded;
+
+  /// 提权页-配对会话失败结论
+  ///
+  /// In zh, this message translates to:
+  /// **'配对失败'**
+  String get escalationPairingFailed;
+
+  /// 提权页-配对成功且点火进行中的结论
+  ///
+  /// In zh, this message translates to:
+  /// **'配对成功，正在启动特权进程…'**
+  String get escalationIgniteStarting;
+
+  /// 提权页-点火进行中的主按钮文案
+  ///
+  /// In zh, this message translates to:
+  /// **'正在启动特权进程…'**
+  String get escalationIgniteRunning;
+
+  /// 提权页-点火失败后的重试按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'重试启动特权进程'**
+  String get escalationIgniteRetry;
+
+  /// 提权页-配对成功但点火失败的结论
+  ///
+  /// In zh, this message translates to:
+  /// **'配对成功，但特权进程未启动'**
+  String get escalationIgniteFailed;
+
+  /// 提权页-空闲态状态行：特权进程已就绪
+  ///
+  /// In zh, this message translates to:
+  /// **'宿主已就绪（uid=2000）'**
+  String get escalationHostReady;
+
+  /// 提权页-空闲态状态行：特权进程未启动
+  ///
+  /// In zh, this message translates to:
+  /// **'宿主未启动，配对成功后会自动拉起'**
+  String get escalationHostNotStarted;
+
+  /// 提权页-已就绪时提供的断开入口按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'断开宿主'**
+  String get escalationHostDisconnect;
+
+  /// 提权页-断开请求发出后按钮上的过渡文案
+  ///
+  /// In zh, this message translates to:
+  /// **'正在断开…'**
+  String get escalationHostDisconnecting;
+
+  /// 提权页-断开按钮下方的说明
+  ///
+  /// In zh, this message translates to:
+  /// **'断开后特权进程会退出，需要重新配对才能再拉起'**
+  String get escalationHostDisconnectHint;
+
+  /// 提权页-运行中状态行前缀
+  ///
+  /// In zh, this message translates to:
+  /// **'执行中'**
+  String get escalationRunning;
+
+  /// 提权页-失败阶段的具体原因标签
+  ///
+  /// In zh, this message translates to:
+  /// **'失败原因'**
+  String get escalationFailureDetail;
+
+  /// 提权页-复制失败原因按钮的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'复制'**
+  String get escalationCopy;
+
+  /// 提权页-复制失败原因成功后的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'已复制到剪贴板'**
+  String get escalationCopied;
+
   /// 导出执行记录按钮
   ///
   /// In zh, this message translates to:

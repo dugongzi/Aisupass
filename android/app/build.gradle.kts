@@ -28,6 +28,19 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // 手册 §7.2：提权链的 launcher 只有 64 位实现，避免把不存在的 32 位产物带进包。
+        ndk {
+            abiFilters += listOf("arm64-v8a")
+        }
+    }
+
+    packaging {
+        jniLibs {
+            // 手册 §7.2：launcher / so 必须是可直接 exec 的独立文件。
+            // 不设 true 会被压进 APK，运行时无法执行。
+            useLegacyPackaging = true
+        }
     }
 
     buildTypes {
@@ -35,6 +48,15 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+
+            // 手册 §7.2：SupassService 由 app_process 按「类名字符串」反射拉起，
+            // R8 一旦开启必须保留类名与 main 方法，否则 release 包必崩。
+            // 注意：当前未开启 minify（libadb 的 AAR 没有 consumer-rules），
+            // 规则先挂在这里，开启 minify 前需要补齐依赖侧的 keep。
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
         }
     }
 }
