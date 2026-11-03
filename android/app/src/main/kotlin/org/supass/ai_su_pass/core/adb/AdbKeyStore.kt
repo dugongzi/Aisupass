@@ -176,7 +176,7 @@ internal class AdbKeyStore(context: Context) {
 
     private companion object {
         /** 与配对链路其他组件共用标签，便于一次过滤。 */
-        const val TAG = "AdbEscalation"
+        const val TAG = "AdbShell"
 
         const val DIR_NAME = "adb"
         const val KEY_FILE = "adbkey.pk8"

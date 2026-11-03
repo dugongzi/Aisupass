@@ -1,6 +1,6 @@
 # ai_su_pass
 
-AiSuPass​ is an intelligent Android privilege escalation assistant that leverages AI-driven vulnerability analysis and exploit chaining to streamline the root acquisition process. Designed for security researchers and advanced developers, it automates exploit discovery, compatibility matching, and post-exploitation configuration through a conversational interface.
+AiSuPass is an Android device assistant. It reads the local device environment, pairs over wireless ADB to obtain a shell(2000) connection, and answers device questions through a conversational interface.
 
 ## Getting Started
 

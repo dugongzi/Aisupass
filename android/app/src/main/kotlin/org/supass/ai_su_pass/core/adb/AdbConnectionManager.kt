@@ -173,7 +173,7 @@ internal class AdbConnectionManager(
 
     private companion object {
         /** 配对链路统一日志标签；logcat 里筛这一个就够了。 */
-        const val TAG = "AdbEscalation"
+        const val TAG = "AdbShell"
 
         /** 连接等待上限；配对后再连接通常 1 秒内完成，15 秒足够覆盖慢设备。 */
         const val CONNECT_TIMEOUT_MS = 15_000L
@@ -283,8 +283,8 @@ internal class PairingDiscovery(context: Context) : AutoCloseable {
     }
 
     private companion object {
-        /** 与外层同一个标签，logcat 里按 `AdbEscalation` 一次过滤整条配对链路。 */
-        const val TAG = "AdbEscalation"
+        /** 与外层同一个标签，logcat 里按 `AdbShell` 一次过滤整条配对链路。 */
+        const val TAG = "AdbShell"
 
         /** 轮询当前端点的间隔；只影响发现延迟，对 CPU 无压力。 */
         const val AWAIT_SLICE_MS = 200L

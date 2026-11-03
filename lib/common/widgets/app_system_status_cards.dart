@@ -1,8 +1,11 @@
+import 'package:Aisupass/common/widgets/app_adb_shell_panel.dart';
 import 'package:Aisupass/common/widgets/app_status_card.dart';
 import 'package:Aisupass/core/extensions/context_extensions.dart';
+import 'package:Aisupass/core/providers/adb_shell_provider.dart';
 import 'package:Aisupass/core/providers/system_status_provider.dart';
 import 'package:Aisupass/generated/system_status.g.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 /// ROOT 与 ADB 两张状态卡片，各自独立检测、独立刷新。
@@ -14,6 +17,19 @@ class AppSystemStatusCards extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // 切回前台时设备和系统状态可能已经变了（用户可能刚从设置里关了无线调试、
+    // 或者刚给别的 App 授了 root）。三个查询各自 invalidate，谁先回来谁先渲染。
+    useEffect(() {
+      final AppLifecycleListener listener = AppLifecycleListener(
+        onResume: () {
+          ref.invalidate(rootStatusProvider);
+          ref.invalidate(adbStatusProvider);
+          ref.invalidate(shellConnectionProvider);
+        },
+      );
+      return listener.dispose;
+    }, <Object?>[ref]);
+
     final AsyncValue<bool> rootAsync = ref.watch(rootStatusProvider);
     final AsyncValue<AdbStatus> adbAsync = ref.watch(adbStatusProvider);
 
@@ -37,7 +53,14 @@ class AppSystemStatusCards extends HookConsumerWidget {
           isActivated: _isAdbEnabled(adbAsync.value),
           isLoading: !adbAsync.hasValue,
           isRefreshing: adbAsync.isLoading,
-          onRefresh: () => ref.invalidate(adbStatusProvider),
+          // 两个查询各自独立发起、各自渲染：开关先回来就先更新卡片，
+          // shell 连接那条还在跑就继续跑，不互相拖。
+          onRefresh: () {
+            ref.invalidate(adbStatusProvider);
+            ref.invalidate(shellConnectionProvider);
+          },
+          // 无线 ADB 配对与 uid=2000 的 shell 连接都属于 ADB 本身。
+          footer: const AppAdbShellPanel(),
         ),
       ],
     );

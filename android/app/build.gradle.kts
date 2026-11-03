@@ -19,7 +19,7 @@ android {
         applicationId = "org.supass.ai_su_pass"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        // 提权链路依赖 Android 11+ 的 /proc 可读性与分区布局假设。
+        // 无线调试配对与 mDNS 发现需要 Android 11+（API 30）。
         minSdk = 30
         targetSdk = flutter.targetSdkVersion
         // Uses the version code from pubspec.yaml. When using split APKs, 1000 * ABI_VERSION
@@ -29,7 +29,7 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
 
-        // 手册 §7.2：提权链的 launcher 只有 64 位实现，避免把不存在的 32 位产物带进包。
+        // 只打 64 位产物。
         ndk {
             abiFilters += listOf("arm64-v8a")
         }
@@ -37,9 +37,9 @@ android {
 
     packaging {
         jniLibs {
-            // 手册 §7.2：launcher / so 必须是可直接 exec 的独立文件。
-            // 不设 true 会被压进 APK，运行时无法执行。
+            // 保留目录内 .so 原始字节，不压缩、不 strip。
             useLegacyPackaging = true
+            keepDebugSymbols += "**/*.so"
         }
     }
 
@@ -49,8 +49,6 @@ android {
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
 
-            // 手册 §7.2：SupassService 由 app_process 按「类名字符串」反射拉起，
-            // R8 一旦开启必须保留类名与 main 方法，否则 release 包必崩。
             // 注意：当前未开启 minify（libadb 的 AAR 没有 consumer-rules），
             // 规则先挂在这里，开启 minify 前需要补齐依赖侧的 keep。
             proguardFiles(

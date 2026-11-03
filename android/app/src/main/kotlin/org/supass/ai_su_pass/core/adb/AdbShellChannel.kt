@@ -245,7 +245,7 @@ internal class AdbShellChannel(
 
     private companion object {
         /** 与其他配对组件共用同一标签，便于一次过滤整条链路。 */
-        const val TAG = "AdbEscalation"
+        const val TAG = "AdbShell"
 
         const val SOURCE = "adb"
         const val UNKNOWN_UID = -1L

@@ -415,10 +415,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatIssueNoConfig => '请先在 AI 配置里完成设置';
 
   @override
-  String get chatEmptyTitle => 'AI 提权助手';
+  String get chatEmptyTitle => 'AI 设备助手';
 
   @override
-  String get chatEmptyHint => '描述你的设备情况，我会读取设备信息并给出提权方案';
+  String get chatEmptyHint => '描述你的设备情况，我会读取设备信息并回答你的问题';
 
   @override
   String get chatSuggestionDevice => '分析我的设备环境';
@@ -427,7 +427,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatSuggestionRoot => '当前设备是否已 root';
 
   @override
-  String get chatSuggestionPlan => '推荐一条可用的提权方案';
+  String get chatSuggestionPlan => '这台设备的 ADB 状态怎么样';
 
   @override
   String get chatSessions => '会话';
@@ -528,22 +528,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatShareFailed => '分享失败，请稍后重试';
 
   @override
-  String get aiQuickPanelTitle => 'AI 提权助手';
+  String get aiQuickPanelTitle => 'AI 助手';
 
   @override
-  String get aiQuickPanelSubtitle => '选择一种方式开始获取最高权限';
+  String get aiQuickChatTitle => 'AI 对话';
 
   @override
-  String get aiQuickEscalateTitle => 'AI 提权';
-
-  @override
-  String get aiQuickEscalateDesc => '智能分析设备环境，自动生成并执行提权方案';
-
-  @override
-  String get manualQuickEscalateTitle => '手动提权';
-
-  @override
-  String get manualQuickEscalateDesc => '利用目前已知的提权方案进行提权';
+  String get aiQuickChatDesc => '读取设备环境并回答你的问题';
 
   @override
   String get languageTitle => '语言';
@@ -569,297 +560,58 @@ class AppLocalizationsZh extends AppLocalizations {
   String get commonRetry => '重试';
 
   @override
-  String get escalationTitle => '提权';
+  String get shellPairingStart => '无线调试配对';
 
   @override
-  String get escalationSubtitle => '探测设备能力并执行提权链';
+  String get shellPairingNotice => '点击后在通知栏输入设备显示的配对码，不必切回应用';
 
   @override
-  String get escalationSectionDevice => '设备信息';
+  String get shellPairingWaitingCode => '等待输入配对码…';
 
   @override
-  String get escalationSectionConnection => '连接';
+  String get shellPairingPairing => '正在配对…';
 
   @override
-  String get escalationSectionChains => '能力矩阵';
+  String get shellPairingConnecting => '配对码已收到，正在建立连接…';
 
   @override
-  String get escalationSectionTimeline => '执行时间线';
+  String get shellPairingCancel => '取消';
 
   @override
-  String get escalationAvailable => '可用';
+  String get shellPairingRetry => '重试';
 
   @override
-  String get escalationUnavailable => '不可用';
+  String get shellConnected => 'shell 已连接';
 
   @override
-  String get escalationStart => '开始提权';
+  String shellConnectedUid(int uid) {
+    return 'shell 已连接（uid=$uid）';
+  }
 
   @override
-  String get escalationCancel => '取消';
+  String get shellDisconnected => 'shell 未连接';
 
   @override
-  String get escalationRetry => '重试';
+  String get shellCopy => '复制';
 
   @override
-  String get escalationNoAvailableChain => '当前设备没有可用的提权链';
+  String get shellCopied => '已复制到剪贴板';
 
   @override
-  String get escalationPlatformUnsupported => '当前平台不支持提权';
+  String get shellReasonHostAuthFailed => '配对鉴权失败，请重试';
 
   @override
-  String get escalationConfirmTitle => '确认执行提权？';
+  String get shellReasonHostDisconnected => '连接已断开';
 
   @override
-  String get escalationConfirmBody => '该操作可能修改系统状态，失败后存在遗留风险。';
+  String get shellReasonPairingTimeout => '配对超时，请重试';
 
   @override
-  String get escalationDangerLow => '低风险';
+  String get shellReasonDeviceRebooted => '设备重启导致连接中断';
 
   @override
-  String get escalationDangerMedium => '中风险';
+  String get shellReasonCancelled => '已取消配对';
 
   @override
-  String get escalationDangerHigh => '高风险';
-
-  @override
-  String get escalationResidualWarning => '检测到上次运行未清理干净，建议先处理遗留状态';
-
-  @override
-  String get escalationHostConnecting => '正在连接提权宿主…';
-
-  @override
-  String get escalationHostDisconnected => '提权宿主未连接';
-
-  @override
-  String get escalationPairingStart => '无线调试配对';
-
-  @override
-  String get escalationPairingNotice => '配对码在下拉通知栏里输入，不要切换应用；切屏会让系统的配对弹窗失效。';
-
-  @override
-  String get escalationPairingWaiting => '等待通知栏输入配对码…';
-
-  @override
-  String get escalationPairingConnecting => '配对码已收到，正在建立调试连接…';
-
-  @override
-  String get escalationPairingSucceeded => '配对成功，特权进程已就绪';
-
-  @override
-  String get escalationPairingFailed => '配对失败';
-
-  @override
-  String get escalationIgniteStarting => '配对成功，正在启动特权进程…';
-
-  @override
-  String get escalationIgniteRunning => '正在启动特权进程…';
-
-  @override
-  String get escalationIgniteRetry => '重试启动特权进程';
-
-  @override
-  String get escalationIgniteFailed => '配对成功，但特权进程未启动';
-
-  @override
-  String get escalationHostReady => '宿主已就绪（uid=2000）';
-
-  @override
-  String get escalationHostNotStarted => '宿主未启动，配对成功后会自动拉起';
-
-  @override
-  String get escalationHostDisconnect => '断开宿主';
-
-  @override
-  String get escalationHostDisconnecting => '正在断开…';
-
-  @override
-  String get escalationHostDisconnectHint => '断开后特权进程会退出，需要重新配对才能再拉起';
-
-  @override
-  String get escalationRunning => '执行中';
-
-  @override
-  String get escalationFailureDetail => '失败原因';
-
-  @override
-  String get escalationCopy => '复制';
-
-  @override
-  String get escalationCopied => '已复制到剪贴板';
-
-  @override
-  String get escalationExportRecord => '导出记录';
-
-  @override
-  String get escalationExportEmpty => '暂无可导出的记录';
-
-  @override
-  String get escalationRecordEmpty => '暂无执行记录';
-
-  @override
-  String get escalationChainShellChannelName => 'L1 通道自检';
-
-  @override
-  String get escalationChainShellChannelDesc =>
-      '验证能否以 shell(2000) 执行命令并写盘，不涉及提权';
-
-  @override
-  String get escalationChainKernelModuleName => '内核模块';
-
-  @override
-  String get escalationChainKernelModuleDesc => '通过加载内核模块获得提权';
-
-  @override
-  String get escalationChainPayloadName => '载荷链';
-
-  @override
-  String get escalationChainPayloadDesc => '使用本地载荷完成提权';
-
-  @override
-  String get escalationChainKernelExploitName => '内核漏洞';
-
-  @override
-  String get escalationChainKernelExploitDesc => '利用内核漏洞获得临时提权';
-
-  @override
-  String get escalationChainPageCacheName => 'PageCache';
-
-  @override
-  String get escalationChainPageCacheDesc => '通过 PageCache 写入获得提权';
-
-  @override
-  String get escalationStageProbe => '探测';
-
-  @override
-  String get escalationStagePrepare => '准备';
-
-  @override
-  String get escalationStageExecute => '执行';
-
-  @override
-  String get escalationStageVerify => '校验';
-
-  @override
-  String get escalationStageCleanup => '清理';
-
-  @override
-  String get escalationOutcomeSuccess => '提权成功';
-
-  @override
-  String get escalationOutcomePartial => '部分成功';
-
-  @override
-  String get escalationOutcomeFailed => '提权失败';
-
-  @override
-  String get escalationOutcomeUnsafe => '存在风险';
-
-  @override
-  String get escalationOutcomeUnsupported => '不支持';
-
-  @override
-  String get escalationOutcomeNotStarted => '未开始';
-
-  @override
-  String get escalationDeviceSdk => 'Android SDK';
-
-  @override
-  String get escalationDeviceAbi => '架构';
-
-  @override
-  String get escalationDeviceKernel => '内核版本';
-
-  @override
-  String get escalationDeviceSelinux => 'SELinux';
-
-  @override
-  String get escalationDeviceManufacturer => '厂商';
-
-  @override
-  String get escalationDeviceModel => '机型';
-
-  @override
-  String get escalationReasonPlatformUnsupported => '当前平台不支持该提权链';
-
-  @override
-  String get escalationReasonAndroidTooOld => '系统版本过低';
-
-  @override
-  String get escalationReasonDeviceNotSupported => '设备不在支持列表内';
-
-  @override
-  String get escalationReasonProbeTimeout => '探测超时';
-
-  @override
-  String get escalationReasonProbeFailed => '探测失败';
-
-  @override
-  String get escalationReasonNoRootBinary => '未找到 su 可执行文件';
-
-  @override
-  String get escalationReasonNoSelinuxContext => '缺少可用的 SELinux 上下文';
-
-  @override
-  String get escalationReasonSelinuxEnforcing => 'SELinux 处于强制模式';
-
-  @override
-  String get escalationReasonShellUnavailable => 'Shell 不可用';
-
-  @override
-  String get escalationReasonShellDenied => 'Shell 执行被拒绝';
-
-  @override
-  String get escalationReasonShellTimeout => 'Shell 执行超时';
-
-  @override
-  String get escalationReasonPayloadMissing => '载荷文件缺失';
-
-  @override
-  String get escalationReasonPayloadMismatch => '载荷与设备不匹配';
-
-  @override
-  String get escalationReasonCatalogCorrupted => '资产目录损坏';
-
-  @override
-  String get escalationReasonKernelNotSupported => '内核不支持';
-
-  @override
-  String get escalationReasonKernelModuleLoadFailed => '内核模块加载失败';
-
-  @override
-  String get escalationReasonKernelVersionMismatch => '内核版本不匹配';
-
-  @override
-  String get escalationReasonExecuteTimeout => '执行超时';
-
-  @override
-  String get escalationReasonExecuteFailed => '执行失败';
-
-  @override
-  String get escalationReasonVerifyFailedAtExternal => '外部状态校验未通过';
-
-  @override
-  String get escalationReasonVerifyTimeout => '校验超时';
-
-  @override
-  String get escalationReasonCleanupFailed => '清理失败';
-
-  @override
-  String get escalationReasonEnforceRestoreFailed => 'SELinux 状态恢复失败';
-
-  @override
-  String get escalationReasonResidualLeft => '存在遗留状态';
-
-  @override
-  String get escalationReasonHostDisconnected => '提权宿主未连接';
-
-  @override
-  String get escalationReasonHostAuthFailed => '提权宿主鉴权失败';
-
-  @override
-  String get escalationReasonHostPairingFailed => '提权宿主配对失败';
-
-  @override
-  String get escalationReasonUnknown => '未知原因';
+  String get shellReasonHostPairingFailed => '配对失败，请重试';
 }

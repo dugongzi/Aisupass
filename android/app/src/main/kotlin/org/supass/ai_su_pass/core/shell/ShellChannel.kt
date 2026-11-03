@@ -15,10 +15,7 @@ internal enum class ShellStatus {
 }
 
 /**
- * shell 命令通道（L1）。
- *
- * 抽象出来的目的：宿主实现可以换（自建 ADB 连接 / 已 root 的 su），
- * 但链实现只认这个接口，不关心身份从哪来。
+ * shell 命令通道。
  *
  * 实现方约束：
  * 1. [exec] 必须带超时，超时先杀进程再返回，不允许无限等待；
@@ -27,23 +24,20 @@ internal enum class ShellStatus {
  */
 internal interface ShellChannel {
 
-    /** 通道来源标识，写进证据便于排障（如 `adb`）。 */
+    /** 通道来源标识，写进日志便于排障（如 `adb`）。 */
     val source: String
 
     /** 通道健康状态，零副作用。 */
     fun status(): ShellStatus
 
-    /** 当前身份 uid：`0` = root，`2000` = shell，`-1` = 未知/不可用。零副作用。 */
+    /** 当前身份 uid：`2000` = shell，`-1` = 未知/不可用。零副作用。 */
     val uid: Long
 
     /** 阻塞执行一条命令；调用方负责放到后台线程。 */
     fun exec(command: String, timeoutMs: Long = DEFAULT_TIMEOUT_MS): ShellResult
 
     companion object {
-        /** 默认超时：普通只读命令足够，危险原语由调用方显式放大。 */
+        /** 默认超时：普通只读命令足够，长命令由调用方显式放大。 */
         const val DEFAULT_TIMEOUT_MS = 10_000L
-
-        /** 合法的特权身份：root 或 shell。 */
-        fun isPrivileged(uid: Long): Boolean = uid == 0L || uid == 2000L
     }
 }

@@ -421,11 +421,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatIssueNoConfig => 'Finish setting up an AI config first';
 
   @override
-  String get chatEmptyTitle => 'AI Escalation Assistant';
+  String get chatEmptyTitle => 'AI Device Assistant';
 
   @override
   String get chatEmptyHint =>
-      'Describe your device and I will inspect it before suggesting an escalation plan';
+      'Describe your device and I will inspect it before answering';
 
   @override
   String get chatSuggestionDevice => 'Analyze my device';
@@ -434,7 +434,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatSuggestionRoot => 'Is this device already rooted?';
 
   @override
-  String get chatSuggestionPlan => 'Recommend an escalation plan';
+  String get chatSuggestionPlan => 'How is the ADB status of this device?';
 
   @override
   String get chatSessions => 'Conversations';
@@ -535,24 +535,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatShareFailed => 'Share failed, please try again';
 
   @override
-  String get aiQuickPanelTitle => 'AI Escalation';
+  String get aiQuickPanelTitle => 'AI Assistant';
 
   @override
-  String get aiQuickPanelSubtitle => 'Choose a way to gain root access';
+  String get aiQuickChatTitle => 'AI Chat';
 
   @override
-  String get aiQuickEscalateTitle => 'AI Escalation';
-
-  @override
-  String get aiQuickEscalateDesc =>
-      'Analyze your device and generate an exploit plan automatically';
-
-  @override
-  String get manualQuickEscalateTitle => 'Manual Escalation';
-
-  @override
-  String get manualQuickEscalateDesc =>
-      'Escalate using currently known exploits';
+  String get aiQuickChatDesc =>
+      'Read the device environment and answer your questions';
 
   @override
   String get languageTitle => 'Language';
@@ -578,321 +568,60 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonRetry => 'Retry';
 
   @override
-  String get escalationTitle => 'Escalation';
+  String get shellPairingStart => 'Pair over wireless debugging';
 
   @override
-  String get escalationSubtitle =>
-      'Probe device capabilities and run escalation chains';
+  String get shellPairingNotice =>
+      'Tap, then enter the code shown on the device in the notification';
 
   @override
-  String get escalationSectionDevice => 'Device';
+  String get shellPairingWaitingCode => 'Waiting for the pairing code…';
 
   @override
-  String get escalationSectionConnection => 'Connection';
+  String get shellPairingPairing => 'Pairing…';
 
   @override
-  String get escalationSectionChains => 'Capability Matrix';
+  String get shellPairingConnecting => 'Code received, connecting…';
 
   @override
-  String get escalationSectionTimeline => 'Timeline';
+  String get shellPairingCancel => 'Cancel';
 
   @override
-  String get escalationAvailable => 'Available';
+  String get shellPairingRetry => 'Retry';
 
   @override
-  String get escalationUnavailable => 'Unavailable';
+  String get shellConnected => 'Shell connected';
 
   @override
-  String get escalationStart => 'Start';
+  String shellConnectedUid(int uid) {
+    return 'Shell connected (uid=$uid)';
+  }
 
   @override
-  String get escalationCancel => 'Cancel';
+  String get shellDisconnected => 'Shell not connected';
 
   @override
-  String get escalationRetry => 'Retry';
+  String get shellCopy => 'Copy';
 
   @override
-  String get escalationNoAvailableChain =>
-      'No escalation chain is available on this device';
+  String get shellCopied => 'Copied to clipboard';
 
   @override
-  String get escalationPlatformUnsupported =>
-      'Escalation is not supported on this platform';
+  String get shellReasonHostAuthFailed =>
+      'Pairing authentication failed, please retry';
 
   @override
-  String get escalationConfirmTitle => 'Run escalation?';
+  String get shellReasonHostDisconnected => 'Connection lost';
 
   @override
-  String get escalationConfirmBody =>
-      'This may modify system state and leave residue on failure.';
+  String get shellReasonPairingTimeout => 'Pairing timed out, please retry';
 
   @override
-  String get escalationDangerLow => 'Low risk';
+  String get shellReasonDeviceRebooted => 'Device rebooted, connection dropped';
 
   @override
-  String get escalationDangerMedium => 'Medium risk';
+  String get shellReasonCancelled => 'Pairing cancelled';
 
   @override
-  String get escalationDangerHigh => 'High risk';
-
-  @override
-  String get escalationResidualWarning =>
-      'A previous run left residual state; clean it up first';
-
-  @override
-  String get escalationHostConnecting => 'Connecting to privilege host…';
-
-  @override
-  String get escalationHostDisconnected => 'Privilege host disconnected';
-
-  @override
-  String get escalationPairingStart => 'Pair via wireless debugging';
-
-  @override
-  String get escalationPairingNotice =>
-      'Enter the code in the notification shade without switching apps — leaving this screen invalidates the system pairing dialog.';
-
-  @override
-  String get escalationPairingWaiting =>
-      'Waiting for the pairing code in notifications…';
-
-  @override
-  String get escalationPairingConnecting =>
-      'Code accepted, establishing the debug connection…';
-
-  @override
-  String get escalationPairingSucceeded =>
-      'Paired, privileged process is ready';
-
-  @override
-  String get escalationPairingFailed => 'Pairing failed';
-
-  @override
-  String get escalationIgniteStarting =>
-      'Paired, starting the privileged process…';
-
-  @override
-  String get escalationIgniteRunning => 'Starting the privileged process…';
-
-  @override
-  String get escalationIgniteRetry => 'Retry starting privileged process';
-
-  @override
-  String get escalationIgniteFailed =>
-      'Paired, but the privileged process did not start';
-
-  @override
-  String get escalationHostReady => 'Host ready (uid=2000)';
-
-  @override
-  String get escalationHostNotStarted =>
-      'Host not started, it will launch after pairing';
-
-  @override
-  String get escalationHostDisconnect => 'Disconnect host';
-
-  @override
-  String get escalationHostDisconnecting => 'Disconnecting…';
-
-  @override
-  String get escalationHostDisconnectHint =>
-      'The privileged process exits after disconnecting; pair again to relaunch it';
-
-  @override
-  String get escalationRunning => 'Running';
-
-  @override
-  String get escalationFailureDetail => 'Reason';
-
-  @override
-  String get escalationCopy => 'Copy';
-
-  @override
-  String get escalationCopied => 'Copied to clipboard';
-
-  @override
-  String get escalationExportRecord => 'Export records';
-
-  @override
-  String get escalationExportEmpty => 'No records to export';
-
-  @override
-  String get escalationRecordEmpty => 'No runs yet';
-
-  @override
-  String get escalationChainShellChannelName => 'L1 channel check';
-
-  @override
-  String get escalationChainShellChannelDesc =>
-      'Verify shell (uid 2000) command execution and tmp write — no escalation';
-
-  @override
-  String get escalationChainKernelModuleName => 'Kernel module';
-
-  @override
-  String get escalationChainKernelModuleDesc =>
-      'Gain privileges by loading a kernel module';
-
-  @override
-  String get escalationChainPayloadName => 'Payload chain';
-
-  @override
-  String get escalationChainPayloadDesc => 'Escalate using a bundled payload';
-
-  @override
-  String get escalationChainKernelExploitName => 'Kernel exploit';
-
-  @override
-  String get escalationChainKernelExploitDesc =>
-      'Gain temporary privileges via a kernel vulnerability';
-
-  @override
-  String get escalationChainPageCacheName => 'PageCache';
-
-  @override
-  String get escalationChainPageCacheDesc =>
-      'Escalate by writing through PageCache';
-
-  @override
-  String get escalationStageProbe => 'Probe';
-
-  @override
-  String get escalationStagePrepare => 'Prepare';
-
-  @override
-  String get escalationStageExecute => 'Execute';
-
-  @override
-  String get escalationStageVerify => 'Verify';
-
-  @override
-  String get escalationStageCleanup => 'Cleanup';
-
-  @override
-  String get escalationOutcomeSuccess => 'Succeeded';
-
-  @override
-  String get escalationOutcomePartial => 'Partially succeeded';
-
-  @override
-  String get escalationOutcomeFailed => 'Failed';
-
-  @override
-  String get escalationOutcomeUnsafe => 'Unsafe state';
-
-  @override
-  String get escalationOutcomeUnsupported => 'Unsupported';
-
-  @override
-  String get escalationOutcomeNotStarted => 'Not started';
-
-  @override
-  String get escalationDeviceSdk => 'Android SDK';
-
-  @override
-  String get escalationDeviceAbi => 'ABI';
-
-  @override
-  String get escalationDeviceKernel => 'Kernel';
-
-  @override
-  String get escalationDeviceSelinux => 'SELinux';
-
-  @override
-  String get escalationDeviceManufacturer => 'Manufacturer';
-
-  @override
-  String get escalationDeviceModel => 'Model';
-
-  @override
-  String get escalationReasonPlatformUnsupported =>
-      'This chain is not supported on the current platform';
-
-  @override
-  String get escalationReasonAndroidTooOld => 'Android version is too old';
-
-  @override
-  String get escalationReasonDeviceNotSupported =>
-      'Device is not in the supported list';
-
-  @override
-  String get escalationReasonProbeTimeout => 'Probe timed out';
-
-  @override
-  String get escalationReasonProbeFailed => 'Probe failed';
-
-  @override
-  String get escalationReasonNoRootBinary => 'No su binary found';
-
-  @override
-  String get escalationReasonNoSelinuxContext => 'No usable SELinux context';
-
-  @override
-  String get escalationReasonSelinuxEnforcing => 'SELinux is enforcing';
-
-  @override
-  String get escalationReasonShellUnavailable => 'Shell is unavailable';
-
-  @override
-  String get escalationReasonShellDenied => 'Shell execution was denied';
-
-  @override
-  String get escalationReasonShellTimeout => 'Shell execution timed out';
-
-  @override
-  String get escalationReasonPayloadMissing => 'Payload file is missing';
-
-  @override
-  String get escalationReasonPayloadMismatch =>
-      'Payload does not match this device';
-
-  @override
-  String get escalationReasonCatalogCorrupted => 'Asset catalog is corrupted';
-
-  @override
-  String get escalationReasonKernelNotSupported => 'Kernel is not supported';
-
-  @override
-  String get escalationReasonKernelModuleLoadFailed =>
-      'Failed to load the kernel module';
-
-  @override
-  String get escalationReasonKernelVersionMismatch => 'Kernel version mismatch';
-
-  @override
-  String get escalationReasonExecuteTimeout => 'Execution timed out';
-
-  @override
-  String get escalationReasonExecuteFailed => 'Execution failed';
-
-  @override
-  String get escalationReasonVerifyFailedAtExternal =>
-      'External state verification failed';
-
-  @override
-  String get escalationReasonVerifyTimeout => 'Verification timed out';
-
-  @override
-  String get escalationReasonCleanupFailed => 'Cleanup failed';
-
-  @override
-  String get escalationReasonEnforceRestoreFailed =>
-      'Failed to restore SELinux state';
-
-  @override
-  String get escalationReasonResidualLeft => 'Residual state left behind';
-
-  @override
-  String get escalationReasonHostDisconnected => 'Privilege host disconnected';
-
-  @override
-  String get escalationReasonHostAuthFailed =>
-      'Privilege host authentication failed';
-
-  @override
-  String get escalationReasonHostPairingFailed =>
-      'Privilege host pairing failed';
-
-  @override
-  String get escalationReasonUnknown => 'Unknown reason';
+  String get shellReasonHostPairingFailed => 'Pairing failed, please retry';
 }

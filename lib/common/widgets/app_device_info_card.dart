@@ -11,7 +11,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 /// 设备信息卡片。
 ///
-/// 单列展示提权方案依赖的环境参数，点击任意一行只复制该项内容，
+/// 单列展示设备环境参数，点击任意一行只复制该项内容，
 /// 右上角按钮可复制全部；SELinux 用色标表达是否受限。
 class AppDeviceInfoCard extends HookConsumerWidget {
   const AppDeviceInfoCard({super.key});

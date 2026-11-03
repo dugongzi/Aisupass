@@ -8,7 +8,6 @@ import 'package:Aisupass/common/widgets/app_bottom_center_ball.dart';
 import 'package:Aisupass/core/extensions/context_extensions.dart';
 import 'package:Aisupass/core/routes/app_route.dart';
 import 'package:Aisupass/features/ai/presentation/providers/ai_config_query_provider.dart';
-import 'package:Aisupass/features/escalation/presentation/providers/escalation_record_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -37,9 +36,6 @@ class MainPage extends HookConsumerWidget {
     final PageController pageController = usePageController();
     // 与首页 AI 状态卡共用同一份真实状态，检测中按未激活处理。
     final bool isAiActivated = ref.watch(aiStatusProvider).value ?? false;
-    // 上次运行是否留下残留，用于快捷面板入口红点。
-    final bool hasResidual =
-        ref.watch(escalationResidualProvider).value ?? false;
 
     final List<String> titles = <String>[
       context.l10n.homeTitle,
@@ -97,21 +93,16 @@ class MainPage extends HookConsumerWidget {
             isAiActivated: isAiActivated,
           ),
         ),
-        // 快捷提权面板叠在 Scaffold 之上，遮罩会同时盖住圆球，
+        // 快捷面板叠在 Scaffold 之上，遮罩会同时盖住圆球，
         // 因此展开时再次点击圆球实际命中的是遮罩，用于收起面板。
         AiQuickPanelOverlay(
           visible: isQuickPanelOpen.value,
           isActivated: isAiActivated,
-          hasResidual: hasResidual,
           bottomOffset: _quickPanelBottomOffset(context),
           onDismiss: () => isQuickPanelOpen.value = false,
-          onAiEscalate: () {
+          onOpenChat: () {
             isQuickPanelOpen.value = false;
             context.push(AppRoute.chat);
-          },
-          onManualEscalate: () {
-            isQuickPanelOpen.value = false;
-            context.push(AppRoute.escalation);
           },
         ),
       ],

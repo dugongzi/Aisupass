@@ -875,13 +875,13 @@ abstract class AppLocalizations {
   /// 空会话引导标题
   ///
   /// In zh, this message translates to:
-  /// **'AI 提权助手'**
+  /// **'AI 设备助手'**
   String get chatEmptyTitle;
 
   /// 空会话引导说明
   ///
   /// In zh, this message translates to:
-  /// **'描述你的设备情况，我会读取设备信息并给出提权方案'**
+  /// **'描述你的设备情况，我会读取设备信息并回答你的问题'**
   String get chatEmptyHint;
 
   /// 空会话建议提问-设备环境
@@ -896,10 +896,10 @@ abstract class AppLocalizations {
   /// **'当前设备是否已 root'**
   String get chatSuggestionRoot;
 
-  /// 空会话建议提问-提权方案
+  /// 空会话建议提问-ADB 状态
   ///
   /// In zh, this message translates to:
-  /// **'推荐一条可用的提权方案'**
+  /// **'这台设备的 ADB 状态怎么样'**
   String get chatSuggestionPlan;
 
   /// 会话列表标题
@@ -1061,38 +1061,20 @@ abstract class AppLocalizations {
   /// 底栏圆球快捷面板标题
   ///
   /// In zh, this message translates to:
-  /// **'AI 提权助手'**
+  /// **'AI 助手'**
   String get aiQuickPanelTitle;
 
-  /// 底栏圆球快捷面板副标题
+  /// 快捷面板-AI 对话入口
   ///
   /// In zh, this message translates to:
-  /// **'选择一种方式开始获取最高权限'**
-  String get aiQuickPanelSubtitle;
+  /// **'AI 对话'**
+  String get aiQuickChatTitle;
 
-  /// 快捷面板-AI 提权入口
+  /// 快捷面板-AI 对话入口说明
   ///
   /// In zh, this message translates to:
-  /// **'AI 提权'**
-  String get aiQuickEscalateTitle;
-
-  /// 快捷面板-AI 提权入口说明
-  ///
-  /// In zh, this message translates to:
-  /// **'智能分析设备环境，自动生成并执行提权方案'**
-  String get aiQuickEscalateDesc;
-
-  /// 快捷面板-手动提权入口
-  ///
-  /// In zh, this message translates to:
-  /// **'手动提权'**
-  String get manualQuickEscalateTitle;
-
-  /// 快捷面板-手动提权入口说明
-  ///
-  /// In zh, this message translates to:
-  /// **'利用目前已知的提权方案进行提权'**
-  String get manualQuickEscalateDesc;
+  /// **'读取设备环境并回答你的问题'**
+  String get aiQuickChatDesc;
 
   /// 设置项-语言（语言名称本身在组件内硬编码，不走 l10n）
   ///
@@ -1136,593 +1118,113 @@ abstract class AppLocalizations {
   /// **'重试'**
   String get commonRetry;
 
-  /// 提权页标题
-  ///
-  /// In zh, this message translates to:
-  /// **'提权'**
-  String get escalationTitle;
-
-  /// 提权页副标题
-  ///
-  /// In zh, this message translates to:
-  /// **'探测设备能力并执行提权链'**
-  String get escalationSubtitle;
-
-  /// 提权页-设备信息分区标题
-  ///
-  /// In zh, this message translates to:
-  /// **'设备信息'**
-  String get escalationSectionDevice;
-
-  /// 提权页-连接分区标题
-  ///
-  /// In zh, this message translates to:
-  /// **'连接'**
-  String get escalationSectionConnection;
-
-  /// 提权页-能力矩阵分区标题
-  ///
-  /// In zh, this message translates to:
-  /// **'能力矩阵'**
-  String get escalationSectionChains;
-
-  /// 提权页-执行时间线分区标题
-  ///
-  /// In zh, this message translates to:
-  /// **'执行时间线'**
-  String get escalationSectionTimeline;
-
-  /// 能力矩阵-链可用
-  ///
-  /// In zh, this message translates to:
-  /// **'可用'**
-  String get escalationAvailable;
-
-  /// 能力矩阵-链不可用
-  ///
-  /// In zh, this message translates to:
-  /// **'不可用'**
-  String get escalationUnavailable;
-
-  /// 提权页主按钮
-  ///
-  /// In zh, this message translates to:
-  /// **'开始提权'**
-  String get escalationStart;
-
-  /// 提权页取消按钮
-  ///
-  /// In zh, this message translates to:
-  /// **'取消'**
-  String get escalationCancel;
-
-  /// 提权页重试按钮
-  ///
-  /// In zh, this message translates to:
-  /// **'重试'**
-  String get escalationRetry;
-
-  /// 无可用链时的提示
-  ///
-  /// In zh, this message translates to:
-  /// **'当前设备没有可用的提权链'**
-  String get escalationNoAvailableChain;
-
-  /// 非 Android 平台的提示
-  ///
-  /// In zh, this message translates to:
-  /// **'当前平台不支持提权'**
-  String get escalationPlatformUnsupported;
-
-  /// 二次确认弹窗标题
-  ///
-  /// In zh, this message translates to:
-  /// **'确认执行提权？'**
-  String get escalationConfirmTitle;
-
-  /// 二次确认弹窗正文
-  ///
-  /// In zh, this message translates to:
-  /// **'该操作可能修改系统状态，失败后存在遗留风险。'**
-  String get escalationConfirmBody;
-
-  /// 链危险等级-低
-  ///
-  /// In zh, this message translates to:
-  /// **'低风险'**
-  String get escalationDangerLow;
-
-  /// 链危险等级-中
-  ///
-  /// In zh, this message translates to:
-  /// **'中风险'**
-  String get escalationDangerMedium;
-
-  /// 链危险等级-高
-  ///
-  /// In zh, this message translates to:
-  /// **'高风险'**
-  String get escalationDangerHigh;
-
-  /// 遗留状态告警横幅
-  ///
-  /// In zh, this message translates to:
-  /// **'检测到上次运行未清理干净，建议先处理遗留状态'**
-  String get escalationResidualWarning;
-
-  /// 宿主连接中提示
-  ///
-  /// In zh, this message translates to:
-  /// **'正在连接提权宿主…'**
-  String get escalationHostConnecting;
-
-  /// 宿主未连接提示
-  ///
-  /// In zh, this message translates to:
-  /// **'提权宿主未连接'**
-  String get escalationHostDisconnected;
-
-  /// 提权页-通知栏配对入口按钮
+  /// 首页 ADB 卡片-shell 未连接时的配对按钮
   ///
   /// In zh, this message translates to:
   /// **'无线调试配对'**
-  String get escalationPairingStart;
+  String get shellPairingStart;
 
-  /// 提权页-通知栏配对说明
+  /// 首页 ADB 卡片-配对说明
   ///
   /// In zh, this message translates to:
-  /// **'配对码在下拉通知栏里输入，不要切换应用；切屏会让系统的配对弹窗失效。'**
-  String get escalationPairingNotice;
+  /// **'点击后在通知栏输入设备显示的配对码，不必切回应用'**
+  String get shellPairingNotice;
 
-  /// 提权页-通知栏配对进行中提示
+  /// 首页 ADB 卡片-等待通知栏输入配对码
   ///
   /// In zh, this message translates to:
-  /// **'等待通知栏输入配对码…'**
-  String get escalationPairingWaiting;
+  /// **'等待输入配对码…'**
+  String get shellPairingWaitingCode;
 
-  /// 提权页-配对码已交换成功、正在连接调试端口
+  /// 首页 ADB 卡片-正在与设备配对
   ///
   /// In zh, this message translates to:
-  /// **'配对码已收到，正在建立调试连接…'**
-  String get escalationPairingConnecting;
+  /// **'正在配对…'**
+  String get shellPairingPairing;
 
-  /// 提权页-配对会话成功结论
+  /// 首页 ADB 卡片-配对成功、正在连接调试端口
   ///
   /// In zh, this message translates to:
-  /// **'配对成功，特权进程已就绪'**
-  String get escalationPairingSucceeded;
+  /// **'配对码已收到，正在建立连接…'**
+  String get shellPairingConnecting;
 
-  /// 提权页-配对会话失败结论
+  /// 首页 ADB 卡片-取消配对按钮
   ///
   /// In zh, this message translates to:
-  /// **'配对失败'**
-  String get escalationPairingFailed;
+  /// **'取消'**
+  String get shellPairingCancel;
 
-  /// 提权页-配对成功且点火进行中的结论
+  /// 首页 ADB 卡片-配对失败后的重试按钮
   ///
   /// In zh, this message translates to:
-  /// **'配对成功，正在启动特权进程…'**
-  String get escalationIgniteStarting;
+  /// **'重试'**
+  String get shellPairingRetry;
 
-  /// 提权页-点火进行中的主按钮文案
+  /// 首页 ADB 卡片-shell 已连接但没有 uid 时的状态
   ///
   /// In zh, this message translates to:
-  /// **'正在启动特权进程…'**
-  String get escalationIgniteRunning;
+  /// **'shell 已连接'**
+  String get shellConnected;
 
-  /// 提权页-点火失败后的重试按钮
+  /// 首页 ADB 卡片-shell 已连接时的状态
   ///
   /// In zh, this message translates to:
-  /// **'重试启动特权进程'**
-  String get escalationIgniteRetry;
+  /// **'shell 已连接（uid={uid}）'**
+  String shellConnectedUid(int uid);
 
-  /// 提权页-配对成功但点火失败的结论
+  /// 首页 ADB 卡片-shell 未连接状态
   ///
   /// In zh, this message translates to:
-  /// **'配对成功，但特权进程未启动'**
-  String get escalationIgniteFailed;
+  /// **'shell 未连接'**
+  String get shellDisconnected;
 
-  /// 提权页-空闲态状态行：特权进程已就绪
-  ///
-  /// In zh, this message translates to:
-  /// **'宿主已就绪（uid=2000）'**
-  String get escalationHostReady;
-
-  /// 提权页-空闲态状态行：特权进程未启动
-  ///
-  /// In zh, this message translates to:
-  /// **'宿主未启动，配对成功后会自动拉起'**
-  String get escalationHostNotStarted;
-
-  /// 提权页-已就绪时提供的断开入口按钮
-  ///
-  /// In zh, this message translates to:
-  /// **'断开宿主'**
-  String get escalationHostDisconnect;
-
-  /// 提权页-断开请求发出后按钮上的过渡文案
-  ///
-  /// In zh, this message translates to:
-  /// **'正在断开…'**
-  String get escalationHostDisconnecting;
-
-  /// 提权页-断开按钮下方的说明
-  ///
-  /// In zh, this message translates to:
-  /// **'断开后特权进程会退出，需要重新配对才能再拉起'**
-  String get escalationHostDisconnectHint;
-
-  /// 提权页-运行中状态行前缀
-  ///
-  /// In zh, this message translates to:
-  /// **'执行中'**
-  String get escalationRunning;
-
-  /// 提权页-失败阶段的具体原因标签
-  ///
-  /// In zh, this message translates to:
-  /// **'失败原因'**
-  String get escalationFailureDetail;
-
-  /// 提权页-复制失败原因按钮的提示
+  /// 首页 ADB 卡片-复制失败原因按钮的提示
   ///
   /// In zh, this message translates to:
   /// **'复制'**
-  String get escalationCopy;
+  String get shellCopy;
 
-  /// 提权页-复制失败原因成功后的提示
+  /// 首页 ADB 卡片-复制成功后的提示
   ///
   /// In zh, this message translates to:
   /// **'已复制到剪贴板'**
-  String get escalationCopied;
-
-  /// 导出执行记录按钮
-  ///
-  /// In zh, this message translates to:
-  /// **'导出记录'**
-  String get escalationExportRecord;
-
-  /// 无可导出记录提示
-  ///
-  /// In zh, this message translates to:
-  /// **'暂无可导出的记录'**
-  String get escalationExportEmpty;
-
-  /// 执行记录为空提示
-  ///
-  /// In zh, this message translates to:
-  /// **'暂无执行记录'**
-  String get escalationRecordEmpty;
-
-  /// 提权链名称-shellChannel
-  ///
-  /// In zh, this message translates to:
-  /// **'L1 通道自检'**
-  String get escalationChainShellChannelName;
-
-  /// 提权链说明-shellChannel
-  ///
-  /// In zh, this message translates to:
-  /// **'验证能否以 shell(2000) 执行命令并写盘，不涉及提权'**
-  String get escalationChainShellChannelDesc;
-
-  /// 提权链名称-kernelModule
-  ///
-  /// In zh, this message translates to:
-  /// **'内核模块'**
-  String get escalationChainKernelModuleName;
-
-  /// 提权链说明-kernelModule
-  ///
-  /// In zh, this message translates to:
-  /// **'通过加载内核模块获得提权'**
-  String get escalationChainKernelModuleDesc;
-
-  /// 提权链名称-payload
-  ///
-  /// In zh, this message translates to:
-  /// **'载荷链'**
-  String get escalationChainPayloadName;
-
-  /// 提权链说明-payload
-  ///
-  /// In zh, this message translates to:
-  /// **'使用本地载荷完成提权'**
-  String get escalationChainPayloadDesc;
-
-  /// 提权链名称-kernelExploit
-  ///
-  /// In zh, this message translates to:
-  /// **'内核漏洞'**
-  String get escalationChainKernelExploitName;
-
-  /// 提权链说明-kernelExploit
-  ///
-  /// In zh, this message translates to:
-  /// **'利用内核漏洞获得临时提权'**
-  String get escalationChainKernelExploitDesc;
-
-  /// 提权链名称-pageCache
-  ///
-  /// In zh, this message translates to:
-  /// **'PageCache'**
-  String get escalationChainPageCacheName;
-
-  /// 提权链说明-pageCache
-  ///
-  /// In zh, this message translates to:
-  /// **'通过 PageCache 写入获得提权'**
-  String get escalationChainPageCacheDesc;
-
-  /// 执行阶段-probe
-  ///
-  /// In zh, this message translates to:
-  /// **'探测'**
-  String get escalationStageProbe;
-
-  /// 执行阶段-prepare
-  ///
-  /// In zh, this message translates to:
-  /// **'准备'**
-  String get escalationStagePrepare;
-
-  /// 执行阶段-execute
-  ///
-  /// In zh, this message translates to:
-  /// **'执行'**
-  String get escalationStageExecute;
-
-  /// 执行阶段-verify
-  ///
-  /// In zh, this message translates to:
-  /// **'校验'**
-  String get escalationStageVerify;
-
-  /// 执行阶段-cleanup
-  ///
-  /// In zh, this message translates to:
-  /// **'清理'**
-  String get escalationStageCleanup;
-
-  /// 执行结果-success
-  ///
-  /// In zh, this message translates to:
-  /// **'提权成功'**
-  String get escalationOutcomeSuccess;
-
-  /// 执行结果-partial
-  ///
-  /// In zh, this message translates to:
-  /// **'部分成功'**
-  String get escalationOutcomePartial;
-
-  /// 执行结果-failed
-  ///
-  /// In zh, this message translates to:
-  /// **'提权失败'**
-  String get escalationOutcomeFailed;
-
-  /// 执行结果-unsafe
-  ///
-  /// In zh, this message translates to:
-  /// **'存在风险'**
-  String get escalationOutcomeUnsafe;
-
-  /// 执行结果-unsupported
-  ///
-  /// In zh, this message translates to:
-  /// **'不支持'**
-  String get escalationOutcomeUnsupported;
-
-  /// 执行结果-notStarted
-  ///
-  /// In zh, this message translates to:
-  /// **'未开始'**
-  String get escalationOutcomeNotStarted;
-
-  /// 设备信息-Android SDK 版本
-  ///
-  /// In zh, this message translates to:
-  /// **'Android SDK'**
-  String get escalationDeviceSdk;
-
-  /// 设备信息-CPU 架构
-  ///
-  /// In zh, this message translates to:
-  /// **'架构'**
-  String get escalationDeviceAbi;
-
-  /// 设备信息-内核版本
-  ///
-  /// In zh, this message translates to:
-  /// **'内核版本'**
-  String get escalationDeviceKernel;
-
-  /// 设备信息-SELinux 状态
-  ///
-  /// In zh, this message translates to:
-  /// **'SELinux'**
-  String get escalationDeviceSelinux;
-
-  /// 设备信息-厂商
-  ///
-  /// In zh, this message translates to:
-  /// **'厂商'**
-  String get escalationDeviceManufacturer;
-
-  /// 设备信息-机型
-  ///
-  /// In zh, this message translates to:
-  /// **'机型'**
-  String get escalationDeviceModel;
-
-  /// 原因码-platformUnsupported
-  ///
-  /// In zh, this message translates to:
-  /// **'当前平台不支持该提权链'**
-  String get escalationReasonPlatformUnsupported;
-
-  /// 原因码-androidTooOld
-  ///
-  /// In zh, this message translates to:
-  /// **'系统版本过低'**
-  String get escalationReasonAndroidTooOld;
-
-  /// 原因码-deviceNotSupported
-  ///
-  /// In zh, this message translates to:
-  /// **'设备不在支持列表内'**
-  String get escalationReasonDeviceNotSupported;
-
-  /// 原因码-probeTimeout
-  ///
-  /// In zh, this message translates to:
-  /// **'探测超时'**
-  String get escalationReasonProbeTimeout;
-
-  /// 原因码-probeFailed
-  ///
-  /// In zh, this message translates to:
-  /// **'探测失败'**
-  String get escalationReasonProbeFailed;
-
-  /// 原因码-noRootBinary
-  ///
-  /// In zh, this message translates to:
-  /// **'未找到 su 可执行文件'**
-  String get escalationReasonNoRootBinary;
-
-  /// 原因码-noSelinuxContext
-  ///
-  /// In zh, this message translates to:
-  /// **'缺少可用的 SELinux 上下文'**
-  String get escalationReasonNoSelinuxContext;
-
-  /// 原因码-selinuxEnforcing
-  ///
-  /// In zh, this message translates to:
-  /// **'SELinux 处于强制模式'**
-  String get escalationReasonSelinuxEnforcing;
-
-  /// 原因码-shellUnavailable
-  ///
-  /// In zh, this message translates to:
-  /// **'Shell 不可用'**
-  String get escalationReasonShellUnavailable;
-
-  /// 原因码-shellDenied
-  ///
-  /// In zh, this message translates to:
-  /// **'Shell 执行被拒绝'**
-  String get escalationReasonShellDenied;
-
-  /// 原因码-shellTimeout
-  ///
-  /// In zh, this message translates to:
-  /// **'Shell 执行超时'**
-  String get escalationReasonShellTimeout;
-
-  /// 原因码-payloadMissing
-  ///
-  /// In zh, this message translates to:
-  /// **'载荷文件缺失'**
-  String get escalationReasonPayloadMissing;
-
-  /// 原因码-payloadMismatch
-  ///
-  /// In zh, this message translates to:
-  /// **'载荷与设备不匹配'**
-  String get escalationReasonPayloadMismatch;
-
-  /// 原因码-catalogCorrupted
-  ///
-  /// In zh, this message translates to:
-  /// **'资产目录损坏'**
-  String get escalationReasonCatalogCorrupted;
-
-  /// 原因码-kernelNotSupported
-  ///
-  /// In zh, this message translates to:
-  /// **'内核不支持'**
-  String get escalationReasonKernelNotSupported;
-
-  /// 原因码-kernelModuleLoadFailed
-  ///
-  /// In zh, this message translates to:
-  /// **'内核模块加载失败'**
-  String get escalationReasonKernelModuleLoadFailed;
-
-  /// 原因码-kernelVersionMismatch
-  ///
-  /// In zh, this message translates to:
-  /// **'内核版本不匹配'**
-  String get escalationReasonKernelVersionMismatch;
-
-  /// 原因码-executeTimeout
-  ///
-  /// In zh, this message translates to:
-  /// **'执行超时'**
-  String get escalationReasonExecuteTimeout;
-
-  /// 原因码-executeFailed
-  ///
-  /// In zh, this message translates to:
-  /// **'执行失败'**
-  String get escalationReasonExecuteFailed;
-
-  /// 原因码-verifyFailedAtExternal
-  ///
-  /// In zh, this message translates to:
-  /// **'外部状态校验未通过'**
-  String get escalationReasonVerifyFailedAtExternal;
-
-  /// 原因码-verifyTimeout
-  ///
-  /// In zh, this message translates to:
-  /// **'校验超时'**
-  String get escalationReasonVerifyTimeout;
-
-  /// 原因码-cleanupFailed
-  ///
-  /// In zh, this message translates to:
-  /// **'清理失败'**
-  String get escalationReasonCleanupFailed;
-
-  /// 原因码-enforceRestoreFailed
-  ///
-  /// In zh, this message translates to:
-  /// **'SELinux 状态恢复失败'**
-  String get escalationReasonEnforceRestoreFailed;
-
-  /// 原因码-residualLeft
-  ///
-  /// In zh, this message translates to:
-  /// **'存在遗留状态'**
-  String get escalationReasonResidualLeft;
-
-  /// 原因码-hostDisconnected
-  ///
-  /// In zh, this message translates to:
-  /// **'提权宿主未连接'**
-  String get escalationReasonHostDisconnected;
+  String get shellCopied;
 
   /// 原因码-hostAuthFailed
   ///
   /// In zh, this message translates to:
-  /// **'提权宿主鉴权失败'**
-  String get escalationReasonHostAuthFailed;
+  /// **'配对鉴权失败，请重试'**
+  String get shellReasonHostAuthFailed;
 
-  /// 原因码-hostPairingFailed
+  /// 原因码-hostDisconnected
   ///
   /// In zh, this message translates to:
-  /// **'提权宿主配对失败'**
-  String get escalationReasonHostPairingFailed;
+  /// **'连接已断开'**
+  String get shellReasonHostDisconnected;
 
-  /// 原因码-unknown 兜底
+  /// 原因码-pairingTimeout
   ///
   /// In zh, this message translates to:
-  /// **'未知原因'**
-  String get escalationReasonUnknown;
+  /// **'配对超时，请重试'**
+  String get shellReasonPairingTimeout;
+
+  /// 原因码-deviceRebooted
+  ///
+  /// In zh, this message translates to:
+  /// **'设备重启导致连接中断'**
+  String get shellReasonDeviceRebooted;
+
+  /// 原因码-cancelled
+  ///
+  /// In zh, this message translates to:
+  /// **'已取消配对'**
+  String get shellReasonCancelled;
+
+  /// 原因码-hostPairingFailed 兜底
+  ///
+  /// In zh, this message translates to:
+  /// **'配对失败，请重试'**
+  String get shellReasonHostPairingFailed;
 }
 
 class _AppLocalizationsDelegate

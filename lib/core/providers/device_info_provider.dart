@@ -44,8 +44,8 @@ class DeviceSnapshot {
 
 /// 采集设备环境信息。
 ///
-/// 提权方案依赖这些数据（SELinux、系统版本、内核、基带、版本号），
-/// 因此在首页展示并支持逐项复制给 AI。
+/// 这些数据（SELinux、系统版本、内核、基带、版本号）在首页展示，
+/// 并可逐项复制给 AI 作为对话上下文。
 final FutureProvider<DeviceSnapshot> deviceSnapshotProvider =
     FutureProvider<DeviceSnapshot>((ref) async {
       final List<DeviceInfoItem> items = <DeviceInfoItem>[];
@@ -84,9 +84,9 @@ final FutureProvider<DeviceSnapshot> deviceSnapshotProvider =
           // ColorOS 的 `ro.build.display.id` 只有 `PHB110_x.x.x.xxx(CN01)`，
           // 设置页展示的完整版本号在 `ro.build.version.ota` 里，优先读它。
           () async =>
-              _readSystemProperty('ro.build.version.ota') ??
+              await _readSystemProperty('ro.build.version.ota') ??
               _nullIfEmpty(android.display) ??
-              _readSystemProperty('ro.build.display.id'),
+              await _readSystemProperty('ro.build.display.id'),
         );
         await _add(items, DeviceInfoField.sotaVersion, _readSotaVersion);
         await _add(

@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-/// AI 圆球上方的快捷提权面板。
+/// AI 圆球上方的快捷面板。
 ///
 /// 面板常驻组件树，由 [visible] 驱动展开/收起：缩放 + 上移 + 淡入，
 /// 同时遮罩层淡入并拦截页面点击，点击遮罩或圆球即可收起。
@@ -16,10 +16,8 @@ class AiQuickPanelOverlay extends HookWidget {
     required this.visible,
     required this.bottomOffset,
     required this.onDismiss,
-    required this.onAiEscalate,
-    required this.onManualEscalate,
+    required this.onOpenChat,
     this.isActivated = false,
-    this.hasResidual = false,
   });
 
   /// 面板是否展开。
@@ -28,20 +26,14 @@ class AiQuickPanelOverlay extends HookWidget {
   /// AI 是否已激活：未激活时描边与外发光退回普通中性色。
   final bool isActivated;
 
-  /// 上次提权是否留下残留：为 true 时在「手动提权」条目右上角显示红点。
-  final bool hasResidual;
-
   /// 面板底端（水滴尖端）距屏幕底部的距离。
   final double bottomOffset;
 
   /// 点击遮罩收起面板。
   final VoidCallback onDismiss;
 
-  /// 点击「AI 提权」。
-  final VoidCallback onAiEscalate;
-
-  /// 点击「手动提权」。
-  final VoidCallback onManualEscalate;
+  /// 点击「AI 助手」。
+  final VoidCallback onOpenChat;
 
   @override
   Widget build(BuildContext context) {
@@ -113,9 +105,7 @@ class AiQuickPanelOverlay extends HookWidget {
                             constraints: BoxConstraints(maxWidth: maxWidth),
                             child: _AiQuickPanel(
                               isActivated: isActivated,
-                              hasResidual: hasResidual,
-                              onAiEscalate: onAiEscalate,
-                              onManualEscalate: onManualEscalate,
+                              onOpenChat: onOpenChat,
                             ),
                           ),
                         ),
@@ -134,20 +124,11 @@ class AiQuickPanelOverlay extends HookWidget {
 
 /// 水滴形面板主体：激活态渐变描边 + 外发光，未激活时退为中性描边。
 class _AiQuickPanel extends HookWidget {
-  const _AiQuickPanel({
-    required this.isActivated,
-    required this.hasResidual,
-    required this.onAiEscalate,
-    required this.onManualEscalate,
-  });
+  const _AiQuickPanel({required this.isActivated, required this.onOpenChat});
 
   /// AI 是否已激活。
   final bool isActivated;
-
-  /// 上次提权是否留下残留。
-  final bool hasResidual;
-  final VoidCallback onAiEscalate;
-  final VoidCallback onManualEscalate;
+  final VoidCallback onOpenChat;
 
   @override
   Widget build(BuildContext context) {
@@ -220,8 +201,7 @@ class _AiQuickPanel extends HookWidget {
     );
   }
 
-  /// 两个入口共用一个圆角容器，中间一条极淡分隔线，
-  /// 避免每行各套一层底色造成视觉碎片。
+  /// 单个入口：容器只做一层极淡底色，避免每行各套一层造成视觉碎片。
   Widget _buildActionGroup(BuildContext context) {
     final ColorScheme colorScheme = context.colorScheme;
     final bool isDark = context.isDark;
@@ -234,62 +214,32 @@ class _AiQuickPanel extends HookWidget {
           borderRadius: radius,
           color: colorScheme.onSurface.withValues(alpha: isDark ? 0.05 : 0.035),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            _AiQuickActionTile(
-              isPrimary: true,
-              icon: Icons.auto_awesome_rounded,
-              title: context.l10n.aiQuickEscalateTitle,
-              description: context.l10n.aiQuickEscalateDesc,
-              onTap: onAiEscalate,
-            ),
-            Divider(
-              height: 1,
-              thickness: 1,
-              indent: 12.w,
-              endIndent: 12.w,
-              color: colorScheme.onSurface.withValues(
-                alpha: isDark ? 0.07 : 0.06,
-              ),
-            ),
-            _AiQuickActionTile(
-              isPrimary: false,
-              icon: Icons.terminal_rounded,
-              title: context.l10n.manualQuickEscalateTitle,
-              description: context.l10n.manualQuickEscalateDesc,
-              showDot: hasResidual,
-              onTap: onManualEscalate,
-            ),
-          ],
+        child: _AiQuickActionTile(
+          icon: Icons.auto_awesome_rounded,
+          title: context.l10n.aiQuickChatTitle,
+          description: context.l10n.aiQuickChatDesc,
+          onTap: onOpenChat,
         ),
       ),
     );
   }
 }
 
-/// 面板内的单个提权入口。
+/// 面板内的单个入口。
 ///
 /// 平铺在分组容器里：图标与文字左对齐成一条竖线，右侧统一箭头；
-/// 主次只靠图标颜色区分，按下时叠一层极淡高亮，不做缩放与发光。
+/// 按下时叠一层极淡高亮，不做缩放与发光。
 class _AiQuickActionTile extends HookWidget {
   const _AiQuickActionTile({
-    required this.isPrimary,
     required this.icon,
     required this.title,
     required this.description,
     required this.onTap,
-    this.showDot = false,
   });
 
-  /// 是否为主操作（AI 提权）。
-  final bool isPrimary;
   final IconData icon;
   final String title;
   final String description;
-
-  /// 是否在条目右上角显示提示红点。
-  final bool showDot;
   final VoidCallback onTap;
 
   @override
@@ -307,85 +257,55 @@ class _AiQuickActionTile extends HookWidget {
         onTapCancel: () => pressed.value = false,
         onTapUp: (_) => pressed.value = false,
         onTap: onTap,
-        child: Stack(
-          children: <Widget>[
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 140),
-              curve: Curves.easeOut,
-              padding: EdgeInsets.fromLTRB(12.w, 11.h, 12.w, 11.h),
-              color: pressed.value
-                  ? colorScheme.onSurface.withValues(
-                      alpha: isDark ? 0.06 : 0.05,
-                    )
-                  : Colors.transparent,
-              child: Row(
-                children: <Widget>[
-                  Icon(
-                    icon,
-                    size: 20.sp,
-                    color: isPrimary
-                        ? colorScheme.primary
-                        : colorScheme.onSurface.withValues(alpha: 0.55),
-                  ),
-                  SizedBox(width: 10.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(
-                          title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w700,
-                            height: 1.2,
-                            color: colorScheme.onSurface.withValues(
-                              alpha: 0.90,
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 2.h),
-                        Text(
-                          description,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 11.sp,
-                            fontWeight: FontWeight.w500,
-                            height: 1.35,
-                            color: colorScheme.onSurface.withValues(
-                              alpha: isPrimary ? 0.55 : 0.45,
-                            ),
-                          ),
-                        ),
-                      ],
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 140),
+          curve: Curves.easeOut,
+          padding: EdgeInsets.fromLTRB(12.w, 11.h, 12.w, 11.h),
+          color: pressed.value
+              ? colorScheme.onSurface.withValues(alpha: isDark ? 0.06 : 0.05)
+              : Colors.transparent,
+          child: Row(
+            children: <Widget>[
+              Icon(icon, size: 20.sp, color: colorScheme.primary),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w700,
+                        height: 1.2,
+                        color: colorScheme.onSurface.withValues(alpha: 0.90),
+                      ),
                     ),
-                  ),
-                  SizedBox(width: 8.w),
-                  Icon(
-                    Icons.chevron_right_rounded,
-                    size: 17.sp,
-                    color: colorScheme.onSurface.withValues(alpha: 0.28),
-                  ),
-                ],
-              ),
-            ),
-            // 上次提权留下残留时，在条目右上角点一颗红点提示需要处理。
-            if (showDot)
-              Positioned(
-                top: 8.h,
-                right: 8.w,
-                child: Container(
-                  width: 6.sp,
-                  height: 6.sp,
-                  decoration: BoxDecoration(
-                    color: colorScheme.error,
-                    shape: BoxShape.circle,
-                  ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w500,
+                        height: 1.35,
+                        color: colorScheme.onSurface.withValues(alpha: 0.55),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-          ],
+              SizedBox(width: 8.w),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 17.sp,
+                color: colorScheme.onSurface.withValues(alpha: 0.28),
+              ),
+            ],
+          ),
         ),
       ),
     );

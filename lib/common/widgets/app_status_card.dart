@@ -17,6 +17,7 @@ class AppStatusCard extends HookWidget {
     this.isLoading = false,
     this.isRefreshing = false,
     this.onRefresh,
+    this.footer,
   });
 
   final String title;
@@ -35,6 +36,11 @@ class AppStatusCard extends HookWidget {
 
   /// 重新检测该项状态；为 null 时不显示刷新按钮。
   final VoidCallback? onRefresh;
+
+  /// 卡片底部的附加内容，与标题/状态同处一个卡片容器内。
+  ///
+  /// 用于「状态之外还带一个动作」的检测项（如 ADB 卡片的 shell 通道）。
+  final Widget? footer;
 
   @override
   Widget build(BuildContext context) {
@@ -61,57 +67,71 @@ class AppStatusCard extends HookWidget {
       // 透明 Material 承载刷新按钮的水波纹，否则会被卡片底色盖住。
       child: Material(
         type: MaterialType.transparency,
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Icon(
-              icon,
-              size: 26.sp,
-              color: highlight
-                  ? colorScheme.primary
-                  : colorScheme.onSurfaceVariant.withValues(alpha: 0.62),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w700,
-                      height: 1.2,
-                      color: colorScheme.onSurface.withValues(alpha: 0.90),
-                    ),
+            Row(
+              children: <Widget>[
+                Icon(
+                  icon,
+                  size: 26.sp,
+                  color: highlight
+                      ? colorScheme.primary
+                      : colorScheme.onSurfaceVariant.withValues(alpha: 0.62),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w700,
+                          height: 1.2,
+                          color: colorScheme.onSurface.withValues(alpha: 0.90),
+                        ),
+                      ),
+                      SizedBox(height: 3.h),
+                      Text(
+                        subtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w500,
+                          height: 1.2,
+                          color: highlight
+                              ? colorScheme.primary
+                              : colorScheme.onSurface.withValues(alpha: 0.56),
+                        ),
+                      ),
+                    ],
                   ),
-                  SizedBox(height: 3.h),
-                  Text(
-                    subtitle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w500,
-                      height: 1.2,
-                      color: highlight
-                          ? colorScheme.primary
-                          : colorScheme.onSurface.withValues(alpha: 0.56),
-                    ),
+                ),
+                if (onRefresh != null) ...<Widget>[
+                  SizedBox(width: 6.w),
+                  _RefreshButton(
+                    onPressed: isRefreshing ? null : onRefresh,
+                    color: highlight
+                        ? colorScheme.primary
+                        : colorScheme.onSurfaceVariant.withValues(alpha: 0.62),
+                    tooltip: context.l10n.refreshTooltip,
                   ),
                 ],
-              ),
+              ],
             ),
-            if (onRefresh != null) ...<Widget>[
-              SizedBox(width: 6.w),
-              _RefreshButton(
-                onPressed: isRefreshing ? null : onRefresh,
-                color: highlight
-                    ? colorScheme.primary
-                    : colorScheme.onSurfaceVariant.withValues(alpha: 0.62),
-                tooltip: context.l10n.refreshTooltip,
+            if (footer != null) ...<Widget>[
+              SizedBox(height: 10.h),
+              Padding(
+                // 右侧补回刷新按钮占掉的内边距，让底部内容与左侧图标对齐。
+                padding: EdgeInsets.only(right: 8.w),
+                child: footer!,
               ),
             ],
           ],
