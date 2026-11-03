@@ -33,8 +33,17 @@ internal interface ShellChannel {
     /** 当前身份 uid：`2000` = shell，`-1` = 未知/不可用。零副作用。 */
     val uid: Long
 
-    /** 阻塞执行一条命令；调用方负责放到后台线程。 */
-    fun exec(command: String, timeoutMs: Long = DEFAULT_TIMEOUT_MS): ShellResult
+    /**
+     * 阻塞执行一条命令；调用方负责放到后台线程。
+     *
+     * @param stdin 补给命令标准输入的字节；为 null 时按「空输入」处理（立即 EOF），
+     *   读 stdin 的命令会直接拿到输入结束，而不是一直挂到超时。
+     */
+    fun exec(
+        command: String,
+        timeoutMs: Long = DEFAULT_TIMEOUT_MS,
+        stdin: ByteArray? = null,
+    ): ShellResult
 
     companion object {
         /** 默认超时：普通只读命令足够，长命令由调用方显式放大。 */

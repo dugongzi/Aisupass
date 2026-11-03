@@ -6,24 +6,13 @@ import io.github.muntashirakon.adb.AdbStream
 import org.supass.ai_su_pass.core.shell.ShellChannel
 import org.supass.ai_su_pass.core.shell.ShellResult
 import org.supass.ai_su_pass.core.shell.ShellStatus
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.io.InputStream
 import java.net.InetSocketAddress
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
-/**
- * 基于自建 ADB 连接（无线调试配对）的 shell 通道。
- *
- * 数据路径：`AdbStream("shell:<命令>")` → adbd 以 shell 身份执行 → 单条合并流回传。
- * 对 [ShellChannel] 之上的代码来说，身份从哪来完全无感。
- *
- * 两个必须自己补的坑：
- * 1. **退出码**：`AdbStream` 只给字节流，没有 `exitValue()`。这里在命令尾部追加
- *    `echo __AISUP_EXIT__:$?`，从输出里剥出退出码；剥不到就按「进程没跑起来」返回 -1。
- * 2. **超时**：`AdbStream.read` 没有读超时。这里把整个「打开流 + 读干」放进工作线程，
- *    主线程按超时 join；超时后 `close()` 流把读线程踢醒，再收尸。
- *
- * stderr 说明：adbd 的 v1 shell 服务把 stdout/stderr 合并成一条流，
- * 无法区分，因此统一放在 [ShellResult.stdout]，stderr 恒为空。
- */
 internal class AdbShellChannel(
     private val manager: AdbConnectionManager,
 ) : ShellChannel {
@@ -112,32 +101,34 @@ internal class AdbShellChannel(
         identity = UNKNOWN_UID
     }
 
-    override fun exec(command: String, timeoutMs: Long): ShellResult {
+    override fun exec(command: String, timeoutMs: Long, stdin: ByteArray?): ShellResult {
         val startedAt = SystemClock.elapsedRealtime()
         if (status() != ShellStatus.READY) {
             return ShellResult(EXIT_NOT_STARTED, "", "channel not ready", 0L, false)
         }
 
-        val sink = StringBuilder()
+        val out = ByteArrayOutputStream()
+        val err = ByteArrayOutputStream()
+        // -1 表示「还没收到 kIdExit」；收到即写入真实退出码。
+        val exitCode = AtomicInteger(EXIT_NOT_STARTED)
         val streamRef = AtomicReference<AdbStream?>(null)
-        val openFailure = AtomicReference<String?>(null)
+        val failure = AtomicReference<String?>(null)
 
         val worker = Thread({
             try {
-                val stream = manager.openStream("shell:${wrapExecution(command)}")
+                val stream = manager.openStream("$SERVICE_PREFIX$command")
                 streamRef.set(stream)
-                stream.openInputStream().bufferedReader(Charsets.UTF_8).use { reader ->
-                    val buffer = CharArray(BUFFER_SIZE)
-                    while (true) {
-                        val read = reader.read(buffer)
-                        if (read < 0) break
-                        synchronized(sink) { sink.append(buffer, 0, read) }
-                    }
+                // 写 stdin 单独一条线程：`AdbStream.write` 会等在写窗口上，可能长时间阻塞。
+                Thread({ pumpStdin(stream, stdin) }, "adb-shell-stdin").apply {
+                    isDaemon = true
+                    start()
                 }
+                readFrames(stream, out, err, exitCode)
             } catch (t: Throwable) {
-                // 超时被 close() 或设备掉线都走这里，统一记为打开/读取失败。
-                openFailure.compareAndSet(null, t.javaClass.simpleName)
+                // 超时被 close()、设备掉线、开流被拒都走这里，统一记为失败原因。
+                failure.compareAndSet(null, t.javaClass.simpleName)
             } finally {
+                // 关流同时负责踢醒还卡在 write 上的 stdin 线程。
                 runCatching { streamRef.get()?.close() }
             }
         }, "adb-shell-exec").apply {
@@ -146,83 +137,171 @@ internal class AdbShellChannel(
         }
 
         worker.join(timeoutMs)
-        if (worker.isAlive) {
-            // 超时：先关流让读线程退出，再收尸；不重试，避免把危险命令跑第二遍。
+        val timedOut = worker.isAlive
+        if (timedOut) {
+            // 超时：先关流让读写线程退出，再收尸；不重试，避免把危险命令跑第二遍。
             runCatching { streamRef.get()?.close() }
             worker.join(STREAM_JOIN_MS)
-            val text = currentText(sink)
-            // 后台进程即使把 stdout/stderr 都重定向走，也可能有残留 fd 让 pty 不闭合，
-            // 于是「命令早就跑完、退出码也回显了，流却等不到 EOF」。这种情况下
-            // 标记其实就在输出里，丢掉它只会把结论错报成「没跑起来」。
-            val parsed = parseExit(text)
+        }
+
+        val outText = textOf(out)
+        val errText = textOf(err)
+        val durationMs = SystemClock.elapsedRealtime() - startedAt
+
+        if (timedOut) {
             return ShellResult(
-                exitCode = parsed.exitCode,
-                stdout = parsed.stdout,
-                stderr = if (parsed.exitCode == EXIT_NOT_STARTED) {
-                    "timeout ${timeoutMs}ms, no exit marker"
-                } else {
-                    ""
-                },
-                durationMs = SystemClock.elapsedRealtime() - startedAt,
+                exitCode = exitCode.get(),
+                stdout = outText,
+                stderr = listOfNotNull(errText.takeIf { it.isNotEmpty() }, "timeout ${timeoutMs}ms")
+                    .joinToString("\n"),
+                durationMs = durationMs,
                 timedOut = true,
             )
         }
 
-        val text = currentText(sink)
-        val failure = openFailure.get()
-        val parsed = parseExit(text)
-        if (parsed.exitCode == EXIT_NOT_STARTED) {
-            // 退出码标记缺失说明命令根本没在 adbd 那边跑起来（流打开失败、设备掉线、
-            // shell 被拒）。这里原本完全静默，上层只看到 exitCode=-1，无从判断原因。
+        val code = exitCode.get()
+        if (code == EXIT_NOT_STARTED) {
+            // 流正常关闭却始终没收到 kIdExit：adbd 那边命令根本没跑起来（开流被拒、
+            // 设备掉线、连接被掐）。这里原本完全静默，上层只看到 -1，无从判断原因。
+            val notes = listOfNotNull(
+                failure.get(),
+                errText.takeIf { it.isNotEmpty() } ?: "exit frame missing",
+            ).joinToString("\n")
             Log.w(
                 TAG,
-                "exec missing exit marker failure=${failure ?: "-"} exit=$EXIT_NOT_STARTED " +
-                    "out='${text.take(LOG_SNIPPET)}'",
+                "exec missing exit frame failure=${failure.get() ?: "-"} " +
+                    "out='${outText.take(LOG_SNIPPET)}' err='${errText.take(LOG_SNIPPET)}'",
             )
-            return ShellResult(
-                exitCode = EXIT_NOT_STARTED,
-                stdout = text,
-                stderr = failure ?: "exit marker missing",
-                durationMs = SystemClock.elapsedRealtime() - startedAt,
-                timedOut = false,
-            )
+            return ShellResult(EXIT_NOT_STARTED, outText, notes, durationMs, false)
         }
 
-        return ShellResult(
-            exitCode = parsed.exitCode,
-            stdout = parsed.stdout,
-            stderr = "",
-            durationMs = SystemClock.elapsedRealtime() - startedAt,
-            timedOut = false,
-        )
+        return ShellResult(code, outText, errText, durationMs, false)
     }
 
     /**
-     * 从流输出里剥出退出码与真正的 stdout。
+     * 读取并解析 shell protocol v2 的帧，直到收到退出帧或流出错/关闭。
      *
-     * 标记缺失时返回 [EXIT_NOT_STARTED]，且 stdout 原样返回（保留现场）。
+     * stdout 与 stderr 必须**同时**被消费：adbd 侧两路共用一个 socket，
+     * 只读一路会让另一路塞满缓冲、整条流一起卡死。
      */
-    private fun parseExit(text: String): ExitParse {
-        val markerIndex = text.lastIndexOf(EXIT_MARKER)
-        if (markerIndex < 0) return ExitParse(EXIT_NOT_STARTED, text)
-        val exitCode = text.substring(markerIndex + EXIT_MARKER.length)
-            .trim()
-            .toIntOrNull() ?: return ExitParse(EXIT_NOT_STARTED, text)
-        return ExitParse(exitCode, text.substring(0, markerIndex).replace("\r\n", "\n"))
+    private fun readFrames(
+        stream: AdbStream,
+        out: ByteArrayOutputStream,
+        err: ByteArrayOutputStream,
+        exitCode: AtomicInteger,
+    ) {
+        val input: InputStream = stream.openInputStream()
+        val header = ByteArray(HEADER_SIZE)
+        val chunk = ByteArray(BUFFER_SIZE)
+
+        while (true) {
+            // 读到 -1 说明对端已关流；此时再读会抛 IOException，必须直接退出。
+            if (!readFully(input, header, HEADER_SIZE)) return
+
+            val id = header[0].toInt() and 0xFF
+            val length = (header[1].toInt() and 0xFF) or
+                ((header[2].toInt() and 0xFF) shl 8) or
+                ((header[3].toInt() and 0xFF) shl 16) or
+                ((header[4].toInt() and 0xFF) shl 24)
+            if (length < 0 || length > MAX_FRAME_BYTES) {
+                throw IOException("bad frame id=$id length=$length")
+            }
+
+            when (id) {
+                ID_STDOUT, ID_STDERR -> {
+                    val sink = if (id == ID_STDOUT) out else err
+                    var remaining = length
+                    while (remaining > 0) {
+                        val want = minOf(remaining, chunk.size)
+                        val read = input.read(chunk, 0, want)
+                        if (read < 0) return
+                        synchronized(sink) { sink.write(chunk, 0, read) }
+                        remaining -= read
+                    }
+                }
+
+                ID_EXIT -> {
+                    // 退出帧长度是 1 字节（AOSP 客户端就是取 data()[0]），值 0..255。
+                    // 被信号杀死时是 128 + signal。
+                    val payload = ByteArray(length)
+                    if (!readFully(input, payload, length)) return
+                    if (length >= 1) exitCode.set(payload[0].toInt() and 0xFF)
+                    return
+                }
+
+                else -> {
+                    // 未知/本端不关心的帧（如 kIdWindowSizeChange）整体丢弃，
+                    // 但必须把 payload 读掉，否则下一帧头会错位。
+                    if (!skip(input, length)) return
+                }
+            }
+        }
     }
 
-    private class ExitParse(val exitCode: Int, val stdout: String)
-
     /**
-     * 包一层外层 shell，顺带把退出码打进输出。
+     * 把 stdin 写进 `kIdStdin` 帧，最后统一发 `kIdCloseStdin`。
      *
-     * adbd 会把 `shell:` 后面的整段字符串交给 `sh -c`，所以这里写的是
-     * `sh -c '原命令'; echo __AISUP_EXIT__:$?`：内层执行原命令，外层负责回显退出码。
-     * 原命令统一用单引号包裹，内部单引号按 POSIX 方式转义（`'\''`）。
+     * 无论有没有 stdin 都发 EOF：否则任何读 stdin 的命令都会一直阻塞到超时，
+     * 而不是像 `exec < /dev/null` 那样立刻拿到 EOF。
      */
-    private fun wrapExecution(command: String): String {
-        val quoted = "'" + command.replace("'", "'\\''") + "'"
-        return "sh -c $quoted; echo $EXIT_MARKER\$?"
+    private fun pumpStdin(stream: AdbStream, stdin: ByteArray?) {
+        try {
+            val output = stream.openOutputStream()
+            if (stdin != null && stdin.isNotEmpty()) {
+                var offset = 0
+                while (offset < stdin.size) {
+                    val len = minOf(stdin.size - offset, MAX_STDIN_CHUNK)
+                    val frame = buildFrame(ID_STDIN, stdin, offset, len)
+                    output.write(frame, 0, frame.size)
+                    offset += len
+                }
+            }
+            val eof = buildFrame(ID_CLOSE_STDIN, null, 0, 0)
+            output.write(eof, 0, eof.size)
+            output.flush()
+        } catch (t: Throwable) {
+            // 进程已退出 / 超时关流 / 写窗口不再打开，都是正常收尾，
+            // 不能覆盖读线程给出的主结果。
+            Log.d(TAG, "stdin pump stopped: ${t.javaClass.simpleName}")
+        }
+    }
+
+    /** 拼一帧：`[1B id][4B 小端长度][payload]`。 */
+    private fun buildFrame(id: Int, src: ByteArray?, offset: Int, length: Int): ByteArray {
+        val frame = ByteArray(HEADER_SIZE + length)
+        frame[0] = id.toByte()
+        frame[1] = (length and 0xFF).toByte()
+        frame[2] = ((length ushr 8) and 0xFF).toByte()
+        frame[3] = ((length ushr 16) and 0xFF).toByte()
+        frame[4] = ((length ushr 24) and 0xFF).toByte()
+        if (src != null && length > 0) {
+            System.arraycopy(src, offset, frame, HEADER_SIZE, length)
+        }
+        return frame
+    }
+
+    /** 读满 [length] 字节；流提前关闭返回 false。 */
+    private fun readFully(input: InputStream, buffer: ByteArray, length: Int): Boolean {
+        var offset = 0
+        while (offset < length) {
+            val read = input.read(buffer, offset, length - offset)
+            if (read < 0) return false
+            offset += read
+        }
+        return true
+    }
+
+    /** 丢弃 [length] 字节的 payload；流提前关闭返回 false。 */
+    private fun skip(input: InputStream, length: Int): Boolean {
+        var remaining = length
+        val scratch = ByteArray(minOf(length, BUFFER_SIZE))
+        while (remaining > 0) {
+            val want = minOf(remaining, scratch.size)
+            val read = input.read(scratch, 0, want)
+            if (read < 0) return false
+            remaining -= read
+        }
+        return true
     }
 
     /** 取身份：`id -u` 是 shell 用户 2000、root 模式 0。 */
@@ -241,7 +320,8 @@ internal class AdbShellChannel(
         return uid
     }
 
-    private fun currentText(sink: StringBuilder): String = synchronized(sink) { sink.toString() }
+    private fun textOf(sink: ByteArrayOutputStream): String =
+        synchronized(sink) { String(sink.toByteArray(), Charsets.UTF_8) }
 
     private companion object {
         /** 与其他配对组件共用同一标签，便于一次过滤整条链路。 */
@@ -251,6 +331,25 @@ internal class AdbShellChannel(
         const val UNKNOWN_UID = -1L
         const val EXIT_NOT_STARTED = -1
 
+        /** `raw` 禁 pty：只有 raw 模式才分离 stdout/stderr 且 stdin 直通进程。 */
+        const val SERVICE_PREFIX = "shell,v2,raw:"
+
+        // shell protocol v2 packet id（AOSP shell_protocol.h）。
+        const val ID_STDIN = 0
+        const val ID_STDOUT = 1
+        const val ID_STDERR = 2
+        const val ID_EXIT = 3
+        const val ID_CLOSE_STDIN = 4
+
+        /** 1B id + 4B 小端长度。 */
+        const val HEADER_SIZE = 5
+
+        /** 帧长度上限：ADB 单包最大 1MB（api >= 28），超过说明流已错位。 */
+        const val MAX_FRAME_BYTES = 1024 * 1024
+
+        /** 单帧 stdin 大小，留足余量避免一次挤爆写窗口。 */
+        const val MAX_STDIN_CHUNK = 32 * 1024
+
         /** 日志里截取输出片段的长度，避免一条日志刷满屏幕。 */
         const val LOG_SNIPPET = 200
         const val BUFFER_SIZE = 4096
@@ -259,8 +358,5 @@ internal class AdbShellChannel(
 
         /** mDNS 发现 `adb-tls-connect` 的等待上限。 */
         const val DISCOVERY_TIMEOUT_MS = 15_000L
-
-        /** 退出码标记；用不常见的前缀，避免与命令自身输出混淆。 */
-        const val EXIT_MARKER = "__AISUP_EXIT__:"
     }
 }
