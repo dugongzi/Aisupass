@@ -104,6 +104,10 @@ class MainPage extends HookConsumerWidget {
             isQuickPanelOpen.value = false;
             context.push(AppRoute.chat);
           },
+          onOpenEscalation: () {
+            isQuickPanelOpen.value = false;
+            context.push(AppRoute.manualEscalation);
+          },
         ),
       ],
     );

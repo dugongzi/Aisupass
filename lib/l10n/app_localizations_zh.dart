@@ -537,6 +537,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiQuickChatDesc => '读取设备环境并回答你的问题';
 
   @override
+  String get aiQuickEscalationTitle => '手动提权';
+
+  @override
+  String get aiQuickEscalationDesc => '匹配本机内核载荷，手动获取 ROOT';
+
+  @override
+  String get escalationTitle => '手动提权';
+
+  @override
+  String get escalationDesc => '手动提权会按当前设备匹配本地内核载荷并尝试提升权限，操作不可逆，请先备份重要数据。';
+
+  @override
+  String get escalationEnvTitle => '当前环境';
+
+  @override
+  String get escalationSelinuxTitle => 'SELinux';
+
+  @override
   String get languageTitle => '语言';
 
   @override

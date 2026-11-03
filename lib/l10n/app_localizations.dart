@@ -1076,6 +1076,42 @@ abstract class AppLocalizations {
   /// **'读取设备环境并回答你的问题'**
   String get aiQuickChatDesc;
 
+  /// 快捷面板-手动提权入口
+  ///
+  /// In zh, this message translates to:
+  /// **'手动提权'**
+  String get aiQuickEscalationTitle;
+
+  /// 快捷面板-手动提权入口说明
+  ///
+  /// In zh, this message translates to:
+  /// **'匹配本机内核载荷，手动获取 ROOT'**
+  String get aiQuickEscalationDesc;
+
+  /// 手动提权页标题
+  ///
+  /// In zh, this message translates to:
+  /// **'手动提权'**
+  String get escalationTitle;
+
+  /// 手动提权页顶部说明
+  ///
+  /// In zh, this message translates to:
+  /// **'手动提权会按当前设备匹配本地内核载荷并尝试提升权限，操作不可逆，请先备份重要数据。'**
+  String get escalationDesc;
+
+  /// 手动提权页-环境信息小标题
+  ///
+  /// In zh, this message translates to:
+  /// **'当前环境'**
+  String get escalationEnvTitle;
+
+  /// 手动提权页-SELinux 状态行
+  ///
+  /// In zh, this message translates to:
+  /// **'SELinux'**
+  String get escalationSelinuxTitle;
+
   /// 设置项-语言（语言名称本身在组件内硬编码，不走 l10n）
   ///
   /// In zh, this message translates to:

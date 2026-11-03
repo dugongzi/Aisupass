@@ -17,6 +17,7 @@ class AiQuickPanelOverlay extends HookWidget {
     required this.bottomOffset,
     required this.onDismiss,
     required this.onOpenChat,
+    required this.onOpenEscalation,
     this.isActivated = false,
   });
 
@@ -34,6 +35,9 @@ class AiQuickPanelOverlay extends HookWidget {
 
   /// 点击「AI 助手」。
   final VoidCallback onOpenChat;
+
+  /// 点击「手动提权」。
+  final VoidCallback onOpenEscalation;
 
   @override
   Widget build(BuildContext context) {
@@ -106,6 +110,7 @@ class AiQuickPanelOverlay extends HookWidget {
                             child: _AiQuickPanel(
                               isActivated: isActivated,
                               onOpenChat: onOpenChat,
+                              onOpenEscalation: onOpenEscalation,
                             ),
                           ),
                         ),
@@ -124,11 +129,16 @@ class AiQuickPanelOverlay extends HookWidget {
 
 /// 水滴形面板主体：激活态渐变描边 + 外发光，未激活时退为中性描边。
 class _AiQuickPanel extends HookWidget {
-  const _AiQuickPanel({required this.isActivated, required this.onOpenChat});
+  const _AiQuickPanel({
+    required this.isActivated,
+    required this.onOpenChat,
+    required this.onOpenEscalation,
+  });
 
   /// AI 是否已激活。
   final bool isActivated;
   final VoidCallback onOpenChat;
+  final VoidCallback onOpenEscalation;
 
   @override
   Widget build(BuildContext context) {
@@ -201,7 +211,7 @@ class _AiQuickPanel extends HookWidget {
     );
   }
 
-  /// 单个入口：容器只做一层极淡底色，避免每行各套一层造成视觉碎片。
+  /// 入口按行平铺在同一个容器里，行之间用细分割线隔开。
   Widget _buildActionGroup(BuildContext context) {
     final ColorScheme colorScheme = context.colorScheme;
     final bool isDark = context.isDark;
@@ -214,11 +224,33 @@ class _AiQuickPanel extends HookWidget {
           borderRadius: radius,
           color: colorScheme.onSurface.withValues(alpha: isDark ? 0.05 : 0.035),
         ),
-        child: _AiQuickActionTile(
-          icon: Icons.auto_awesome_rounded,
-          title: context.l10n.aiQuickChatTitle,
-          description: context.l10n.aiQuickChatDesc,
-          onTap: onOpenChat,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            _AiQuickActionTile(
+              icon: Icons.auto_awesome_rounded,
+              title: context.l10n.aiQuickChatTitle,
+              description: context.l10n.aiQuickChatDesc,
+              onTap: onOpenChat,
+            ),
+            Divider(
+              height: 1,
+              thickness: 1,
+              // 缩进对齐文字左边缘，看起来是同一条竖线上的两条入口。
+              indent: 42.w,
+              endIndent: 12.w,
+              color: colorScheme.outline.withValues(
+                alpha: isDark ? 0.24 : 0.12,
+              ),
+            ),
+            _AiQuickActionTile(
+              icon: Icons.admin_panel_settings_outlined,
+              title: context.l10n.aiQuickEscalationTitle,
+              description: context.l10n.aiQuickEscalationDesc,
+              onTap: onOpenEscalation,
+            ),
+          ],
         ),
       ),
     );

@@ -755,6 +755,30 @@
   "@aiQuickChatDesc": {
     "description": "快捷面板-AI 对话入口说明"
   },
+  "aiQuickEscalationTitle": "手动提权",
+  "@aiQuickEscalationTitle": {
+    "description": "快捷面板-手动提权入口"
+  },
+  "aiQuickEscalationDesc": "匹配本机内核载荷，手动获取 ROOT",
+  "@aiQuickEscalationDesc": {
+    "description": "快捷面板-手动提权入口说明"
+  },
+  "escalationTitle": "手动提权",
+  "@escalationTitle": {
+    "description": "手动提权页标题"
+  },
+  "escalationDesc": "手动提权会按当前设备匹配本地内核载荷并尝试提升权限，操作不可逆，请先备份重要数据。",
+  "@escalationDesc": {
+    "description": "手动提权页顶部说明"
+  },
+  "escalationEnvTitle": "当前环境",
+  "@escalationEnvTitle": {
+    "description": "手动提权页-环境信息小标题"
+  },
+  "escalationSelinuxTitle": "SELinux",
+  "@escalationSelinuxTitle": {
+    "description": "手动提权页-SELinux 状态行"
+  },
   "languageTitle": "语言",
   "@languageTitle": {
     "description": "设置项-语言（语言名称本身在组件内硬编码，不走 l10n）"

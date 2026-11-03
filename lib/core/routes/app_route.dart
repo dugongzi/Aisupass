@@ -3,6 +3,7 @@ import 'package:Aisupass/common/pages/main_page.dart';
 import 'package:Aisupass/features/ai/presentation/pages/ai_config_edit_page.dart';
 import 'package:Aisupass/features/ai/presentation/pages/ai_config_page.dart';
 import 'package:Aisupass/features/chat/presentation/pages/chat_page.dart';
+import 'package:Aisupass/features/escalation/presentation/pages/manual_escalation_page.dart';
 import 'package:go_router/go_router.dart';
 
 /// 全局路由路径常量。
@@ -24,6 +25,9 @@ class AppRoute {
 
   /// 拼接编辑页路径，[id] 传 [newConfigId] 表示新建。
   static String aiConfigEditPath(String id) => '/aiConfig/edit/$id';
+
+  // 提权
+  static const manualEscalation = '/escalation/manual';
 
   // 桌面端
   static const desktopHome = '/desktop';
@@ -55,6 +59,10 @@ final List<GoRoute> appRoutes = [
         ),
       ),
     ],
+  ),
+  GoRoute(
+    path: AppRoute.manualEscalation,
+    builder: (context, state) => const ManualEscalationPage(),
   ),
   GoRoute(
     path: AppRoute.desktopHome,

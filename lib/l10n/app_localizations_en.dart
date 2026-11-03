@@ -545,6 +545,26 @@ class AppLocalizationsEn extends AppLocalizations {
       'Read the device environment and answer your questions';
 
   @override
+  String get aiQuickEscalationTitle => 'Manual root';
+
+  @override
+  String get aiQuickEscalationDesc =>
+      'Match a local kernel payload and gain ROOT manually';
+
+  @override
+  String get escalationTitle => 'Manual root';
+
+  @override
+  String get escalationDesc =>
+      'Manual root matches a local kernel payload for this device and attempts to elevate privileges. The change is irreversible — back up important data first.';
+
+  @override
+  String get escalationEnvTitle => 'Current environment';
+
+  @override
+  String get escalationSelinuxTitle => 'SELinux';
+
+  @override
   String get languageTitle => 'Language';
 
   @override
