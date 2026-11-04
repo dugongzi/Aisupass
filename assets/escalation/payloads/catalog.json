@@ -2027,6 +2027,20 @@
                         "sha256":  "b247909fed6a0e80bc9d54ed59b1113b658b4cdf40ee218082e1783cf0caedf0",
                         "command":  "LD_PRELOAD=\u003cpayload\u003e /system/bin/id",
                         "source":  "hmascs/KSuRoot :: app/src/main/jniLibs/arm64-v8a/libbaseline_6_12.so"
+                    },
+                    {
+                        "id":  "mi_k70u_os3",
+                        "library":  "libksu_mi_k70u_os3.so",
+                        "vendor":  "xiaomi",
+                        "displayName":  "Redmi K70 Ultra（澎湃 OS 3，自包含 runner）",
+                        "models":  [],
+                        "kernelVersion":  null,
+                        "kernelUnknown":  true,
+                        "buildId":  "",
+                        "size":  164976,
+                        "sha256":  "afd47c758d5623d0c8af69120159cee49f2e70097899b1e36a3f9b3dc8314633",
+                        "command":  "LD_PRELOAD=\u003cpayload\u003e /system/bin/id",
+                        "source":  "hmascs/KSuRoot :: app/src/main/jniLibs/arm64-v8a/libksu_mi_k70u_os3.so"
                     }
                 ]
 }

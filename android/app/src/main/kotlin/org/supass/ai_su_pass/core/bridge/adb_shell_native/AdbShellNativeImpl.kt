@@ -8,7 +8,9 @@ import android.util.Log
 import org.supass.ai_su_pass.core.adb.AdbConnectionManager
 import org.supass.ai_su_pass.core.adb.AdbShellChannel
 import org.supass.ai_su_pass.core.adb.PairingNotification
+import org.supass.ai_su_pass.core.shell.ShellResult
 import org.supass.ai_su_pass.core.shell.ShellStatus
+import java.io.File
 import java.util.UUID
 import java.util.concurrent.Executors
 import java.util.concurrent.LinkedBlockingQueue
@@ -34,6 +36,14 @@ class AdbShellNativeImpl(private val context: Context) : AdbShellNative {
 
     private val executor = Executors.newSingleThreadExecutor()
     private val mainHandler = Handler(Looper.getMainLooper())
+
+    /**
+     * 命令执行专用线程。
+     *
+     * [AdbShellChannel.exec] 会阻塞到命令结束；若与配对轮询共用 [executor]，
+     * 一条 `sleep 30` 就能让配对进度停更。单线程串行还顺带挡住了连点并发。
+     */
+    private val execExecutor = Executors.newSingleThreadExecutor()
 
     /** 唯一的身份来源：应用内无线调试自配对，不需要用户安装任何外部 App。 */
     private val adb = AdbShellChannel(AdbConnectionManager(context))
@@ -184,6 +194,72 @@ class AdbShellNativeImpl(private val context: Context) : AdbShellNative {
         job?.session?.cancel()
         mainHandler.post { callback(Result.success(Unit)) }
     }
+
+    override fun exec(
+        command: String,
+        timeoutMs: Long,
+        stdin: ByteArray?,
+        callback: (Result<ShellExecResult>) -> Unit,
+    ) {
+        val trimmed = command.trim()
+        if (trimmed.isEmpty()) {
+            mainHandler.post {
+                callback(Result.success(unstarted("empty command")))
+            }
+            return
+        }
+
+        // 超时必须夹在区间内：0 会让命令立刻被掐断，过大则会长期占住连接。
+        val budget = timeoutMs.coerceIn(MIN_EXEC_TIMEOUT_MS, MAX_EXEC_TIMEOUT_MS)
+        execExecutor.execute {
+            val payload = runCatching { adb.exec(trimmed, budget, stdin) }
+                .fold(
+                    onSuccess = { it.toPayload() },
+                    onFailure = { unstarted("exec failed: ${it.javaClass.simpleName}") },
+                )
+            Log.i(
+                TAG,
+                "exec exit=${payload.exitCode} ms=${payload.durationMs} timedOut=${payload.timedOut} " +
+                    "stdout=${payload.stdout.length}c stderr=${payload.stderr.length}c",
+            )
+            mainHandler.post { callback(Result.success(payload)) }
+        }
+    }
+
+    /** 内部结果 → 契约结果。两者字段一一对应，只换承载类型。 */
+    private fun ShellResult.toPayload(): ShellExecResult = ShellExecResult(
+        exitCode = exitCode.toLong(),
+        stdout = stdout,
+        stderr = stderr,
+        durationMs = durationMs,
+        timedOut = timedOut,
+    )
+
+    /**
+     * 读原生库解压目录。
+     *
+     * 只在 `extractNativeLibs=true`（本工程走 `useLegacyPackaging = true`）时有值：
+     * 此时 PackageManager 会把 jniLibs 里的 so 解压到该目录，权限为
+     * `apk_data_file`，shell（uid=2000）既读得到也 dlopen 得动，
+     * 于是注入不需要再把字节搬进 `/data/local/tmp`。
+     *
+     * 目录不可用时回空串——注入前必须据此拦一次，否则错误会伪装成「so 不存在」。
+     */
+    override fun nativeLibraryDir(callback: (Result<String>) -> Unit) {
+        val dir = context.applicationInfo.nativeLibraryDir.orEmpty()
+        val usable = dir.isNotEmpty() && File(dir).isDirectory
+        Log.i(TAG, "nativeLibraryDir='$dir' usable=$usable")
+        mainHandler.post { callback(Result.success(if (usable) dir else "")) }
+    }
+
+    /** 命令没能跑起来时的统一返回：只回证据，不向 Dart 抛异常。 */
+    private fun unstarted(message: String): ShellExecResult = ShellExecResult(
+        exitCode = EXIT_NOT_STARTED.toLong(),
+        stdout = "",
+        stderr = message,
+        durationMs = 0L,
+        timedOut = false,
+    )
 
     /**
      * 通知栏输入模式的配对：先在通知里等用户输入 6 位码，再发现端点、走正常配对。
@@ -363,6 +439,7 @@ class AdbShellNativeImpl(private val context: Context) : AdbShellNative {
         // 只断连接，不 close()：close() 会 destroy 掉当前私钥对象。
         adb.disconnect()
         executor.shutdownNow()
+        execExecutor.shutdownNow()
     }
 
     /** 配对输入方式。 */
@@ -425,6 +502,13 @@ class AdbShellNativeImpl(private val context: Context) : AdbShellNative {
 
         const val CREDENTIALS_UNAVAILABLE = "credentialsUnavailable"
         const val UNKNOWN_ERROR = "unknown"
+
+        /** 命令没跑起来（通道未连接、流未建立、被超时前关闭）。 */
+        const val EXIT_NOT_STARTED = -1
+
+        /** 单条命令的超时区间：下限防误传 0 立刻掐断，上限防长期占住连接。 */
+        const val MIN_EXEC_TIMEOUT_MS = 1_000L
+        const val MAX_EXEC_TIMEOUT_MS = 120_000L
 
         /** libadb 在设备未授权时抛的异常类名，用来把失败归到 `hostAuthFailed`。 */
         const val AUTH_FAILED_EXCEPTION = "AdbAuthenticationFailedException"

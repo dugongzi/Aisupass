@@ -279,6 +279,76 @@ class PairingSnapshot {
   int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
 }
 
+/// 一条 shell 命令的执行结果。
+///
+/// 刻意不提供 `success` 布尔值：原生只回证据，判定权留给上层。
+class ShellExecResult {
+  ShellExecResult({
+    required this.exitCode,
+    required this.stdout,
+    required this.stderr,
+    required this.durationMs,
+    required this.timedOut,
+  });
+
+  /// 退出码；`-1` 表示命令没跑起来（通道未连接、流未建立等）。
+  ///
+  /// 被信号终止时按 `128 + 信号值` 计，这与 shell 的惯例一致。
+  int exitCode;
+
+  /// 标准输出。
+  String stdout;
+
+  /// 标准错误。
+  String stderr;
+
+  /// 耗时（毫秒），单调时钟。
+  int durationMs;
+
+  /// 是否因超时被掐断。
+  bool timedOut;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      exitCode,
+      stdout,
+      stderr,
+      durationMs,
+      timedOut,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static ShellExecResult decode(Object result) {
+    result as List<Object?>;
+    return ShellExecResult(
+      exitCode: result[0]! as int,
+      stdout: result[1]! as String,
+      stderr: result[2]! as String,
+      durationMs: result[3]! as int,
+      timedOut: result[4]! as bool,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! ShellExecResult || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(exitCode, other.exitCode) && _deepEquals(stdout, other.stdout) && _deepEquals(stderr, other.stderr) && _deepEquals(durationMs, other.durationMs) && _deepEquals(timedOut, other.timedOut);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+}
+
 
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
@@ -299,6 +369,9 @@ class _PigeonCodec extends StandardMessageCodec {
     }    else if (value is PairingSnapshot) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
+    }    else if (value is ShellExecResult) {
+      buffer.putUint8(133);
+      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -316,6 +389,8 @@ class _PigeonCodec extends StandardMessageCodec {
         return PairingStartResult.decode(readValue(buffer)!);
       case 132:
         return PairingSnapshot.decode(readValue(buffer)!);
+      case 133:
+        return ShellExecResult.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -325,8 +400,8 @@ class _PigeonCodec extends StandardMessageCodec {
 /// 无线 ADB 配对与 shell 连接的原生接口。
 ///
 /// 契约原则：
-/// 1. 只做两件事：配对建链、读连接状态；
-/// 2. 不提供任意命令执行能力，也不持有任何常驻进程；
+/// 1. 配对建链、读连接状态、在当前连接上执行单条命令；
+/// 2. 不持有任何常驻进程：每条命令跑完即回收，不保留交互式会话；
 /// 3. 不抛异常，失败一律走结构化返回值。
 class AdbShellNative {
   /// Constructor for [AdbShellNative].  The [binaryMessenger] named argument is
@@ -420,5 +495,57 @@ class AdbShellNative {
         isNullValid: true,
     )
     ;
+  }
+
+  /// 在当前 shell 连接上执行一条命令。
+  ///
+  /// 走 ADB shell protocol v2，stdout 与 stderr 天然分离，退出码由协议给出。
+  /// [stdin] 为命令的标准输入字节；传 null 表示立即 EOF——读 stdin 的命令
+  /// 会直接拿到输入结束，而不是挂到超时。
+  Future<ShellExecResult> exec(String command, int timeoutMs, Uint8List? stdin) async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.Aisupass.AdbShellNative.exec$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[command, timeoutMs, stdin]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
+    return pigeonVar_replyValue! as ShellExecResult;
+  }
+
+  /// 读取本 App 在设备上的原生库解压目录（`nativeLibraryDir`）。
+  ///
+  /// 打进 `jniLibs` 的 so 会被 PackageManager 解压到这里，权限为
+  /// `apk_data_file` 且可执行，因此 shell（uid=2000）能直接 `LD_PRELOAD` 它，
+  /// 无需再把字节写进 `/data/local/tmp`。
+  ///
+  /// 路径含安装随机后缀，每次安装/更新都会变，**调用方不得缓存**。
+  /// 返回空串表示目录不可用——`android:extractNativeLibs=false` 时 so 留在 APK
+  /// 内、不会解压，注入会失败。
+  Future<String> nativeLibraryDir() async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.Aisupass.AdbShellNative.nativeLibraryDir$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
+    return pigeonVar_replyValue! as String;
   }
 }

@@ -172,3 +172,90 @@ class ShellPairingController extends Notifier<ShellPairingState> {
     _timer = null;
   }
 }
+
+/// 本 App 的原生库解压目录（`nativeLibraryDir`）。
+///
+/// 打进 `jniLibs` 的 so 由 PackageManager 解压到这里，`shell` 身份能直接
+/// `LD_PRELOAD`，所以注入不必再把字节写进 `/data/local/tmp`。
+///
+/// 路径含安装随机后缀、每次安装都会变，因此只在进程内存里缓存，
+/// 不做任何落盘持久化。空串表示目录不可用。
+///
+/// 桌面端没有这项能力，固定返回空串。
+final FutureProvider<String> nativeLibraryDirProvider = FutureProvider<String>((
+  ref,
+) async {
+  if (!Platform.isAndroid) return '';
+  try {
+    return await ref.watch(adbShellNativeProvider).nativeLibraryDir();
+  } catch (_) {
+    // 原生未注册或调用失败时按不可用处理，由调用方给出可读提示。
+    return '';
+  }
+});
+
+/// 命令执行面板的状态：最近一条命令与它的结果。
+@immutable
+class ShellConsoleState {
+  const ShellConsoleState({
+    this.running = false,
+    this.command,
+    this.result,
+    this.error,
+  });
+
+  /// 是否正在执行。
+  final bool running;
+
+  /// 最近一条命令；为 null 表示还没跑过。
+  final String? command;
+
+  /// 原生回传的结构化结果。
+  final ShellExecResult? result;
+
+  /// Pigeon 调用本身失败时的描述（通道未注册等），与 [result] 互斥。
+  final String? error;
+}
+
+/// 在已连接的 shell 上执行单条命令。
+///
+/// 只服务于调试面板：不做命令白名单，也不做历史记录。
+final NotifierProvider<ShellConsoleController, ShellConsoleState>
+shellConsoleProvider =
+    NotifierProvider<ShellConsoleController, ShellConsoleState>(
+      ShellConsoleController.new,
+    );
+
+class ShellConsoleController extends Notifier<ShellConsoleState> {
+  /// 单条命令的默认上限：足以跑 `sha256sum` 这类操作，又不至于长时间占住连接。
+  static const Duration _timeout = Duration(seconds: 20);
+
+  @override
+  ShellConsoleState build() => const ShellConsoleState();
+
+  /// 执行一条命令；已有命令在跑时直接忽略，避免把原生串行队列堆起来。
+  Future<void> run(String command) async {
+    final String trimmed = command.trim();
+    if (trimmed.isEmpty || state.running) return;
+
+    state = ShellConsoleState(running: true, command: trimmed);
+    try {
+      final ShellExecResult result = await ref
+          .read(adbShellNativeProvider)
+          .exec(trimmed, _timeout.inMilliseconds, null);
+      state = ShellConsoleState(command: trimmed, result: result);
+    } catch (error) {
+      state = ShellConsoleState(command: trimmed, error: '$error');
+    }
+  }
+
+  /// 清空面板。
+  void clear() => state = const ShellConsoleState();
+
+  /// 直接切到失败态。
+  ///
+  /// 用于「命令还没发出去就已经确定跑不通」的本地校验（例如原生库目录不可用），
+  /// 免得去设备上绕一圈、最后拿到一条容易误读的 `CANNOT LINK`。
+  void fail(String message) =>
+      state = ShellConsoleState(command: state.command, error: message);
+}
