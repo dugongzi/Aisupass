@@ -146,10 +146,9 @@ class _HalfCircleNotchedShape extends NotchedShape {
   @override
   Path getOuterPath(Rect host, Rect? guest) {
     if (guest == null || !host.overlaps(guest)) {
-      return Path()
-        ..addRRect(
-          RRect.fromRectAndRadius(host, Radius.circular(cornerRadius)),
-        );
+      return Path()..addRRect(
+        RRect.fromRectAndRadius(host, Radius.circular(cornerRadius)),
+      );
     }
 
     return getOuterPathWithGuestMetrics(
@@ -165,10 +164,9 @@ class _HalfCircleNotchedShape extends NotchedShape {
     required double guestCenterY,
   }) {
     if (guestDiameter <= 0) {
-      return Path()
-        ..addRRect(
-          RRect.fromRectAndRadius(host, Radius.circular(cornerRadius)),
-        );
+      return Path()..addRRect(
+        RRect.fromRectAndRadius(host, Radius.circular(cornerRadius)),
+      );
     }
 
     final double notchRadius = guestDiameter / 2.0 + notchMargin;
@@ -193,9 +191,7 @@ class _HalfCircleNotchedShape extends NotchedShape {
     p[0] = Offset(a - s1, b);
     p[1] = Offset(a, b);
     final double cmpx = b < 0 ? -1.0 : 1.0;
-    p[2] = cmpx * p2yA > cmpx * p2yB
-        ? Offset(p2xA, p2yA)
-        : Offset(p2xB, p2yB);
+    p[2] = cmpx * p2yA > cmpx * p2yB ? Offset(p2xA, p2yA) : Offset(p2xB, p2yB);
     p[3] = Offset(-1.0 * p[2].dx, p[2].dy);
     p[4] = Offset(-1.0 * p[1].dx, p[1].dy);
     p[5] = Offset(-1.0 * p[0].dx, p[0].dy);
@@ -415,47 +411,52 @@ class _BottomBarItem extends HookWidget {
       onTap: onTap,
       child: SizedBox(
         height: double.infinity,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
-              curve: Curves.easeOutCubic,
-              width: 42.w,
-              height: 30.h,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12.r),
-                color: selected
-                    ? colorScheme.primary.withValues(
-                        alpha: isDark ? 0.16 : 0.10,
-                      )
-                    : Colors.transparent,
+        // 图标块 + 间距 + 文字行高在小屏或大字号下会超出底栏高度，
+        // 用 scaleDown 兜底：放得下时按原尺寸画，放不下时等比缩小，不溢出。
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeOutCubic,
+                width: 42.w,
+                height: 30.h,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12.r),
+                  color: selected
+                      ? colorScheme.primary.withValues(
+                          alpha: isDark ? 0.16 : 0.10,
+                        )
+                      : Colors.transparent,
+                ),
+                child: Icon(
+                  selected ? item.filledIcon : item.outlinedIcon,
+                  size: 22.sp,
+                  color: iconColor,
+                ),
               ),
-              child: Icon(
-                selected ? item.filledIcon : item.outlinedIcon,
-                size: 22.sp,
-                color: iconColor,
+              SizedBox(height: 2.h),
+              AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 250),
+                style: TextStyle(
+                  fontFamily: AppFonts.primary,
+                  fontSize: 10.sp,
+                  color: labelColor,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                  height: 1.2,
+                ),
+                child: Text(
+                  item.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-            ),
-            SizedBox(height: 2.h),
-            AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 250),
-              style: TextStyle(
-                fontFamily: AppFonts.primary,
-                fontSize: 10.sp,
-                color: labelColor,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                height: 1.2,
-              ),
-              child: Text(
-                item.label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

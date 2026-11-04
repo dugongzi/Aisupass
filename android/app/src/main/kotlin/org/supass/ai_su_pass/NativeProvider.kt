@@ -4,6 +4,8 @@ import android.content.Context
 import io.flutter.plugin.common.BinaryMessenger
 import org.supass.ai_su_pass.core.bridge.adb_shell_native.AdbShellNative
 import org.supass.ai_su_pass.core.bridge.adb_shell_native.AdbShellNativeImpl
+import org.supass.ai_su_pass.core.bridge.device_identity_native.DeviceIdentityNative
+import org.supass.ai_su_pass.core.bridge.device_identity_native.DeviceIdentityNativeImpl
 import org.supass.ai_su_pass.core.bridge.system_status_native.SystemStatusNative
 import org.supass.ai_su_pass.core.bridge.system_status_native.SystemStatusNativeImpl
 
@@ -17,6 +19,7 @@ object NativeProvider {
 
     private var systemStatusImpl: SystemStatusNativeImpl? = null
     private var adbShellImpl: AdbShellNativeImpl? = null
+    private var deviceIdentityImpl: DeviceIdentityNativeImpl? = null
 
     fun registerAll(context: Context, messenger: BinaryMessenger) {
         systemStatusImpl?.dispose()
@@ -30,6 +33,11 @@ object NativeProvider {
         val shellImpl = adbShellImpl
             ?: AdbShellNativeImpl(context.applicationContext).also { adbShellImpl = it }
         AdbShellNative.setUp(messenger, shellImpl)
+
+        deviceIdentityImpl?.dispose()
+        val identityImpl = DeviceIdentityNativeImpl(context.applicationContext)
+        deviceIdentityImpl = identityImpl
+        DeviceIdentityNative.setUp(messenger, identityImpl)
     }
 
     fun dispose() {
@@ -37,5 +45,7 @@ object NativeProvider {
         systemStatusImpl = null
         adbShellImpl?.dispose()
         adbShellImpl = null
+        deviceIdentityImpl?.dispose()
+        deviceIdentityImpl = null
     }
 }
