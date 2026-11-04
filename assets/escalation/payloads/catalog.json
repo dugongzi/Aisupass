@@ -2039,8 +2039,36 @@
                         "buildId":  "",
                         "size":  164976,
                         "sha256":  "afd47c758d5623d0c8af69120159cee49f2e70097899b1e36a3f9b3dc8314633",
-                        "command":  "LD_PRELOAD=\u003cpayload\u003e /system/bin/id",
-                        "source":  "hmascs/KSuRoot :: app/src/main/jniLibs/arm64-v8a/libksu_mi_k70u_os3.so"
+                        "command":  "/data/local/tmp/preload.so --no-proxy --force",
+                        "source":  "Xiaomi/k70u_os3"
+                    },
+                    {
+                        "id":  "mi_8g2_6m",
+                        "library":  "libksu_mi_8g2_6m.so",
+                        "vendor":  "xiaomi",
+                        "displayName":  "小米 13 系列等 6 款（骁龙 8 Gen 2，自包含 runner）",
+                        "models":  [],
+                        "kernelVersion":  null,
+                        "kernelUnknown":  true,
+                        "buildId":  "",
+                        "size":  1889584,
+                        "sha256":  "55a406e6d0fefb339d18915e06dd86a289b923094e8b19172245b27333e90552",
+                        "command":  "/data/local/tmp/preload.so --no-proxy --force",
+                        "source":  "Xiaomi/小米8g2/小米13系列等6款.so"
+                    },
+                    {
+                        "id":  "mi_mt6895_43499",
+                        "library":  "libksu_mi_mt6895_43499.so",
+                        "vendor":  "xiaomi",
+                        "displayName":  "小米天玑 8000～8250（MT6895，自包含 runner）",
+                        "models":  [],
+                        "kernelVersion":  null,
+                        "kernelUnknown":  true,
+                        "buildId":  "",
+                        "size":  4982680,
+                        "sha256":  "71563f169b0454b93db517a6d0ceeb96da1ed9eaa131e5ccb5313d24866a7083",
+                        "command":  "/data/local/tmp/mi_mt6895_43499 --target \u003c内核版本的后三位\u003e",
+                        "source":  "Xiaomi/小米天玑8000～8250/mi_mt6895_43499"
                     }
                 ]
 }
