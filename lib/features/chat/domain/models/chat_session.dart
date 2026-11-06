@@ -1,6 +1,6 @@
 import 'package:meta/meta.dart';
 
-import 'chat_turn.dart';
+import 'package:Aisupass/features/chat/domain/models/chat_turn.dart';
 
 /// 一个独立的多轮对话会话，整体序列化后落盘。
 @immutable

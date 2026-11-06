@@ -6,8 +6,7 @@ part 'payload_dto.g.dart';
 
 /// 载荷清单 DTO，对应 `catalog.json` 的单个条目。
 ///
-/// catalog 里 `kernelVersion` 为 `null` 时由 `@Default('')` 收敛成空串，
-/// 「未知」语义交给实体 getter 还原，因此这里不接 `kernelUnknown` 字段。
+/// catalog 里 `kernelVersion` 为 `null` 时由 `@Default('')` 收敛成空串。
 @freezed
 abstract class PayloadDto with _$PayloadDto {
   const PayloadDto._();
@@ -18,11 +17,16 @@ abstract class PayloadDto with _$PayloadDto {
     @Default('') String vendor,
     @Default('') String displayName,
     @Default(<String>[]) List<String> models,
+    @Default(false) bool kernelUnknown,
     @Default('') String kernelVersion,
+    @Default(<String>[]) List<String> kernelCommits,
     @Default('') String buildId,
     @Default(0) int size,
     @Default('') String sha256,
     @Default('') String command,
+
+    /// 助手只能 `dlopen`，形态上跑不了主体的载荷在 catalog 里标 `true`。
+    @Default(false) bool standalone,
     @Default('') String source,
   }) = _PayloadDto;
 
@@ -36,11 +40,14 @@ abstract class PayloadDto with _$PayloadDto {
     vendor: vendor,
     displayName: displayName,
     models: models,
+    kernelUnknown: kernelUnknown,
     kernelVersion: kernelVersion,
+    kernelCommits: kernelCommits,
     buildId: buildId,
     size: size,
     sha256: sha256,
     command: command,
+    standalone: standalone,
     source: source,
   );
 }

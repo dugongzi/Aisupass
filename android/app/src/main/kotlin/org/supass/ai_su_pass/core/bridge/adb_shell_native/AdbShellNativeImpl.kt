@@ -506,9 +506,20 @@ class AdbShellNativeImpl(private val context: Context) : AdbShellNative {
         /** 命令没跑起来（通道未连接、流未建立、被超时前关闭）。 */
         const val EXIT_NOT_STARTED = -1
 
-        /** 单条命令的超时区间：下限防误传 0 立刻掐断，上限防长期占住连接。 */
+        /** 单条命令的超时区间：下限防误传 0 立刻掐断，上限防误传天文数字占住连接。 */
         const val MIN_EXEC_TIMEOUT_MS = 1_000L
-        const val MAX_EXEC_TIMEOUT_MS = 120_000L
+
+        /**
+         * 上限取 15 分钟，留足长任务的余量。
+         *
+         * 载荷的重试节奏是 `EXPLOIT_ATTEMPTS=24` × `EXPLOIT_ATTEMPT_TIMEOUT_SEC=120`，
+         * 上限若定在 120 秒，第一轮还没跑完就会被掐断。
+         *
+         * 提权链路目前是「后台起 + 轮询日志」，单条命令都在秒级，用不到这个
+         * 上限；留着它只是为了不把调用方传的大值静默削小。控制台那条命令
+         * 传 20 秒，不受影响。
+         */
+        const val MAX_EXEC_TIMEOUT_MS = 900_000L
 
         /** libadb 在设备未授权时抛的异常类名，用来把失败归到 `hostAuthFailed`。 */
         const val AUTH_FAILED_EXCEPTION = "AdbAuthenticationFailedException"

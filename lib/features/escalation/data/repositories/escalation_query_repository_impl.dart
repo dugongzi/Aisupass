@@ -11,9 +11,7 @@ import 'package:Aisupass/generated/device_identity.g.dart' as pigeon;
 /// 提权链路查询仓储实现：DTO -> Entity 的唯一转换点，
 /// 同时承载不依赖 IO 的匹配算法。
 class EscalationQueryRepositoryImpl implements EscalationQueryRepository {
-  const EscalationQueryRepositoryImpl({
-    required this._datasource,
-  });
+  const EscalationQueryRepositoryImpl({required this._datasource});
 
   final EscalationQueryDatasource _datasource;
 
@@ -21,12 +19,13 @@ class EscalationQueryRepositoryImpl implements EscalationQueryRepository {
   static final RegExp _modelSeparator = RegExp(r'[^a-z0-9+\-]+');
 
   /// 6.6.89 特例：这几个机型共用 `libbs.so`。
-  static const Map<String, Set<String>> _overrideToLibss = <String, Set<String>>{
-    'iqoo neo10 pro+': <String>{'6.6.89'},
-    'iqoo neo11': <String>{'6.6.89'},
-    'iqoo 11': <String>{'6.6.89'},
-    'iqoo 13': <String>{'6.6.89'},
-  };
+  static const Map<String, Set<String>> _overrideToLibss =
+      <String, Set<String>>{
+        'iqoo neo10 pro+': <String>{'6.6.89'},
+        'iqoo neo11': <String>{'6.6.89'},
+        'iqoo 11': <String>{'6.6.89'},
+        'iqoo 13': <String>{'6.6.89'},
+      };
 
   /// 厂商别名归一。未登记的厂商直接放弃兜底。
   static const Map<String, String> _vendorAliases = <String, String>{
@@ -43,30 +42,20 @@ class EscalationQueryRepositoryImpl implements EscalationQueryRepository {
   @override
   Future<List<Payload>> listPayloads() async {
     final List<PayloadDto> dtos = await _datasource.loadPayloadCatalog();
-    return dtos
-        .map((PayloadDto dto) => dto.toEntity())
-        .toList(growable: false);
+    return dtos.map((PayloadDto dto) => dto.toEntity()).toList(growable: false);
   }
 
   @override
   Future<DeviceIdentity> deviceIdentity() async {
-    final pigeon.DeviceIdentity native = await _datasource
-        .readDeviceIdentity();
+    final pigeon.DeviceIdentity native = await _datasource.readDeviceIdentity();
     return DeviceIdentityDto.fromNative(native).toEntity();
   }
 
   @override
-  Future<PayloadMatch?> resolve({bool allowVendorFallback = true}) async {
+  Future<PayloadMatch?> resolve({bool allowVendorFallback = false}) async {
     final List<Payload> all = await listPayloads();
     final DeviceIdentity device = await deviceIdentity();
     return _resolve(all, device, allowVendorFallback: allowVendorFallback);
-  }
-
-  @override
-  Future<String> payloadPath(Payload payload) async {
-    final String directory = await _datasource.readNativeLibraryDir();
-    if (directory.isEmpty) return '';
-    return '$directory/${payload.library}';
   }
 
   /// 机型关键词全中判定。分词后比较，不用子串匹配。
@@ -87,7 +76,10 @@ class EscalationQueryRepositoryImpl implements EscalationQueryRepository {
     return null;
   }
 
-  /// 三档匹配：特例 -> 同内核 -> 同机型，最后才走厂商兜底。
+  /// 四档匹配：特例 -> 精确 -> 同内核 -> 同机型。
+  ///
+  /// 从精确到宽松逐档试，命中即返回；都没中时才看
+  /// [allowVendorFallback] 是否允许厂商兜底。
   PayloadMatch? _resolve(
     List<Payload> all,
     DeviceIdentity device, {
@@ -124,25 +116,40 @@ class EscalationQueryRepositoryImpl implements EscalationQueryRepository {
       return allowVendorFallback ? _vendorFallback(all, device) : null;
     }
 
-    // 档位一：内核版本相等。kernelUnknown 是硬闸门，必须先排除。
+    // 档位一：机型全中 + 内核版本相等 + commit 命中。commit 必须非空集合，
+    // 空集只代表「无 commit 约束」，不能当成通配。
     for (final Payload payload in candidates) {
       if (!payload.kernelUnknown &&
-          payload.kernelVersion == device.kernelVersion) {
+          (payload.kernelAgnostic ||
+              payload.kernelVersion == device.kernelVersion) &&
+          payload.kernelCommits.isNotEmpty &&
+          payload.kernelCommits.contains(device.kernelCommit)) {
+        return PayloadMatch(payload: payload, tier: MatchTier.exact);
+      }
+    }
+
+    // 档位二：内核版本相等或不限内核。kernelUnknown 是硬闸门，必须先排除。
+    for (final Payload payload in candidates) {
+      if (!payload.kernelUnknown &&
+          (payload.kernelAgnostic ||
+              payload.kernelVersion == device.kernelVersion)) {
         return PayloadMatch(payload: payload, tier: MatchTier.sameKernel);
       }
     }
 
-    // 档位二：机型中、版本不等，优先非未知。
+    // 档位三：机型中、版本不等，优先已知内核（不限内核与已知内核同权重，未知排最后）。
     final List<Payload> sorted = candidates.toList()
       ..sort(
-        (Payload a, Payload b) => a.kernelUnknown == b.kernelUnknown
-            ? 0
-            : (a.kernelUnknown ? 1 : -1),
+        (Payload a, Payload b) =>
+            a.kernelUnknown == b.kernelUnknown ? 0 : (a.kernelUnknown ? 1 : -1),
       );
     return PayloadMatch(payload: sorted.first, tier: MatchTier.similarDevice);
   }
 
   /// 厂商兜底：机型不中时，同厂商同版本取体积最小的一条。
+  ///
+  /// 只在显式传入 `allowVendorFallback: true` 时才会被调用。兜底载荷机型
+  /// 不同，命中不代表能跑，调用方须自行确认。
   PayloadMatch? _vendorFallback(List<Payload> all, DeviceIdentity device) {
     final String? vendor = _vendorAliases[device.manufacturer.toLowerCase()];
     if (vendor == null) return null;

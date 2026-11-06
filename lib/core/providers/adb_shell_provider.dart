@@ -30,7 +30,12 @@ final FutureProvider<ShellConnection> shellConnectionProvider =
 /// 配对会话的当前快照，面板据此决定显示哪一行字、给哪个按钮。
 @immutable
 class ShellPairingState {
-  const ShellPairingState({this.sessionId, this.stage, this.reason, this.detail});
+  const ShellPairingState({
+    this.sessionId,
+    this.stage,
+    this.reason,
+    this.detail,
+  });
 
   /// 原生侧会话 id；为空表示当前没有会话。
   final String? sessionId;
@@ -234,7 +239,9 @@ class ShellConsoleController extends Notifier<ShellConsoleState> {
   ShellConsoleState build() => const ShellConsoleState();
 
   /// 执行一条命令；已有命令在跑时直接忽略，避免把原生串行队列堆起来。
-  Future<void> run(String command) async {
+  ///
+  /// [timeout] 供长耗时命令（如内核利用）单独放宽；不传则用默认上限。
+  Future<void> run(String command, {Duration? timeout}) async {
     final String trimmed = command.trim();
     if (trimmed.isEmpty || state.running) return;
 
@@ -242,7 +249,7 @@ class ShellConsoleController extends Notifier<ShellConsoleState> {
     try {
       final ShellExecResult result = await ref
           .read(adbShellNativeProvider)
-          .exec(trimmed, _timeout.inMilliseconds, null);
+          .exec(trimmed, (timeout ?? _timeout).inMilliseconds, null);
       state = ShellConsoleState(command: trimmed, result: result);
     } catch (error) {
       state = ShellConsoleState(command: trimmed, error: '$error');

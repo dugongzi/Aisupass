@@ -565,6 +565,118 @@ class AppLocalizationsEn extends AppLocalizations {
   String get escalationSelinuxTitle => 'SELinux';
 
   @override
+  String get escalationCommandLabel => 'Command';
+
+  @override
+  String get escalationRunButton => 'Run';
+
+  @override
+  String get escalationRunningButton => 'Running…';
+
+  @override
+  String get escalationClearButton => 'Clear';
+
+  @override
+  String escalationShellConnected(int uid) {
+    return 'shell connected (uid=$uid)';
+  }
+
+  @override
+  String get escalationShellDisconnected =>
+      'Not connected — pair wireless debugging on the home screen first';
+
+  @override
+  String get escalationInvokeFailed => 'Invocation failed';
+
+  @override
+  String get escalationTimedOutTag => ' (timed out)';
+
+  @override
+  String get escalationNativeDirUnavailable =>
+      'Native library directory unavailable: this install has no extracted jniLibs .so (extractNativeLibs / useLegacyPackaging must be true)';
+
+  @override
+  String get escalationPresetLibDir => 'lib dir';
+
+  @override
+  String get escalationPresetInject => 'L1 inject';
+
+  @override
+  String get escalationPresetChecksum => 'so checksum';
+
+  @override
+  String get escalationExploitButton => 'Start root';
+
+  @override
+  String get escalationDeviceLabel => 'Device';
+
+  @override
+  String get escalationCatalogLabel => 'Catalog entries';
+
+  @override
+  String get escalationMatchLabel => 'Matched payload';
+
+  @override
+  String get escalationMatchNone =>
+      'No candidate for this device in the catalog';
+
+  @override
+  String get escalationMatchLoading => 'Matching…';
+
+  @override
+  String get escalationMatchDegraded => 'Degraded match — may not work';
+
+  @override
+  String get escalationKernelUnknown => 'unknown kernel';
+
+  @override
+  String get escalationHandoffSection => 'Hand off root';
+
+  @override
+  String get escalationHandoffDesc =>
+      'The root you just got is temporary and dies on reboot. Hand it to an installed manager so it can load the kernel module and make it persist.';
+
+  @override
+  String get escalationHandoffManagerLabel => 'Manager';
+
+  @override
+  String get escalationHandoffManagerKernelsu => 'KernelSU';
+
+  @override
+  String get escalationHandoffManagerSukisu => 'SukiSU Ultra';
+
+  @override
+  String get escalationHandoffButton => 'Hand off to manager';
+
+  @override
+  String escalationHandoffSuccess(String manager) {
+    return 'Handed off to $manager. Open $manager to confirm the module is loaded.';
+  }
+
+  @override
+  String escalationHandoffManagerMissing(String manager, String package) {
+    return '$manager is not installed on this device: no libksud.so found for package $package. Install $manager first, then retry.';
+  }
+
+  @override
+  String get escalationHandoffNoRoot =>
+      'No root right now: the payload did not succeed, or the temporary root is already gone. Run the escalation above first, then hand off.';
+
+  @override
+  String escalationHandoffFailed(int code) {
+    return 'Handoff failed (exit code $code). Common causes: manager version does not match the kernel module, permission was denied, or the manager is upgrading.';
+  }
+
+  @override
+  String get escalationHandoffFailedNoCode =>
+      'Handoff failed: the command never ran, so there is no exit code. Check whether permission was denied or the manager is upgrading.';
+
+  @override
+  String escalationHandoffOpenHome(String manager) {
+    return 'Open $manager download page';
+  }
+
+  @override
   String get languageTitle => 'Language';
 
   @override

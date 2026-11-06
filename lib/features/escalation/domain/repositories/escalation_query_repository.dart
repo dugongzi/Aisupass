@@ -12,10 +12,10 @@ abstract class EscalationQueryRepository {
 
   /// 为当前设备挑选载荷。
   ///
-  /// [allowVendorFallback] 为 `false` 时**只**禁用同厂商兜底，
-  /// 不影响 `sameKernel` 与 `similarDevice`。无任何候选时返回 `null`。
-  Future<PayloadMatch?> resolve({bool allowVendorFallback = true});
-
-  /// 取载荷在设备上的绝对路径。原生库目录不可用时返回空串。
-  Future<String> payloadPath(Payload payload);
+  /// [allowVendorFallback] 为 `false`（默认）时不走同厂商兜底，
+  /// 不影响 `exact` / `sameKernel` / `similarDevice`。无任何候选时返回
+  /// `null`。
+  ///
+  /// 默认关闭：兜底载荷机型不同，拿去自动执行必然失败。
+  Future<PayloadMatch?> resolve({bool allowVendorFallback = false});
 }

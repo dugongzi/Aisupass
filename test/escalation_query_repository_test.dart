@@ -16,10 +16,8 @@ const String _catalogPath = 'assets/escalation/payloads/catalog.json';
 
 /// 只替换 IO 两端的测试替身：清单由用例给定，设备身份由用例给定。
 class _FakeDatasource extends EscalationQueryDatasource {
-  _FakeDatasource({
-    required this._payloads,
-    required this._identity,
-  }) : super(bundle: rootBundle, native: pigeon.DeviceIdentityNative());
+  _FakeDatasource({required this._payloads, required this._identity})
+    : super(bundle: rootBundle, native: pigeon.DeviceIdentityNative());
 
   final List<PayloadDto> _payloads;
   final pigeon.DeviceIdentity _identity;
@@ -36,11 +34,12 @@ pigeon.DeviceIdentity _identity({
   required String kernelVersion,
   String manufacturer = 'vivo',
   String model = '',
+  String kernelCommit = '000000000000',
 }) => pigeon.DeviceIdentity(
   identityText: identityText,
-  kernelRelease: '$kernelVersion-android14-11-g000000000000',
+  kernelRelease: '$kernelVersion-android14-11-g$kernelCommit',
   kernelVersion: kernelVersion,
-  kernelCommit: '000000000000',
+  kernelCommit: kernelCommit,
   manufacturer: manufacturer,
   model: model,
   pageSize: 4096,
@@ -60,6 +59,7 @@ PayloadDto _entry({
   required String displayName,
   required String kernelVersion,
   String library = 'libksu_test.so',
+  List<String> kernelCommits = const <String>[],
 }) => PayloadDto(
   id: id,
   library: library,
@@ -67,6 +67,7 @@ PayloadDto _entry({
   displayName: displayName,
   models: models,
   kernelVersion: kernelVersion,
+  kernelCommits: kernelCommits,
   size: 1,
   sha256: 'sha256',
   command: 'LD_PRELOAD=<payload> /system/bin/id',
@@ -77,9 +78,9 @@ void main() {
     late List<PayloadDto> catalog;
 
     setUpAll(() {
-      final Map<String, dynamic> root =
-          jsonDecode(File(_catalogPath).readAsStringSync())
-              as Map<String, dynamic>;
+      final Map<String, dynamic> root = jsonDecode(
+        File(_catalogPath).readAsStringSync(),
+      ) as Map<String, dynamic>;
       catalog = (root['entries'] as List<dynamic>)
           .map(
             (dynamic entry) =>
@@ -103,6 +104,8 @@ void main() {
     });
 
     test('iQOO 13 + 6.6.57 同内核命中 vivo_iqoo13_6657_a', () async {
+      // commit 用默认的 `000000000000`，与条目登记的 `da7e4eafe109` 不符，
+      // 因此只能落在同内核档，不得升到精确档。
       final PayloadMatch? match = await _repository(
         payloads: catalog,
         identity: _identity(
@@ -114,6 +117,66 @@ void main() {
       expect(match, isNotNull);
       expect(match!.tier, MatchTier.sameKernel);
       expect(match.payload.id, 'vivo_iqoo13_6657_a');
+    });
+
+    test('iQOO 13 + 6.6.57 + commit 命中登记值走精确档', () async {
+      final PayloadMatch? match = await _repository(
+        payloads: catalog,
+        identity: _identity(
+          identityText: 'vivo iqoo 13 v2463a',
+          kernelVersion: '6.6.57',
+          kernelCommit: 'da7e4eafe109',
+        ),
+      ).resolve();
+
+      expect(match, isNotNull);
+      expect(match!.tier, MatchTier.exact);
+      expect(match.payload.id, 'vivo_iqoo13_6657_a');
+      expect(match.isDegraded, isFalse);
+    });
+
+    test('kernelCommits 为空集的条目永不进精确档', () async {
+      final List<PayloadDto> crafted = <PayloadDto>[
+        _entry(
+          id: 'vivo_no_commit',
+          displayName: 'iQOO 13',
+          models: <String>['iqoo 13'],
+          kernelVersion: '6.6.57',
+        ),
+      ];
+
+      final PayloadMatch? match = await _repository(
+        payloads: crafted,
+        identity: _identity(
+          identityText: 'vivo iqoo 13',
+          kernelVersion: '6.6.57',
+          kernelCommit: 'da7e4eafe109',
+        ),
+      ).resolve();
+
+      expect(match, isNotNull);
+      expect(match!.tier, MatchTier.sameKernel);
+      expect(match.payload.id, 'vivo_no_commit');
+    });
+
+    test('同厂商兜底默认不执行，显式开启才产出候选', () async {
+      final pigeon.DeviceIdentity identity = _identity(
+        identityText: 'vivo mysteryphone',
+        kernelVersion: '6.6.57',
+      );
+
+      final PayloadMatch? defaultResolve = await _repository(
+        payloads: catalog,
+        identity: identity,
+      ).resolve();
+      final PayloadMatch? fallback = await _repository(
+        payloads: catalog,
+        identity: identity,
+      ).resolve(allowVendorFallback: true);
+
+      expect(defaultResolve, isNull);
+      expect(fallback, isNotNull);
+      expect(fallback!.tier, MatchTier.vendorFallback);
     });
 
     test('iQOO 13 + 6.7.0 只落到同机型降级档', () async {

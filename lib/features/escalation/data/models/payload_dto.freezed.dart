@@ -15,7 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$PayloadDto {
 
- String get id; String get library; String get vendor; String get displayName; List<String> get models; String get kernelVersion; String get buildId; int get size; String get sha256; String get command; String get source;
+ String get id; String get library; String get vendor; String get displayName; List<String> get models; bool get kernelUnknown; String get kernelVersion; List<String> get kernelCommits; String get buildId; int get size; String get sha256; String get command;/// 助手只能 `dlopen`，形态上跑不了主体的载荷在 catalog 里标 `true`。
+ bool get standalone; String get source;
 /// Create a copy of PayloadDto
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +29,16 @@ $PayloadDtoCopyWith<PayloadDto> get copyWith => _$PayloadDtoCopyWithImpl<Payload
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PayloadDto&&(identical(other.id, id) || other.id == id)&&(identical(other.library, library) || other.library == library)&&(identical(other.vendor, vendor) || other.vendor == vendor)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&const DeepCollectionEquality().equals(other.models, models)&&(identical(other.kernelVersion, kernelVersion) || other.kernelVersion == kernelVersion)&&(identical(other.buildId, buildId) || other.buildId == buildId)&&(identical(other.size, size) || other.size == size)&&(identical(other.sha256, sha256) || other.sha256 == sha256)&&(identical(other.command, command) || other.command == command)&&(identical(other.source, source) || other.source == source));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PayloadDto&&(identical(other.id, id) || other.id == id)&&(identical(other.library, library) || other.library == library)&&(identical(other.vendor, vendor) || other.vendor == vendor)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&const DeepCollectionEquality().equals(other.models, models)&&(identical(other.kernelUnknown, kernelUnknown) || other.kernelUnknown == kernelUnknown)&&(identical(other.kernelVersion, kernelVersion) || other.kernelVersion == kernelVersion)&&const DeepCollectionEquality().equals(other.kernelCommits, kernelCommits)&&(identical(other.buildId, buildId) || other.buildId == buildId)&&(identical(other.size, size) || other.size == size)&&(identical(other.sha256, sha256) || other.sha256 == sha256)&&(identical(other.command, command) || other.command == command)&&(identical(other.standalone, standalone) || other.standalone == standalone)&&(identical(other.source, source) || other.source == source));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,library,vendor,displayName,const DeepCollectionEquality().hash(models),kernelVersion,buildId,size,sha256,command,source);
+int get hashCode => Object.hash(runtimeType,id,library,vendor,displayName,const DeepCollectionEquality().hash(models),kernelUnknown,kernelVersion,const DeepCollectionEquality().hash(kernelCommits),buildId,size,sha256,command,standalone,source);
 
 @override
 String toString() {
-  return 'PayloadDto(id: $id, library: $library, vendor: $vendor, displayName: $displayName, models: $models, kernelVersion: $kernelVersion, buildId: $buildId, size: $size, sha256: $sha256, command: $command, source: $source)';
+  return 'PayloadDto(id: $id, library: $library, vendor: $vendor, displayName: $displayName, models: $models, kernelUnknown: $kernelUnknown, kernelVersion: $kernelVersion, kernelCommits: $kernelCommits, buildId: $buildId, size: $size, sha256: $sha256, command: $command, standalone: $standalone, source: $source)';
 }
 
 
@@ -48,7 +49,7 @@ abstract mixin class $PayloadDtoCopyWith<$Res>  {
   factory $PayloadDtoCopyWith(PayloadDto value, $Res Function(PayloadDto) _then) = _$PayloadDtoCopyWithImpl;
 @useResult
 $Res call({
- String id, String library, String vendor, String displayName, List<String> models, String kernelVersion, String buildId, int size, String sha256, String command, String source
+ String id, String library, String vendor, String displayName, List<String> models, bool kernelUnknown, String kernelVersion, List<String> kernelCommits, String buildId, int size, String sha256, String command, bool standalone, String source
 });
 
 
@@ -65,19 +66,22 @@ class _$PayloadDtoCopyWithImpl<$Res>
 
 /// Create a copy of PayloadDto
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? library = null,Object? vendor = null,Object? displayName = null,Object? models = null,Object? kernelVersion = null,Object? buildId = null,Object? size = null,Object? sha256 = null,Object? command = null,Object? source = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? library = null,Object? vendor = null,Object? displayName = null,Object? models = null,Object? kernelUnknown = null,Object? kernelVersion = null,Object? kernelCommits = null,Object? buildId = null,Object? size = null,Object? sha256 = null,Object? command = null,Object? standalone = null,Object? source = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,library: null == library ? _self.library : library // ignore: cast_nullable_to_non_nullable
 as String,vendor: null == vendor ? _self.vendor : vendor // ignore: cast_nullable_to_non_nullable
 as String,displayName: null == displayName ? _self.displayName : displayName // ignore: cast_nullable_to_non_nullable
 as String,models: null == models ? _self.models : models // ignore: cast_nullable_to_non_nullable
-as List<String>,kernelVersion: null == kernelVersion ? _self.kernelVersion : kernelVersion // ignore: cast_nullable_to_non_nullable
-as String,buildId: null == buildId ? _self.buildId : buildId // ignore: cast_nullable_to_non_nullable
+as List<String>,kernelUnknown: null == kernelUnknown ? _self.kernelUnknown : kernelUnknown // ignore: cast_nullable_to_non_nullable
+as bool,kernelVersion: null == kernelVersion ? _self.kernelVersion : kernelVersion // ignore: cast_nullable_to_non_nullable
+as String,kernelCommits: null == kernelCommits ? _self.kernelCommits : kernelCommits // ignore: cast_nullable_to_non_nullable
+as List<String>,buildId: null == buildId ? _self.buildId : buildId // ignore: cast_nullable_to_non_nullable
 as String,size: null == size ? _self.size : size // ignore: cast_nullable_to_non_nullable
 as int,sha256: null == sha256 ? _self.sha256 : sha256 // ignore: cast_nullable_to_non_nullable
 as String,command: null == command ? _self.command : command // ignore: cast_nullable_to_non_nullable
-as String,source: null == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
+as String,standalone: null == standalone ? _self.standalone : standalone // ignore: cast_nullable_to_non_nullable
+as bool,source: null == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }
@@ -163,10 +167,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String library,  String vendor,  String displayName,  List<String> models,  String kernelVersion,  String buildId,  int size,  String sha256,  String command,  String source)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String library,  String vendor,  String displayName,  List<String> models,  bool kernelUnknown,  String kernelVersion,  List<String> kernelCommits,  String buildId,  int size,  String sha256,  String command,  bool standalone,  String source)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PayloadDto() when $default != null:
-return $default(_that.id,_that.library,_that.vendor,_that.displayName,_that.models,_that.kernelVersion,_that.buildId,_that.size,_that.sha256,_that.command,_that.source);case _:
+return $default(_that.id,_that.library,_that.vendor,_that.displayName,_that.models,_that.kernelUnknown,_that.kernelVersion,_that.kernelCommits,_that.buildId,_that.size,_that.sha256,_that.command,_that.standalone,_that.source);case _:
   return orElse();
 
 }
@@ -184,10 +188,10 @@ return $default(_that.id,_that.library,_that.vendor,_that.displayName,_that.mode
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String library,  String vendor,  String displayName,  List<String> models,  String kernelVersion,  String buildId,  int size,  String sha256,  String command,  String source)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String library,  String vendor,  String displayName,  List<String> models,  bool kernelUnknown,  String kernelVersion,  List<String> kernelCommits,  String buildId,  int size,  String sha256,  String command,  bool standalone,  String source)  $default,) {final _that = this;
 switch (_that) {
 case _PayloadDto():
-return $default(_that.id,_that.library,_that.vendor,_that.displayName,_that.models,_that.kernelVersion,_that.buildId,_that.size,_that.sha256,_that.command,_that.source);case _:
+return $default(_that.id,_that.library,_that.vendor,_that.displayName,_that.models,_that.kernelUnknown,_that.kernelVersion,_that.kernelCommits,_that.buildId,_that.size,_that.sha256,_that.command,_that.standalone,_that.source);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -204,10 +208,10 @@ return $default(_that.id,_that.library,_that.vendor,_that.displayName,_that.mode
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String library,  String vendor,  String displayName,  List<String> models,  String kernelVersion,  String buildId,  int size,  String sha256,  String command,  String source)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String library,  String vendor,  String displayName,  List<String> models,  bool kernelUnknown,  String kernelVersion,  List<String> kernelCommits,  String buildId,  int size,  String sha256,  String command,  bool standalone,  String source)?  $default,) {final _that = this;
 switch (_that) {
 case _PayloadDto() when $default != null:
-return $default(_that.id,_that.library,_that.vendor,_that.displayName,_that.models,_that.kernelVersion,_that.buildId,_that.size,_that.sha256,_that.command,_that.source);case _:
+return $default(_that.id,_that.library,_that.vendor,_that.displayName,_that.models,_that.kernelUnknown,_that.kernelVersion,_that.kernelCommits,_that.buildId,_that.size,_that.sha256,_that.command,_that.standalone,_that.source);case _:
   return null;
 
 }
@@ -219,7 +223,7 @@ return $default(_that.id,_that.library,_that.vendor,_that.displayName,_that.mode
 @JsonSerializable()
 
 class _PayloadDto extends PayloadDto {
-  const _PayloadDto({this.id = '', this.library = '', this.vendor = '', this.displayName = '', this.models = const <String>[], this.kernelVersion = '', this.buildId = '', this.size = 0, this.sha256 = '', this.command = '', this.source = ''}): super._();
+  const _PayloadDto({this.id = '', this.library = '', this.vendor = '', this.displayName = '', this.models = const <String>[], this.kernelUnknown = false, this.kernelVersion = '', this.kernelCommits = const <String>[], this.buildId = '', this.size = 0, this.sha256 = '', this.command = '', this.standalone = false, this.source = ''}): super._();
   factory _PayloadDto.fromJson(Map<String, dynamic> json) => _$PayloadDtoFromJson(json);
 
 @override@JsonKey() final  String id;
@@ -227,11 +231,15 @@ class _PayloadDto extends PayloadDto {
 @override@JsonKey() final  String vendor;
 @override@JsonKey() final  String displayName;
 @override@JsonKey() final  List<String> models;
+@override@JsonKey() final  bool kernelUnknown;
 @override@JsonKey() final  String kernelVersion;
+@override@JsonKey() final  List<String> kernelCommits;
 @override@JsonKey() final  String buildId;
 @override@JsonKey() final  int size;
 @override@JsonKey() final  String sha256;
 @override@JsonKey() final  String command;
+/// 助手只能 `dlopen`，形态上跑不了主体的载荷在 catalog 里标 `true`。
+@override@JsonKey() final  bool standalone;
 @override@JsonKey() final  String source;
 
 /// Create a copy of PayloadDto
@@ -247,16 +255,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PayloadDto&&(identical(other.id, id) || other.id == id)&&(identical(other.library, library) || other.library == library)&&(identical(other.vendor, vendor) || other.vendor == vendor)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&const DeepCollectionEquality().equals(other.models, models)&&(identical(other.kernelVersion, kernelVersion) || other.kernelVersion == kernelVersion)&&(identical(other.buildId, buildId) || other.buildId == buildId)&&(identical(other.size, size) || other.size == size)&&(identical(other.sha256, sha256) || other.sha256 == sha256)&&(identical(other.command, command) || other.command == command)&&(identical(other.source, source) || other.source == source));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PayloadDto&&(identical(other.id, id) || other.id == id)&&(identical(other.library, library) || other.library == library)&&(identical(other.vendor, vendor) || other.vendor == vendor)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&const DeepCollectionEquality().equals(other.models, models)&&(identical(other.kernelUnknown, kernelUnknown) || other.kernelUnknown == kernelUnknown)&&(identical(other.kernelVersion, kernelVersion) || other.kernelVersion == kernelVersion)&&const DeepCollectionEquality().equals(other.kernelCommits, kernelCommits)&&(identical(other.buildId, buildId) || other.buildId == buildId)&&(identical(other.size, size) || other.size == size)&&(identical(other.sha256, sha256) || other.sha256 == sha256)&&(identical(other.command, command) || other.command == command)&&(identical(other.standalone, standalone) || other.standalone == standalone)&&(identical(other.source, source) || other.source == source));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,library,vendor,displayName,const DeepCollectionEquality().hash(models),kernelVersion,buildId,size,sha256,command,source);
+int get hashCode => Object.hash(runtimeType,id,library,vendor,displayName,const DeepCollectionEquality().hash(models),kernelUnknown,kernelVersion,const DeepCollectionEquality().hash(kernelCommits),buildId,size,sha256,command,standalone,source);
 
 @override
 String toString() {
-  return 'PayloadDto(id: $id, library: $library, vendor: $vendor, displayName: $displayName, models: $models, kernelVersion: $kernelVersion, buildId: $buildId, size: $size, sha256: $sha256, command: $command, source: $source)';
+  return 'PayloadDto(id: $id, library: $library, vendor: $vendor, displayName: $displayName, models: $models, kernelUnknown: $kernelUnknown, kernelVersion: $kernelVersion, kernelCommits: $kernelCommits, buildId: $buildId, size: $size, sha256: $sha256, command: $command, standalone: $standalone, source: $source)';
 }
 
 
@@ -267,7 +275,7 @@ abstract mixin class _$PayloadDtoCopyWith<$Res> implements $PayloadDtoCopyWith<$
   factory _$PayloadDtoCopyWith(_PayloadDto value, $Res Function(_PayloadDto) _then) = __$PayloadDtoCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String library, String vendor, String displayName, List<String> models, String kernelVersion, String buildId, int size, String sha256, String command, String source
+ String id, String library, String vendor, String displayName, List<String> models, bool kernelUnknown, String kernelVersion, List<String> kernelCommits, String buildId, int size, String sha256, String command, bool standalone, String source
 });
 
 
@@ -284,19 +292,22 @@ class __$PayloadDtoCopyWithImpl<$Res>
 
 /// Create a copy of PayloadDto
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? library = null,Object? vendor = null,Object? displayName = null,Object? models = null,Object? kernelVersion = null,Object? buildId = null,Object? size = null,Object? sha256 = null,Object? command = null,Object? source = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? library = null,Object? vendor = null,Object? displayName = null,Object? models = null,Object? kernelUnknown = null,Object? kernelVersion = null,Object? kernelCommits = null,Object? buildId = null,Object? size = null,Object? sha256 = null,Object? command = null,Object? standalone = null,Object? source = null,}) {
   return _then(_PayloadDto(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,library: null == library ? _self.library : library // ignore: cast_nullable_to_non_nullable
 as String,vendor: null == vendor ? _self.vendor : vendor // ignore: cast_nullable_to_non_nullable
 as String,displayName: null == displayName ? _self.displayName : displayName // ignore: cast_nullable_to_non_nullable
 as String,models: null == models ? _self.models : models // ignore: cast_nullable_to_non_nullable
-as List<String>,kernelVersion: null == kernelVersion ? _self.kernelVersion : kernelVersion // ignore: cast_nullable_to_non_nullable
-as String,buildId: null == buildId ? _self.buildId : buildId // ignore: cast_nullable_to_non_nullable
+as List<String>,kernelUnknown: null == kernelUnknown ? _self.kernelUnknown : kernelUnknown // ignore: cast_nullable_to_non_nullable
+as bool,kernelVersion: null == kernelVersion ? _self.kernelVersion : kernelVersion // ignore: cast_nullable_to_non_nullable
+as String,kernelCommits: null == kernelCommits ? _self.kernelCommits : kernelCommits // ignore: cast_nullable_to_non_nullable
+as List<String>,buildId: null == buildId ? _self.buildId : buildId // ignore: cast_nullable_to_non_nullable
 as String,size: null == size ? _self.size : size // ignore: cast_nullable_to_non_nullable
 as int,sha256: null == sha256 ? _self.sha256 : sha256 // ignore: cast_nullable_to_non_nullable
 as String,command: null == command ? _self.command : command // ignore: cast_nullable_to_non_nullable
-as String,source: null == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
+as String,standalone: null == standalone ? _self.standalone : standalone // ignore: cast_nullable_to_non_nullable
+as bool,source: null == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }

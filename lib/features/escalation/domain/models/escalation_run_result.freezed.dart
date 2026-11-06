@@ -14,12 +14,17 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$EscalationRunResult {
 
-/// 是否判定为提权成功（退出码与两条日志标记同时满足）。
- bool get success;/// 命令退出码；`-1` 表示没跑起来。
+/// 是否判定为提权成功（载荷日志标记通过，且 `su -c id` 确认为 uid 0）。
+ bool get success;/// 命令退出码；`-1` 表示命令没跑起来，或退出码文件没读到。
+///
+/// 提权链路是「后台起 + 轮询日志」，设备端进程不在前台、回收不到返回值，
+/// 退出码由启动脚本在助手退出后写进 `exploit.rc`，收日志时一并读回。
+/// 也就是说这里可能出现任意非 0 值，不再只有 0 / -1 两档。
+/// **判断成败只看 [success]**。
  int get exitCode;/// 标准输出。
  String get stdout;/// 标准错误。
  String get stderr;/// 耗时（毫秒）。
- int get durationMs;/// 是否因超时被掐断。
+ int get durationMs;/// 是否因停滞或超时被掐断。
  bool get timedOut;
 /// Create a copy of EscalationRunResult
 /// with the given fields replaced by the non-null parameter values.
@@ -220,9 +225,14 @@ class _EscalationRunResult extends EscalationRunResult {
   const _EscalationRunResult({required this.success, required this.exitCode, required this.stdout, required this.stderr, required this.durationMs, required this.timedOut}): super._();
   
 
-/// 是否判定为提权成功（退出码与两条日志标记同时满足）。
+/// 是否判定为提权成功（载荷日志标记通过，且 `su -c id` 确认为 uid 0）。
 @override final  bool success;
-/// 命令退出码；`-1` 表示没跑起来。
+/// 命令退出码；`-1` 表示命令没跑起来，或退出码文件没读到。
+///
+/// 提权链路是「后台起 + 轮询日志」，设备端进程不在前台、回收不到返回值，
+/// 退出码由启动脚本在助手退出后写进 `exploit.rc`，收日志时一并读回。
+/// 也就是说这里可能出现任意非 0 值，不再只有 0 / -1 两档。
+/// **判断成败只看 [success]**。
 @override final  int exitCode;
 /// 标准输出。
 @override final  String stdout;
@@ -230,7 +240,7 @@ class _EscalationRunResult extends EscalationRunResult {
 @override final  String stderr;
 /// 耗时（毫秒）。
 @override final  int durationMs;
-/// 是否因超时被掐断。
+/// 是否因停滞或超时被掐断。
 @override final  bool timedOut;
 
 /// Create a copy of EscalationRunResult

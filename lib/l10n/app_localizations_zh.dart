@@ -555,6 +555,116 @@ class AppLocalizationsZh extends AppLocalizations {
   String get escalationSelinuxTitle => 'SELinux';
 
   @override
+  String get escalationCommandLabel => '命令';
+
+  @override
+  String get escalationRunButton => '执行';
+
+  @override
+  String get escalationRunningButton => '执行中…';
+
+  @override
+  String get escalationClearButton => '清空';
+
+  @override
+  String escalationShellConnected(int uid) {
+    return 'shell 已连接（uid=$uid）';
+  }
+
+  @override
+  String get escalationShellDisconnected => '未连接，请先在首页完成无线调试配对';
+
+  @override
+  String get escalationInvokeFailed => '调用失败';
+
+  @override
+  String get escalationTimedOutTag => '（超时）';
+
+  @override
+  String get escalationNativeDirUnavailable =>
+      '原生库目录不可用：当前安装没有解压 jniLibs 里的 so（需 extractNativeLibs / useLegacyPackaging 为 true）';
+
+  @override
+  String get escalationPresetLibDir => '库目录';
+
+  @override
+  String get escalationPresetInject => 'L1 注入';
+
+  @override
+  String get escalationPresetChecksum => 'so 校验';
+
+  @override
+  String get escalationExploitButton => '开始提权';
+
+  @override
+  String get escalationDeviceLabel => '设备';
+
+  @override
+  String get escalationCatalogLabel => '清单条目';
+
+  @override
+  String get escalationMatchLabel => '命中载荷';
+
+  @override
+  String get escalationMatchNone => '当前设备在清单里没有候选';
+
+  @override
+  String get escalationMatchLoading => '匹配中…';
+
+  @override
+  String get escalationMatchDegraded => '降级命中，可能不可用';
+
+  @override
+  String get escalationKernelUnknown => '未知内核';
+
+  @override
+  String get escalationHandoffSection => '移交 root';
+
+  @override
+  String get escalationHandoffDesc =>
+      '提权拿到的是临时 root，重启即失效。把它交给已安装的管理器，由管理器加载内核模块后才会持久。';
+
+  @override
+  String get escalationHandoffManagerLabel => '管理器';
+
+  @override
+  String get escalationHandoffManagerKernelsu => 'KernelSU';
+
+  @override
+  String get escalationHandoffManagerSukisu => 'SukiSU Ultra';
+
+  @override
+  String get escalationHandoffButton => '移交给管理器';
+
+  @override
+  String escalationHandoffSuccess(String manager) {
+    return '已移交给 $manager，请打开 $manager 确认模块已加载。';
+  }
+
+  @override
+  String escalationHandoffManagerMissing(String manager, String package) {
+    return '设备上没装 $manager：找不到它的 libksud.so（包名 $package）。请先安装 $manager，再回来重试。';
+  }
+
+  @override
+  String get escalationHandoffNoRoot =>
+      '当前没有 root：载荷没跑成功，或者临时 root 已经失效。先回到上面执行一次提权，再来移交。';
+
+  @override
+  String escalationHandoffFailed(int code) {
+    return '移交失败（退出码 $code）。常见原因：管理器版本与内核模块不匹配、授权被拒绝，或管理器正在升级。';
+  }
+
+  @override
+  String get escalationHandoffFailedNoCode =>
+      '移交失败：命令没跑起来，没拿到退出码。检查授权框是否被拒绝，或管理器是否在升级。';
+
+  @override
+  String escalationHandoffOpenHome(String manager) {
+    return '打开 $manager 下载页';
+  }
+
+  @override
   String get languageTitle => '语言';
 
   @override

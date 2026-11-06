@@ -3,7 +3,10 @@ enum MatchTier {
   /// 6.6.89 特例：多个机型共用 `libbs.so`
   libbsOverride,
 
-  /// 机型全中且内核版本相等
+  /// 机型全中、内核版本相等且内核 commit 命中（最高精度）
+  exact,
+
+  /// 机型全中且内核版本相等，但 commit 未登记或不符
   sameKernel,
 
   /// 机型全中但内核版本不等（同机型其它 OTA，可能可用）

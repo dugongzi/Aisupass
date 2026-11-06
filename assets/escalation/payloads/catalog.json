@@ -493,7 +493,6 @@
                                        "a366"
                                    ],
                         "kernelVersion":  "6.6.46",
-                        "kernelUnknown":  false,
                         "buildId":  "A366WVLS3AYG1",
                         "size":  128688,
                         "sha256":  "481e3425d5038b7b51820d626783d5b1afb50c3358075582f14c94e5d7b52eec",
@@ -542,7 +541,6 @@
                                        "a566"
                                    ],
                         "kernelVersion":  "6.6.102",
-                        "kernelUnknown":  false,
                         "buildId":  "A566EXXSCCZG6",
                         "size":  104128,
                         "sha256":  "f28050c5f291386ec539aac668b218d88ab8df43ec159978b2a7b71a329b0bd5",
@@ -559,7 +557,6 @@
                                        "sm-g991"
                                    ],
                         "kernelVersion":  "5.4.274",
-                        "kernelUnknown":  false,
                         "buildId":  "G991USQSHHYI1",
                         "size":  78864,
                         "sha256":  "88e9e4fc52efc76309dcd0fc6afe4cc74ff7931da1f3aa74901eea012b12839f",
@@ -576,7 +573,6 @@
                                        "sm-g991"
                                    ],
                         "kernelVersion":  "5.4.274",
-                        "kernelUnknown":  false,
                         "buildId":  "G991BXXSJHZC2",
                         "size":  134920,
                         "sha256":  "8a0c837da2befba68ee8bf998c1dfd701f3c08c8834bbcafc31a92c126573310",
@@ -593,7 +589,6 @@
                                        "sm-g990b2"
                                    ],
                         "kernelVersion":  "5.4.289",
-                        "kernelUnknown":  false,
                         "buildId":  "G990B2XXSJIZF1",
                         "size":  123328,
                         "sha256":  "87e479880f2e5686c2a8e643a05265ed6d10b97f4646a4382068143bbb4232cf",
@@ -610,7 +605,6 @@
                                        "s721"
                                    ],
                         "kernelVersion":  "6.1.157",
-                        "kernelUnknown":  false,
                         "buildId":  "S721NKSSCDZF3",
                         "size":  104128,
                         "sha256":  "511efc33cb2d9ef3aa396034c63e00fbe56af181cfe613245e4b614c7ebeac9f",
@@ -627,7 +621,6 @@
                                        "sm-s918"
                                    ],
                         "kernelVersion":  "5.15.189",
-                        "kernelUnknown":  false,
                         "buildId":  "S9180ZHS8FZF5",
                         "size":  137728,
                         "sha256":  "55586f8e13e2ef57b33a94a8d36f33d6f01f2881310b1fbe5e764bb06ba78bb2",
@@ -644,7 +637,6 @@
                                        "s9180"
                                    ],
                         "kernelVersion":  "5.15.189",
-                        "kernelUnknown":  false,
                         "buildId":  "",
                         "size":  131072,
                         "sha256":  "18cf7a3f2c78d0f5af9a443511925b6bd573499a9ac7b91d2873cd82e1243743",
@@ -661,7 +653,6 @@
                                        "s9180"
                                    ],
                         "kernelVersion":  "5.15.189",
-                        "kernelUnknown":  false,
                         "buildId":  "",
                         "size":  131072,
                         "sha256":  "38215556b6d366591df2b39281fa559a1648af88c6961ca6b523e2241172c918",
@@ -678,7 +669,6 @@
                                        "s9180"
                                    ],
                         "kernelVersion":  "5.15.189",
-                        "kernelUnknown":  false,
                         "buildId":  "",
                         "size":  131072,
                         "sha256":  "70737c407e4b7d0e415058f2377f32830f2a06c7377f70df0779dc70bb3ef4ec",
@@ -694,7 +684,6 @@
                                        "sm-s918u"
                                    ],
                         "kernelVersion":  "5.15.189",
-                        "kernelUnknown":  false,
                         "buildId":  "",
                         "size":  134040,
                         "sha256":  "980348831d37bd46fa6bc5c737bb6c7bc49144c4bf86ece71f63e9b7234245ff",
@@ -711,7 +700,6 @@
                                        "sm-s928"
                                    ],
                         "kernelVersion":  "6.1.145",
-                        "kernelUnknown":  false,
                         "buildId":  "S928USQS6DZF2",
                         "size":  104128,
                         "sha256":  "693d86f889f3137cfc7d455b1ff9aa4673bd112c98a9ff68382e98b5adc10dbd",
@@ -728,7 +716,6 @@
                                        "sm-s928"
                                    ],
                         "kernelVersion":  "6.1.145",
-                        "kernelUnknown":  false,
                         "buildId":  "S928USQS6DZF2",
                         "size":  129992,
                         "sha256":  "7e9f6e53af1713ba419fd088e2decf174976213a514eaba3dab9dc619dfcd4f6",
@@ -745,7 +732,6 @@
                                        "sm-s921"
                                    ],
                         "kernelVersion":  "6.1.157",
-                        "kernelUnknown":  false,
                         "buildId":  "S921NKSSFDZF3",
                         "size":  104128,
                         "sha256":  "1256ab0c500cb44ed46bf79dcf7331bf8e23fe1b047dd980e6048a3ae01a4245",
@@ -762,7 +748,6 @@
                                        "sm-s921"
                                    ],
                         "kernelVersion":  "6.1.157",
-                        "kernelUnknown":  false,
                         "buildId":  "S921BXXSFDZF2",
                         "size":  104128,
                         "sha256":  "c900fac422c134c4b2fda1b6772b335d4e8523f80e444a83922840cf78641014",
@@ -779,7 +764,6 @@
                                        "sm-s921"
                                    ],
                         "kernelVersion":  "6.1.157",
-                        "kernelUnknown":  false,
                         "buildId":  "S921BXXSFDZE1",
                         "size":  104128,
                         "sha256":  "cde4e9ca1f235f11940513c897de23c97f89f70c7ef0104d071ff1acbbcf1776",
@@ -796,7 +780,6 @@
                                        "sm-s926"
                                    ],
                         "kernelVersion":  "6.1.157",
-                        "kernelUnknown":  false,
                         "buildId":  "S926BXXUEDZDR",
                         "size":  104128,
                         "sha256":  "b1fe6dcc2e4d5cbfc13679f2086835c0a2ab2be5624f122b23b0c30954670552",
@@ -813,7 +796,6 @@
                                        "sm-s938"
                                    ],
                         "kernelVersion":  "6.6.98",
-                        "kernelUnknown":  false,
                         "buildId":  "S938NKSUACZF1",
                         "size":  104128,
                         "sha256":  "6311e5ae1a381fd96b8a989e82525521ed9b00cff4e0d3020d3904eb5716587c",
@@ -830,7 +812,6 @@
                                        "sm-s938"
                                    ],
                         "kernelVersion":  "6.6.98",
-                        "kernelUnknown":  false,
                         "buildId":  "S9380ZHUBCZF1",
                         "size":  104128,
                         "sha256":  "d7665a9d1a05299b395d943e957149a20722705f113fc4915927aa8c3249ac26",
@@ -932,7 +913,6 @@
                                        "sm-s942"
                                    ],
                         "kernelVersion":  "6.12.30",
-                        "kernelUnknown":  false,
                         "buildId":  "",
                         "size":  235712,
                         "sha256":  "39ec4f052d10fde02f40fd7b01d53a1210eec9e665a233da9d84891f197faa6b",
@@ -949,7 +929,6 @@
                                        "sm-s942"
                                    ],
                         "kernelVersion":  "6.12.30",
-                        "kernelUnknown":  false,
                         "buildId":  "",
                         "size":  235712,
                         "sha256":  "4684e76c052fbca89f0902906ba57a4ae28bc4d19e93e4621317ba34f722eb92",
@@ -1000,7 +979,6 @@
                                        "sm-f966"
                                    ],
                         "kernelVersion":  "6.6.98",
-                        "kernelUnknown":  false,
                         "buildId":  "F966USQU9BZDN",
                         "size":  111216,
                         "sha256":  "dcb20ca0186ab94e897440e478252361e6999fa20178b2c4e2fcefa6bea4d515",
@@ -1096,13 +1074,8 @@
                         "library":  "libksu_mi_sm8650_a.so",
                         "vendor":  "xiaomi",
                         "displayName":  "Redmi K80 Pro / Xiaomi 15 Pro / Xiaomi 15 Ultra（骁龙 8 至尊版家族）",
-                        "models":  [
-                                       "miro",
-                                       "haotian",
-                                       "xuanyuan"
-                                   ],
+                        "models":  [],
                         "kernelVersion":  null,
-                        "kernelUnknown":  true,
                         "buildId":  "",
                         "size":  85608,
                         "sha256":  "e9090eccf96dd2890fcd2bafcfdc48178b9569fe1fdcf795c90b4290edba5c12",
@@ -1114,14 +1087,8 @@
                         "library":  "libksu_mi_sm8550_a.so",
                         "vendor":  "xiaomi",
                         "displayName":  "Redmi K90 / Civi 5 Pro / Pad 8 / Turbo 4 Pro（骁龙 8 Gen 3 家族）",
-                        "models":  [
-                                       "annibale",
-                                       "luming",
-                                       "yupei",
-                                       "onyx"
-                                   ],
+                        "models":  [],
                         "kernelVersion":  null,
-                        "kernelUnknown":  true,
                         "buildId":  "",
                         "size":  85608,
                         "sha256":  "576deb3385c38dc283fccb2734e80a87334c4c784520768ede487c002f7d2ad8",
@@ -1149,12 +1116,8 @@
                         "library":  "libksu_mi_sm8750_a.so",
                         "vendor":  "xiaomi",
                         "displayName":  "Xiaomi 15 / Xiaomi Pad 8 Pro（骁龙 8 Elite 家族）",
-                        "models":  [
-                                       "dada",
-                                       "piano"
-                                   ],
+                        "models":  [],
                         "kernelVersion":  null,
-                        "kernelUnknown":  true,
                         "buildId":  "",
                         "size":  85624,
                         "sha256":  "9950c6a6483361e68ea550950354e032953406517119a06b3a1b8a5a527045da",
@@ -1186,7 +1149,6 @@
 
                                    ],
                         "kernelVersion":  "6.6.118",
-                        "kernelUnknown":  false,
                         "buildId":  "",
                         "size":  118672,
                         "sha256":  "e76f74f2d69108961859fc5a7dd3ccf8ddab2d6d9e042709ab6cae1ede4c075f",
@@ -1217,8 +1179,8 @@
                         "models":  [
                                        "iqoo 12"
                                    ],
+                        "kernelUnknown":  false,
                         "kernelVersion":  null,
-                        "kernelUnknown":  true,
                         "buildId":  "",
                         "size":  154240,
                         "sha256":  "6b4e788cdcb0b8c4c8607589d6f820a0b32657687dc4386127177af1f734255c",
@@ -1234,7 +1196,9 @@
                                        "iqoo 13"
                                    ],
                         "kernelVersion":  "6.6.30",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "24ffe62b0a0e"
+                                         ],
                         "buildId":  "",
                         "size":  147104,
                         "sha256":  "f58eca3124ab0a34c1e14607041bd87959c5cb7f412670b0de413a13965d1dd3",
@@ -1250,7 +1214,9 @@
                                        "iqoo 13"
                                    ],
                         "kernelVersion":  "6.6.30",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "ddea8124c6fe"
+                                         ],
                         "buildId":  "",
                         "size":  147104,
                         "sha256":  "3874b28e1fff36f9adf219291a6a4303ae42a1624246bfcf4ccd11868409a644",
@@ -1266,7 +1232,9 @@
                                        "iqoo 13"
                                    ],
                         "kernelVersion":  "6.6.57",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "da7e4eafe109"
+                                         ],
                         "buildId":  "",
                         "size":  147104,
                         "sha256":  "aa6d442f737bfc77b1305d235696ad964244154d1ea0c6aed8a6152ad2df6ea6",
@@ -1282,7 +1250,9 @@
                                        "iqoo 13"
                                    ],
                         "kernelVersion":  "6.6.89",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "1f71897ac249"
+                                         ],
                         "buildId":  "",
                         "size":  147104,
                         "sha256":  "135080801e86f9e117f1bdcd946715ed93350feee5cef33b9da362787e0ba825",
@@ -1298,7 +1268,9 @@
 
                                    ],
                         "kernelVersion":  "6.6.89",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "1f71897ac249"
+                                         ],
                         "buildId":  "",
                         "size":  157784,
                         "sha256":  "9033f24d366d78e2ea6a19d8e38a2c8c086dc174afd2c14af1d1efaa1db566de",
@@ -1314,7 +1286,9 @@
                                        "iqoo neo10 pro"
                                    ],
                         "kernelVersion":  "6.6.30",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "24ffe62b0a0e"
+                                         ],
                         "buildId":  "",
                         "size":  147048,
                         "sha256":  "89dc451f03ad08fa5b2173b62e350d3c4612a32e19ffefb805c86d1b24809e93",
@@ -1330,7 +1304,9 @@
                                        "iqoo neo10 pro"
                                    ],
                         "kernelVersion":  "6.6.57",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "e9c3d7352454"
+                                         ],
                         "buildId":  "",
                         "size":  147048,
                         "sha256":  "5b57e8924e88fd464d2ec2e154fa735315467664aefa21305e8755f8710cb8ab",
@@ -1346,7 +1322,9 @@
                                        "iqoo neo10 pro"
                                    ],
                         "kernelVersion":  "6.6.89",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "b57af212129c"
+                                         ],
                         "buildId":  "",
                         "size":  147048,
                         "sha256":  "9feb0d6fddeb4307c69b3939619232c3049ea21e5a145605f19a6768e01c9a17",
@@ -1362,7 +1340,9 @@
                                        "iqoo neo10 pro+"
                                    ],
                         "kernelVersion":  "6.6.57",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "a7861f9f1a53"
+                                         ],
                         "buildId":  "",
                         "size":  147104,
                         "sha256":  "c22d23d363b7158c4bde38449aef7670a69e70b9c0d131c51236d8cd3bf1309f",
@@ -1378,7 +1358,9 @@
                                        "iqoo neo10 pro+"
                                    ],
                         "kernelVersion":  "6.6.57",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "da7e4eafe109"
+                                         ],
                         "buildId":  "",
                         "size":  147104,
                         "sha256":  "088d8c3c518a73cac30f0bd0b845bfbade8b180fab2b3b30ea63c5f35c9c1f64",
@@ -1394,7 +1376,9 @@
                                        "iqoo neo10 pro+"
                                    ],
                         "kernelVersion":  "6.6.89",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "1f71897ac249"
+                                         ],
                         "buildId":  "",
                         "size":  147104,
                         "sha256":  "7b9ff7e820c3b741d46b4c2c1c8c11e0a1654cc3f07388dd44956d8076cc1eb6",
@@ -1411,7 +1395,9 @@
                                        "iqoo 11"
                                    ],
                         "kernelVersion":  "6.6.89",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "1f71897ac249"
+                                         ],
                         "buildId":  "",
                         "size":  147104,
                         "sha256":  "4deb01e21d1c8bdd3d4991f738ec6f16590ec30d2a724f487736da5540eee027",
@@ -1443,7 +1429,6 @@
                                        "iqoo neo8"
                                    ],
                         "kernelVersion":  "6.1.115",
-                        "kernelUnknown":  false,
                         "buildId":  "",
                         "size":  91056,
                         "sha256":  "7ec9d4550ce8ab938797b677d09de1982c2587ca497d9e351dde47c6acc91d47",
@@ -1459,7 +1444,9 @@
                                        "iqoo z10 turbo+"
                                    ],
                         "kernelVersion":  "6.6.89",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "b57af212129c"
+                                         ],
                         "buildId":  "",
                         "size":  157672,
                         "sha256":  "c0cf336d657e6102e176ee8ffcb823b020492312f7e657e9f4d57d166edbb6ac",
@@ -1475,7 +1462,9 @@
                                        "iqoo z10 turbo+"
                                    ],
                         "kernelVersion":  "6.6.57",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "e9c3d7352454"
+                                         ],
                         "buildId":  "",
                         "size":  156824,
                         "sha256":  "c0474820eb0bef03fb2a086b1b4dec99c8015f0f03a85eaf399ef52decb563e5",
@@ -1507,7 +1496,9 @@
                                        "vivo pad5 pro"
                                    ],
                         "kernelVersion":  "6.6.127",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "24559e55e8d4"
+                                         ],
                         "buildId":  "",
                         "size":  147048,
                         "sha256":  "7c7c91ab74ebab865ceb698b0526118ef9f864b3f0e3a88ff259230d021fcd1a",
@@ -1523,7 +1514,9 @@
                                        "vivo pad5 pro"
                                    ],
                         "kernelVersion":  "6.6.30",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "24ffe62b0a0e"
+                                         ],
                         "buildId":  "",
                         "size":  147048,
                         "sha256":  "b36a91392f89370dd77e77e22bac51a49d8632e693b6f57e0f78619a1937828b",
@@ -1540,7 +1533,6 @@
                                        "v2309a"
                                    ],
                         "kernelVersion":  "6.1.145",
-                        "kernelUnknown":  false,
                         "buildId":  "PD2309_A_16.2.14.0.W10.V000L1",
                         "size":  271432,
                         "sha256":  "a7ff8a3988243272b17cfb3a06f16b9320d4d47167502672ff7e1cbc4260d0ff",
@@ -1556,7 +1548,9 @@
                                        "vivo x200"
                                    ],
                         "kernelVersion":  "6.6.30",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "24ffe62b0a0e"
+                                         ],
                         "buildId":  "",
                         "size":  147048,
                         "sha256":  "0ba832d0c5e13d2ae2cdf71ee6607b5762684391cdbd90b2e74e7534e9a5d4ea",
@@ -1572,7 +1566,9 @@
                                        "vivo x200"
                                    ],
                         "kernelVersion":  "6.6.30",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "3c00ef68de5b"
+                                         ],
                         "buildId":  "",
                         "size":  147048,
                         "sha256":  "27da87c0f9714ec67403e836a961d90722528e48787e6d606919d024c5f1cdb0",
@@ -1588,7 +1584,9 @@
                                        "vivo x200"
                                    ],
                         "kernelVersion":  "6.6.30",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "4063ff378d59"
+                                         ],
                         "buildId":  "",
                         "size":  147048,
                         "sha256":  "928fdc5fa53db89e6b5698b3ad2bd1582db9c57d229a89387935ce464579a650",
@@ -1604,7 +1602,9 @@
                                        "vivo x200"
                                    ],
                         "kernelVersion":  "6.6.30",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "df2db89bad22"
+                                         ],
                         "buildId":  "",
                         "size":  147048,
                         "sha256":  "8007714786c75909d836e10e708a62095288122b183e29239baeefca1dc4b42c",
@@ -1620,7 +1620,9 @@
                                        "vivo x200"
                                    ],
                         "kernelVersion":  "6.6.57",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "0d2377693855"
+                                         ],
                         "buildId":  "",
                         "size":  147048,
                         "sha256":  "1701f91770c81cd8b7bc555b48c442e2e0d9ba4f73d4009e639b0431df5a2488",
@@ -1636,7 +1638,9 @@
                                        "vivo x200"
                                    ],
                         "kernelVersion":  "6.6.57",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "5552931da54f"
+                                         ],
                         "buildId":  "",
                         "size":  147048,
                         "sha256":  "ba5b2da4532c52896f6a943ac73cc72d5fbfcb0a19d3c4ae53ca0c0939be3e24",
@@ -1652,7 +1656,9 @@
                                        "vivo x200"
                                    ],
                         "kernelVersion":  "6.6.57",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "e9c3d7352454"
+                                         ],
                         "buildId":  "",
                         "size":  147048,
                         "sha256":  "91c3080e6cf329896e639321add256749cd6be7d23cf36a7434fd7fdb1f10d53",
@@ -1668,7 +1674,9 @@
                                        "vivo x200"
                                    ],
                         "kernelVersion":  "6.6.89",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "177325e1c8c7"
+                                         ],
                         "buildId":  "",
                         "size":  147048,
                         "sha256":  "e1bd0dbd1dd2ef65f7ac0c27d12b6dc9668982ea2e17f2d76dcd1c5f2f5545e6",
@@ -1684,7 +1692,9 @@
                                        "vivo x200"
                                    ],
                         "kernelVersion":  "6.6.89",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "b57af212129c"
+                                         ],
                         "buildId":  "",
                         "size":  147048,
                         "sha256":  "a97b62da740c3af0cce103a11d51ef90be602ec23fc9f721fe834777a1c0041e",
@@ -1700,7 +1710,9 @@
                                        "vivo x200s"
                                    ],
                         "kernelVersion":  "6.6.30",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "24ffe62b0a0e"
+                                         ],
                         "buildId":  "",
                         "size":  147112,
                         "sha256":  "787389ba729c099c04a9cdf2eac835d1ccaebbab7169da6b6edd1ca481cd6256",
@@ -1716,7 +1728,9 @@
                                        "vivo x200s"
                                    ],
                         "kernelVersion":  "6.6.57",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "0d2377693855"
+                                         ],
                         "buildId":  "",
                         "size":  147048,
                         "sha256":  "459afb5d5930d7d8d7c31a450c1c0c03a2e83f578f7581a68ee29750d6e5e254",
@@ -1732,7 +1746,9 @@
                                        "vivo x200s"
                                    ],
                         "kernelVersion":  "6.6.57",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "5552931da54f"
+                                         ],
                         "buildId":  "",
                         "size":  147048,
                         "sha256":  "dc2fa3d821ecaf083926fce4589130c4f5ec92438c43af85d923ca496640e24a",
@@ -1748,7 +1764,9 @@
                                        "vivo x200s"
                                    ],
                         "kernelVersion":  "6.6.57",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "e9c3d7352454"
+                                         ],
                         "buildId":  "",
                         "size":  147112,
                         "sha256":  "d304c6615a4c1fb79dab7bec7c0cfdee6c06672f5cf000f8f75ee7aa39f1d0ad",
@@ -1764,7 +1782,9 @@
                                        "vivo x200s"
                                    ],
                         "kernelVersion":  "6.6.89",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "177325e1c8c7"
+                                         ],
                         "buildId":  "",
                         "size":  147048,
                         "sha256":  "02442049ad1ddc9ae2797a965533bbf9503ce186f8092f6ac6c8af980940d960",
@@ -1780,7 +1800,9 @@
                                        "vivo x200s"
                                    ],
                         "kernelVersion":  "6.6.89",
-                        "kernelUnknown":  false,
+                        "kernelCommits":  [
+                                             "b57af212129c"
+                                         ],
                         "buildId":  "",
                         "size":  147112,
                         "sha256":  "ab1bcce345dfa1b04131bcf00ca0d58f2729afd43de3e8d643c42e58010227c1",
@@ -1796,7 +1818,6 @@
 
                                    ],
                         "kernelVersion":  null,
-                        "kernelUnknown":  true,
                         "buildId":  "",
                         "size":  176544,
                         "sha256":  "8c3410cbc7dce25df3274c0e35d293cb38d7ad2384af7ecc549a3400c50695d9",
@@ -1893,7 +1914,6 @@
                                        "re6030l1"
                                    ],
                         "kernelVersion":  "6.12.23",
-                        "kernelUnknown":  false,
                         "buildId":  "",
                         "size":  87992,
                         "sha256":  "d2f4a9b29722909f459414ca8c2555f418f84899840162276aaa3ea8172f959d",
@@ -1941,7 +1961,6 @@
 
                                    ],
                         "kernelVersion":  "6.6.118",
-                        "kernelUnknown":  false,
                         "buildId":  "",
                         "size":  58432,
                         "sha256":  "8f8332a9b47c2fe7a4969dd634b6aabb653f8e99e46149850bf24c273eeaae68",
@@ -1965,22 +1984,6 @@
                         "source":  "pimpamebanihah/cve-2026-43499-app.so :: cve-2026-43499-app.so"
                     },
                     {
-                        "id":  "libcve43499root",
-                        "library":  "libcve43499root.so",
-                        "vendor":  "universal",
-                        "displayName":  "CVE-2026-43499 runner 辅助",
-                        "models":  [
-
-                                   ],
-                        "kernelVersion":  null,
-                        "kernelUnknown":  true,
-                        "buildId":  "",
-                        "size":  26024,
-                        "sha256":  "c6b0612b6bdbd60ded964694284f7e8d81cfff2079abeaf3b8854952c2b49eec",
-                        "command":  "LD_PRELOAD=\u003cpayload\u003e /system/bin/id",
-                        "source":  "hmascs/KSuRoot :: app/src/main/jniLibs/arm64-v8a/libcve43499root.so"
-                    },
-                    {
                         "id":  "libionstack",
                         "library":  "libionstack.so",
                         "vendor":  "universal",
@@ -1989,7 +1992,6 @@
 
                                    ],
                         "kernelVersion":  null,
-                        "kernelUnknown":  true,
                         "buildId":  "",
                         "size":  154528,
                         "sha256":  "67bedbd7709d40333392e1943cc9314eadf6322f651aa0c67ad6f95edaa2ae94",
@@ -2005,7 +2007,6 @@
 
                                    ],
                         "kernelVersion":  "6.1",
-                        "kernelUnknown":  false,
                         "buildId":  "",
                         "size":  175776,
                         "sha256":  "835f25ff3f27fee412b5380835937939733fc9e42ea7b0229c105bef906f6a7f",
@@ -2021,7 +2022,6 @@
 
                                    ],
                         "kernelVersion":  "6.12",
-                        "kernelUnknown":  false,
                         "buildId":  "",
                         "size":  175760,
                         "sha256":  "b247909fed6a0e80bc9d54ed59b1113b658b4cdf40ee218082e1783cf0caedf0",
@@ -2035,11 +2035,11 @@
                         "displayName":  "Redmi K70 Ultra（澎湃 OS 3，自包含 runner）",
                         "models":  [],
                         "kernelVersion":  null,
-                        "kernelUnknown":  true,
                         "buildId":  "",
                         "size":  164976,
                         "sha256":  "afd47c758d5623d0c8af69120159cee49f2e70097899b1e36a3f9b3dc8314633",
                         "command":  "/data/local/tmp/preload.so --no-proxy --force",
+                        "standalone":  true,
                         "source":  "Xiaomi/k70u_os3"
                     },
                     {
@@ -2049,11 +2049,11 @@
                         "displayName":  "小米 13 系列等 6 款（骁龙 8 Gen 2，自包含 runner）",
                         "models":  [],
                         "kernelVersion":  null,
-                        "kernelUnknown":  true,
                         "buildId":  "",
                         "size":  1889584,
                         "sha256":  "55a406e6d0fefb339d18915e06dd86a289b923094e8b19172245b27333e90552",
                         "command":  "/data/local/tmp/preload.so --no-proxy --force",
+                        "standalone":  true,
                         "source":  "Xiaomi/小米8g2/小米13系列等6款.so"
                     },
                     {
@@ -2063,11 +2063,11 @@
                         "displayName":  "小米天玑 8000～8250（MT6895，自包含 runner）",
                         "models":  [],
                         "kernelVersion":  null,
-                        "kernelUnknown":  true,
                         "buildId":  "",
                         "size":  4982680,
                         "sha256":  "71563f169b0454b93db517a6d0ceeb96da1ed9eaa131e5ccb5313d24866a7083",
                         "command":  "/data/local/tmp/mi_mt6895_43499 --target \u003c内核版本的后三位\u003e",
+                        "standalone":  true,
                         "source":  "Xiaomi/小米天玑8000～8250/mi_mt6895_43499"
                     }
                 ]

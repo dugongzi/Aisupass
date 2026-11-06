@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.system.Os
 import android.system.OsConstants
 import java.util.concurrent.Executors
@@ -11,8 +12,7 @@ import java.util.concurrent.Executors
 /**
  * 设备身份采集桥接层：只负责取值，不含任何匹配判断。
  *
- * 与 KSuRoot 的 `DeviceSnapshot` 对齐，全部走 App 侧 API，
- * 不绕到 shell 去 `getprop`。
+ * 全部走 App 侧 API，不绕到 shell 去 `getprop`。
  */
 class DeviceIdentityNativeImpl(private val context: Context) : DeviceIdentityNative {
 
@@ -21,13 +21,37 @@ class DeviceIdentityNativeImpl(private val context: Context) : DeviceIdentityNat
         val KERNEL_COMMIT: Regex = Regex("-g([0-9a-f]{10,})")
 
         /**
-         * 市场名属性。`Build.MODEL` 在 vivo/iQOO 上是型号代码，
-         * catalog 登记的是市场名，所以把常见市场名字段一并拼进身份文本。
+         * 市场名属性候选，**按可信度排序**。
+         *
+         * `Build.MODEL` 在 vivo/iQOO 上是型号代码（`V2463A`），catalog 登记的却是
+         * 市场名（`iqoo 13`），只拼 `Build.*` 必然召回不到。
+         *
+         * 注意 `ro.vivo.product.model` **不在**列表里：实测它返回代号 `PD2463`，
+         * 当市场名用会把代号显示给用户，属于「猜错比认不出更糟」。
          */
         val MARKET_NAME_PROPERTIES: List<String> = listOf(
-            "ro.miui.product.name",
+            // Android 官方约定（多分区都可能有）
             "ro.product.marketname",
+            "ro.product.system.marketname",
+            "ro.product.vendor.marketname",
+            "ro.product.odm.marketname",
+            "ro.product.product.marketname",
+            // 通用别名
+            "ro.config.marketing_name",
+            "ro.config.market_name",
+            // 厂商自定义
+            "ro.vivo.market.name",
+            "ro.oppo.market.name",
+            "ro.oplus.market.name",
+            "ro.miui.product.name",
+            "ro.product.mod_device",
+            "ro.config.device_name",
+            "ro.huawei.market.name",
+            "ro.honor.market.name",
         )
+
+        /** 形如 `V2463A` / `PD2463` / `SM-S918B` 的型号代码：短、无空格、字母数字混排。 */
+        val CODE_LIKE: Regex = Regex("^[A-Za-z]{1,4}[-_]?[A-Za-z0-9]{2,10}$")
     }
 
     private val executor = Executors.newSingleThreadExecutor()
@@ -66,7 +90,7 @@ class DeviceIdentityNativeImpl(private val context: Context) : DeviceIdentityNat
     }
 
     /**
-     * 身份文本：多个来源去重后小写空格拼接。
+     * 身份文本：`Build.*` 六项 + 市场名，去重后小写空格拼接。
      *
      * 名字落在哪个字段都能命中，纯召回提升，不新增数据。
      */
@@ -78,13 +102,44 @@ class DeviceIdentityNativeImpl(private val context: Context) : DeviceIdentityNat
         sources.add(Build.DEVICE.orEmpty())
         sources.add(Build.PRODUCT.orEmpty())
         sources.add(Build.BOARD.orEmpty())
-        for (key in MARKET_NAME_PROPERTIES) {
-            sources.add(readSystemProperty(key))
-        }
+        sources.add(marketName().orEmpty())
         return sources
-            .map { it.trim().lowercase() }
+            .map { it.trim() }
             .filter { it.isNotEmpty() }
+            .distinct()
             .joinToString(" ")
+            .lowercase()
+    }
+
+    /**
+     * 取市场名：先按属性优先级找，再回落 `Settings.Global.device_name`
+     * （蓝牙/热点里的设备名，出厂常写的就是市场名）。
+     *
+     * 取不到返回 `null`，**不回落**到型号代码——猜错比认不出更糟。
+     */
+    private fun marketName(): String? {
+        for (key in MARKET_NAME_PROPERTIES) {
+            val value = readSystemProperty(key).trim()
+            if (value.isEmpty()) continue
+            // 值本身像型号代码（`PD2463` / `V2463A`）就不认它是市场名。
+            if (looksLikeCode(value)) continue
+            return value
+        }
+        return try {
+            Settings.Global.getString(context.contentResolver, "device_name")
+                ?.trim()
+                ?.takeIf { it.isNotEmpty() }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    /** 名字看起来像型号代码吗？有空格或含小写都判「不像」。 */
+    private fun looksLikeCode(name: String): Boolean {
+        if (name.isEmpty()) return false
+        if (name.contains(' ')) return false
+        if (name.any { it.isLowerCase() }) return false
+        return CODE_LIKE.matches(name)
     }
 
     /**

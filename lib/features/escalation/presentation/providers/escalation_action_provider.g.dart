@@ -60,7 +60,7 @@ final class EscalationActionDatasourceProvider
 }
 
 String _$escalationActionDatasourceHash() =>
-    r'03bb6bea7467f7ca98a64c5bffbb517ee2f84329';
+    r'033cb08c2ea1d7d43ed2f87cf285a4f223d499e4';
 
 /// 提权链路执行仓储。
 
@@ -114,10 +114,11 @@ final class EscalationActionRepositoryProvider
 }
 
 String _$escalationActionRepositoryHash() =>
-    r'0694f428f5ece7013e0bf572cfb003e009c572d7';
+    r'874eb12d3417e136b6da44f7903cdf1a1a2dafe8';
 
 /// 自动匹配并执行一次载荷提权。
 ///
+/// 「选哪份」归查询仓储，「跑」归执行仓储，两者的装配只在这里发生。
 /// 成功后刷新查询侧，避免 UI 还拿着旧的匹配结果。
 
 @ProviderFor(runPayload)
@@ -125,6 +126,7 @@ const runPayloadProvider = RunPayloadProvider._();
 
 /// 自动匹配并执行一次载荷提权。
 ///
+/// 「选哪份」归查询仓储，「跑」归执行仓储，两者的装配只在这里发生。
 /// 成功后刷新查询侧，避免 UI 还拿着旧的匹配结果。
 
 final class RunPayloadProvider
@@ -139,6 +141,7 @@ final class RunPayloadProvider
         $FutureProvider<EscalationRunResult> {
   /// 自动匹配并执行一次载荷提权。
   ///
+  /// 「选哪份」归查询仓储，「跑」归执行仓储，两者的装配只在这里发生。
   /// 成功后刷新查询侧，避免 UI 还拿着旧的匹配结果。
   const RunPayloadProvider._()
     : super(
@@ -166,4 +169,108 @@ final class RunPayloadProvider
   }
 }
 
-String _$runPayloadHash() => r'11aa5558fccf3a6be1d05e4b566668291726ef7a';
+String _$runPayloadHash() => r'c9539072bc7e90f512f033291eb3162b27cd6944';
+
+/// 把临时 root 移交给用户选定的 [manager]。
+///
+/// 与 [runPayload] 分开是刻意的：提权拿到的一次性 root 与「谁接管」是两件
+/// 事，上游也把移交做成了独立入口。移交必然失败于「管理器没装」，这种情况下
+/// 返回的是 [HandoffKind.managerMissing] 而非异常，UI 直接渲染即可。
+
+@ProviderFor(handoffRoot)
+const handoffRootProvider = HandoffRootFamily._();
+
+/// 把临时 root 移交给用户选定的 [manager]。
+///
+/// 与 [runPayload] 分开是刻意的：提权拿到的一次性 root 与「谁接管」是两件
+/// 事，上游也把移交做成了独立入口。移交必然失败于「管理器没装」，这种情况下
+/// 返回的是 [HandoffKind.managerMissing] 而非异常，UI 直接渲染即可。
+
+final class HandoffRootProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<HandoffOutcome>,
+          HandoffOutcome,
+          FutureOr<HandoffOutcome>
+        >
+    with $FutureModifier<HandoffOutcome>, $FutureProvider<HandoffOutcome> {
+  /// 把临时 root 移交给用户选定的 [manager]。
+  ///
+  /// 与 [runPayload] 分开是刻意的：提权拿到的一次性 root 与「谁接管」是两件
+  /// 事，上游也把移交做成了独立入口。移交必然失败于「管理器没装」，这种情况下
+  /// 返回的是 [HandoffKind.managerMissing] 而非异常，UI 直接渲染即可。
+  const HandoffRootProvider._({
+    required HandoffRootFamily super.from,
+    required RootManager super.argument,
+  }) : super(
+         retry: null,
+         name: r'handoffRootProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$handoffRootHash();
+
+  @override
+  String toString() {
+    return r'handoffRootProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<HandoffOutcome> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<HandoffOutcome> create(Ref ref) {
+    final argument = this.argument as RootManager;
+    return handoffRoot(ref, manager: argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is HandoffRootProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$handoffRootHash() => r'9ccac61d7f99b1fecd78537b4d1d7ef08220d1ef';
+
+/// 把临时 root 移交给用户选定的 [manager]。
+///
+/// 与 [runPayload] 分开是刻意的：提权拿到的一次性 root 与「谁接管」是两件
+/// 事，上游也把移交做成了独立入口。移交必然失败于「管理器没装」，这种情况下
+/// 返回的是 [HandoffKind.managerMissing] 而非异常，UI 直接渲染即可。
+
+final class HandoffRootFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<HandoffOutcome>, RootManager> {
+  const HandoffRootFamily._()
+    : super(
+        retry: null,
+        name: r'handoffRootProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// 把临时 root 移交给用户选定的 [manager]。
+  ///
+  /// 与 [runPayload] 分开是刻意的：提权拿到的一次性 root 与「谁接管」是两件
+  /// 事，上游也把移交做成了独立入口。移交必然失败于「管理器没装」，这种情况下
+  /// 返回的是 [HandoffKind.managerMissing] 而非异常，UI 直接渲染即可。
+
+  HandoffRootProvider call({required RootManager manager}) =>
+      HandoffRootProvider._(argument: manager, from: this);
+
+  @override
+  String toString() => r'handoffRootProvider';
+}
