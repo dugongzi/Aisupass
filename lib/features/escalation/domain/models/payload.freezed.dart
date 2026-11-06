@@ -38,7 +38,8 @@ mixin _$Payload {
 /// 助手的 `--run-payload` 只做 `dlopen`。形如 `ET_EXEC` 的可执行文件
 /// 无法被 `dlopen`，主体挂在 `DT_PREINIT_ARRAY` 的 PIE 也会被链接器跳过。
 /// 清单里由 `"standalone": true` 显式标注，运行时**不解析 ELF 头**；
-/// 这类载荷参数按机型而定，因此**不参与自动执行**。
+/// 这类载荷直接执行其本身，不经助手；参数取 [command] 里载荷路径之后的
+/// 部分，`<内核版本的后三位>` 这类占位符补不齐就不执行。
  bool get standalone;/// 来源描述，仅展示用。
  String get source;
 /// Create a copy of Payload
@@ -284,7 +285,8 @@ class _Payload extends Payload {
 /// 助手的 `--run-payload` 只做 `dlopen`。形如 `ET_EXEC` 的可执行文件
 /// 无法被 `dlopen`，主体挂在 `DT_PREINIT_ARRAY` 的 PIE 也会被链接器跳过。
 /// 清单里由 `"standalone": true` 显式标注，运行时**不解析 ELF 头**；
-/// 这类载荷参数按机型而定，因此**不参与自动执行**。
+/// 这类载荷直接执行其本身，不经助手；参数取 [command] 里载荷路径之后的
+/// 部分，`<内核版本的后三位>` 这类占位符补不齐就不执行。
 @override final  bool standalone;
 /// 来源描述，仅展示用。
 @override final  String source;

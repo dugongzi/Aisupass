@@ -117,6 +117,71 @@ class PayloadShell {
         'cat $pid';
   }
 
+  /// 启动脚本（独立可执行载荷）：直接执行载荷本身，不走助手。
+  ///
+  /// 输出仍写 [logPath]：探测脚本按日志体积判停滞，落点必须与助手链一致，
+  /// 否则日志恒为 0 字节，进程活着也会被判成停滞。
+  static String buildStandaloneLaunchCommand({
+    required String payloadPath,
+    required String arguments,
+  }) {
+    final String payload = quote(payloadPath);
+    final String log = quote(logPath);
+    final String output = quote(outputPath);
+    final String pid = quote(pidPath);
+    final String rc = quote(rcPath);
+    final String args = arguments.isEmpty ? '' : ' $arguments';
+    return '[ -x $payload ] || { '
+        'echo "payload not executable: $payload"; exit $payloadMissingExitCode; }; '
+        'rm -f $log $output $pid $rc; '
+        ': > $log; '
+        '( $payload$args >$log 2>&1 </dev/null & '
+        'assist=\$!; '
+        'echo \$assist > $pid; '
+        'wait \$assist; '
+        'echo \$? > $rc ) & '
+        'i=0; '
+        'while [ ! -s $pid ] && [ \$i -lt 50 ]; do '
+        'sleep 0.1; i=\$((i+1)); done; '
+        'cat $pid';
+  }
+
+  /// 读设备内核版本，供需要内核版本参数的独立载荷填空。
+  static String buildKernelReleaseCommand() => 'uname -r 2>/dev/null';
+
+  /// catalog 里「内核版本末段」的占位符。
+  static const String kernelTailPlaceholder = '<内核版本的后三位>';
+
+  /// 把 catalog 的命令文案转成直接执行载荷的参数串。
+  ///
+  /// 文案的第一个 token 是载荷在设备上的落点（如 `/data/local/tmp/preload.so`），
+  /// 与本 App 的 `nativeLibraryDir` 不同，不采用；只取它后面的参数。
+  /// 占位符补不齐时返回 `null`，由调用方拒绝执行 —— 猜参数只会得到一次
+  /// 看起来跑了、实际什么都没做的尝试。
+  static String? standaloneArguments(String command, String kernelVersion) {
+    final String trimmed = command.trim();
+    if (trimmed.isEmpty) return null;
+    final int space = trimmed.indexOf(' ');
+    String resolved = space < 0 ? '' : trimmed.substring(space + 1).trim();
+    if (resolved.contains(kernelTailPlaceholder)) {
+      final String tail = kernelTail(kernelVersion);
+      if (tail.isEmpty) return null;
+      resolved = resolved.replaceAll(kernelTailPlaceholder, tail);
+    }
+    if (resolved.contains('<') || resolved.contains('>')) return null;
+    return resolved;
+  }
+
+  /// 内核版本末段：`6.6.89` → `89`。
+  ///
+  /// 末段带厂商后缀（`6.6.89-android15-8-gabcd`）时只取开头的数字。
+  static String kernelTail(String kernelVersion) {
+    final List<String> parts = kernelVersion.trim().split('.');
+    if (parts.length < 3) return '';
+    final RegExpMatch? digits = RegExp(r'^\d+').firstMatch(parts.last);
+    return digits?.group(0) ?? '';
+  }
+
   /// 探测脚本：一行 `state=running|gone size=<字节数>`。
   ///
   /// `kill -0` 只查进程存不存在，不投递信号。进程号文件缺失或已被回收都算

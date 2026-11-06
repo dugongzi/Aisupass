@@ -39,7 +39,7 @@ class EscalationActionDatasource {
   Future<pigeon.ShellExecResult> _exec(String command, int timeoutMs) =>
       _native.exec(command, timeoutMs, null);
 
-  late final SuShell _su = SuShell(exec: _exec);
+  late final SuShell _su = SuShell(exec: _exec, wait: _delay);
 
   late final SlideOffsetCache _slideCache = SlideOffsetCache(
     exec: _exec,
@@ -51,12 +51,6 @@ class EscalationActionDatasource {
   /// 拿到的 root 是**一次性**的，cred 属于那个已退出的载荷子进程。要留下来
   /// 必须走 [handoffRoot]。失败返回结果，不抛异常。
   Future<EscalationRunResult> runPayload(Payload payload) async {
-    if (payload.standalone) {
-      return EscalationRunResult.failure(
-        '${payload.library} 是独立可执行载荷，参数按机型而定，暂不支持自动执行',
-      );
-    }
-
     final String directory = await _native.nativeLibraryDir();
     if (directory.isEmpty) {
       return EscalationRunResult.failure('原生库目录不可用：so 没有解压到 nativeLibraryDir');
@@ -64,23 +58,57 @@ class EscalationActionDatasource {
 
     final DateTime startedAt = DateTime.now();
 
-    // 读取 boot token 和 KASLR P0 偏移缓存
-    final String? bootToken = await _slideCache.bootToken();
+    // 读取 boot token 和 KASLR P0 偏移缓存。独立载荷没有注入 slide 的位置，
+    // 这份缓存对它没意义，跳过读盘也就少一条设备命令。
+    final String? bootToken = payload.standalone
+        ? null
+        : await _slideCache.bootToken();
     final String? cachedSlide = bootToken != null
         ? await _slideCache.read(bootToken)
         : null;
 
-    final pigeon.ShellExecResult launch = await _exec(
-      PayloadShell.buildLaunchCommand(
+    final String payloadPath = '$directory/${payload.library}';
+
+    final String launchCommand;
+    if (payload.standalone) {
+      // catalog 里 `command` 的尾部是该载荷的参数，含占位符的要按设备实际内核
+      // 补齐；补不齐就拒绝执行，猜参数只会跑一次什么都没做的尝试。
+      String kernelVersion = payload.kernelVersion;
+      if (payload.command.contains(PayloadShell.kernelTailPlaceholder)) {
+        final pigeon.ShellExecResult kernel = await _exec(
+          PayloadShell.buildKernelReleaseCommand(),
+          PayloadShell.shortTimeoutMs,
+        );
+        kernelVersion = kernel.exitCode == 0 ? kernel.stdout : '';
+      }
+      final String? arguments = PayloadShell.standaloneArguments(
+        payload.command,
+        kernelVersion,
+      );
+      if (arguments == null) {
+        return EscalationRunResult.failure(
+          '${payload.library} 的参数无法在设备上补齐：${payload.command}',
+        );
+      }
+      launchCommand = PayloadShell.buildStandaloneLaunchCommand(
+        payloadPath: payloadPath,
+        arguments: arguments,
+      );
+    } else {
+      launchCommand = PayloadShell.buildLaunchCommand(
         helperPath: '$directory/${PayloadShell.helperLibrary}',
-        payloadPath: '$directory/${payload.library}',
+        payloadPath: payloadPath,
         slideOffset: cachedSlide,
-      ),
+      );
+    }
+
+    final pigeon.ShellExecResult launch = await _exec(
+      launchCommand,
       PayloadShell.shortTimeoutMs,
     );
 
-    // 启动脚本自带两道闸门：helper 不可执行退 2、载荷缺失退 3。其余非 0
-    // 说明命令没在设备上跑起来，轮询下去没意义。
+    // 启动脚本自带闸门：载荷缺失退 3（助手链另有 helper 不可执行退 2）。其余
+    // 非 0 说明命令没在设备上跑起来，轮询下去没意义。
     if (launch.exitCode != 0) {
       return EscalationRunResult(
         success: false,
@@ -130,13 +158,16 @@ class EscalationActionDatasource {
 
     final int exitCode = PayloadShell.exitCodeFrom(log);
 
-    // 两条日志标记加退出码，三者都满足才算成功。
+    // 两条日志标记加退出码，三者都满足才算成功。独立载荷的日志格式不由本项目
+    // 约定，标记对它不成立，只要求它自己正常退出。
     final bool payloadReportedSuccess =
         log.contains(PayloadShell.markerCompleted) &&
         log.contains(PayloadShell.markerRoot);
-    if (!payloadReportedSuccess ||
-        exitCode != 0 ||
-        outcome != PollOutcome.finished) {
+    final bool chainSucceeded =
+        (payload.standalone || payloadReportedSuccess) &&
+        exitCode == 0 &&
+        outcome == PollOutcome.finished;
+    if (!chainSucceeded) {
       final String reason = switch (outcome) {
         PollOutcome.finished when exitCode > 0 => '载荷退出码 $exitCode',
         PollOutcome.finished when exitCode == 0 && !payloadReportedSuccess =>
@@ -160,7 +191,10 @@ class EscalationActionDatasource {
       );
     }
 
-    final pigeon.ShellExecResult rootCheck = await _su.checkRoot();
+    // 载荷退出与 `su` 可用之间有间隙，刚打完的这一次多探几轮再下结论。
+    final pigeon.ShellExecResult rootCheck = await _su.checkRoot(
+      attempts: SuShell.rootCheckAttempts,
+    );
     final bool rootVerified = _su.indicatesRoot(rootCheck);
 
     return EscalationRunResult(

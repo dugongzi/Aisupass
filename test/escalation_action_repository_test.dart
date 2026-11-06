@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:Aisupass/core/storage/json_codec.dart';
 import 'package:Aisupass/core/storage/key_value_store.dart';
+import 'package:Aisupass/core/utils/payload_shell.dart';
 import 'package:Aisupass/features/escalation/data/datasources/escalation_action_datasource.dart';
 import 'package:Aisupass/features/escalation/data/repositories/escalation_action_repository_impl.dart';
 import 'package:Aisupass/features/escalation/domain/enums/root_manager.dart';
@@ -21,7 +22,10 @@ const String _directory =
 /// 不用真的等 180 秒。
 const Duration _fastPoll = Duration(seconds: 180);
 
-Payload _payload({bool standalone = false}) => Payload(
+Payload _payload({
+  bool standalone = false,
+  String command = 'LD_PRELOAD=<payload> /system/bin/id',
+}) => Payload(
   id: 'vivo_iqoo13_6657_a',
   library: 'libksu_vivo_iqoo13_6657_a.so',
   vendor: 'vivo',
@@ -33,7 +37,7 @@ Payload _payload({bool standalone = false}) => Payload(
   buildId: '',
   size: 1,
   sha256: '',
-  command: 'LD_PRELOAD=<payload> /system/bin/id',
+  command: command,
   standalone: standalone,
   source: '',
 );
@@ -56,6 +60,9 @@ pigeon.ShellExecResult _fail(int exitCode, {String stderr = ''}) =>
     );
 
 bool _isLaunch(String command) => command.contains('env EXPLOIT_ATTEMPTS');
+bool _isStandaloneLaunch(String command) =>
+    !_isLaunch(command) && command.contains('wait \$assist');
+bool _isKernelRelease(String command) => command.contains('uname -r');
 bool _isProbe(String command) => command.contains('state=');
 bool _isTerminate(String command) => command.contains('kill -TERM');
 bool _isCollect(String command) => command.contains('helper output');
@@ -241,17 +248,59 @@ void main() {
       expect(fake.commands, isEmpty);
     });
 
-    test('standalone 载荷不自动执行', () async {
-      final _FakeNative fake = _FakeNative(
-        (String command) => fail('不该发命令: $command'),
-      );
+    test('standalone 载荷直接跑本体，参数按设备内核补齐', () async {
+      final _FakeNative fake = _FakeNative((String command) {
+        if (_isKernelRelease(command)) return _ok('6.6.89-android15-8-gabcd\n');
+        if (_isStandaloneLaunch(command)) return _ok('4242\n');
+        if (_isProbe(command)) return _ok('state=gone size=42');
+        // 独立载荷的日志格式不由本项目约定，没有那两条标记。
+        if (_isCollect(command)) return _ok('[*] runner\nexitCode=0\n');
+        if (_isRootCheck(command)) return _ok('uid=0(root) gid=0(root)');
+        fail('不该走到这里: $command');
+      });
 
       final EscalationRunResult result = await _repository(fake)
-          .runPayload(_payload(standalone: true));
+          .runPayload(
+            _payload(
+              standalone: true,
+              command:
+                  '/data/local/tmp/mi_mt6895_43499 --target <内核版本的后三位>',
+            ),
+          );
+
+      expect(result.success, isTrue);
+      final String launch = fake.commands.firstWhere(_isStandaloneLaunch);
+      // 执行的是本 App 目录下那份，不是 catalog 文案里的落点。
+      expect(
+        launch,
+        contains("'$_directory/libksu_vivo_iqoo13_6657_a.so' --target 89"),
+      );
+      // 不过助手：没有 --run-payload，也没有助手的环境变量。
+      expect(launch, isNot(contains('--run-payload')));
+      expect(launch, isNot(contains('EXPLOIT_ATTEMPTS')));
+      // 日志落点必须与助手链一致，否则探测按体积判停滞会恒判卡死。
+      expect(launch, contains(">'${PayloadShell.logPath}'"));
+    });
+
+    test('standalone 占位符补不齐时拒绝执行，不发启动命令', () async {
+      final _FakeNative fake = _FakeNative((String command) {
+        if (_isKernelRelease(command)) return _fail(1);
+        fail('不该走到这里: $command');
+      });
+
+      final EscalationRunResult result = await _repository(fake)
+          .runPayload(
+            _payload(
+              standalone: true,
+              command:
+                  '/data/local/tmp/mi_mt6895_43499 --target <内核版本的后三位>',
+            ),
+          );
 
       expect(result.success, isFalse);
-      expect(result.stderr, contains('暂不支持自动执行'));
-      expect(fake.commands, isEmpty);
+      expect(result.stderr, contains('参数无法在设备上补齐'));
+      expect(fake.commands.where(_isStandaloneLaunch), isEmpty);
+      expect(fake.probes, 0);
     });
   });
 
@@ -301,6 +350,30 @@ void main() {
       expect(result.success, isFalse);
       expect(result.exitCode, -1);
       expect(result.stderr, contains('uid=2000'));
+    });
+
+    test('su 还没起来时多探几轮，不把间隙当没 root', () async {
+      int rootChecks = 0;
+      final _FakeNative fake = _FakeNative((String command) {
+        if (_isLaunch(command)) return _ok('4242\n');
+        if (_isProbe(command)) return _ok('state=gone size=987');
+        if (_isCollect(command)) {
+          return _ok('exploit completed\ndone=1 root=1\nexitCode=0\n');
+        }
+        if (_isRootCheck(command)) {
+          rootChecks++;
+          return rootChecks < 3
+              ? _ok('uid=2000(shell) gid=2000(shell)')
+              : _ok('uid=0(root) gid=0(root)');
+        }
+        fail('不该走到这里: $command');
+      });
+
+      final EscalationRunResult result = await _repository(fake)
+          .runPayload(_payload());
+
+      expect(result.success, isTrue);
+      expect(rootChecks, 3);
     });
 
     test('进程退出但标记不全判失败，且不算超时', () async {
@@ -631,10 +704,10 @@ void main() {
       // 探身份与移交都借 root shell；诊断命令不在这里跑（它要逐条试候选本身）。
       expect(fake.commands, hasLength(2));
       for (final String command in fake.commands) {
-        // 载荷把 su 落在 /apex/com.android.virt/bin，该目录不在默认 PATH。
+        // 载荷把 su 落在 /data/local/tmp，该目录不在默认 PATH。
         expect(
           command,
-          contains('for c in /apex/com.android.virt/bin/su /product/bin/su'),
+          contains('for c in /data/local/tmp/su /apex/com.android.virt/bin/su'),
         );
         expect(command, contains('[ -x "\$c" ]'));
         expect(command, contains('if [ -z "\$SU" ]; then SU=su; fi'));

@@ -9,27 +9,37 @@ typedef ShellExec =
 /// 以 root 身份执行脚本的薄壳：包 `su`、把 `id` 读数判成是不是 root、
 /// 失败后逐条摊开 `su` 候选。
 class SuShell {
-  const SuShell({required this.exec});
+  const SuShell({required this.exec, this.wait = _defaultWait});
 
   final ShellExec exec;
 
-  /// `su` 候选路径，绝对路径优先。
-  ///
-  /// 本工程载荷提权后把 `su` 落在 `/apex/com.android.virt/bin/su`（实测确认），
-  /// 该目录不在默认 `PATH` 里；KernelSU / SukiSU 常见落点是 `/product/bin/su`，
-  /// Magisk 是 `/debug_ramdisk/su`。逐条试，取第一个可执行的，都没有才交给
-  /// `PATH` 里的裸 `su`。
+  /// 两次重试之间的等待；测试注入成立即返回。
+  final Future<void> Function(Duration duration) wait;
+
+  static Future<void> _defaultWait(Duration duration) =>
+      Future<void>.delayed(duration);
+
+
   static const List<String> candidates = <String>[
+    '/data/local/tmp/su',
     '/apex/com.android.virt/bin/su',
     '/product/bin/su',
     '/debug_ramdisk/su',
     '/system/bin/su',
     '/system/xbin/su',
     '/sbin/su',
+    '/vendor/bin/su',
+    '/odm/bin/su',
   ];
 
   /// 探测 root 身份的单次上限。比普通短命令长：管理器可能弹授权框。
   static const int rootProbeTimeoutMs = 20000;
+
+  /// 刚打完载荷时的探测轮数。载荷退出与 `su` 可用之间有时间差，单次会误判。
+  static const int rootCheckAttempts = 5;
+
+  /// 两轮探测之间的间隔。
+  static const Duration rootCheckInterval = Duration(milliseconds: 300);
 
   /// 移交这一步的上限。理由同上。
   static const int handoffTimeoutMs = 120000;
@@ -41,8 +51,22 @@ class SuShell {
   );
 
   /// 借 root shell 读一次身份。
-  Future<pigeon.ShellExecResult> checkRoot() =>
-      run('id', timeoutMs: rootProbeTimeoutMs);
+  ///
+  /// [attempts] > 1 用于刚打完载荷的场景：载荷退出与 `su` 可用之间有间隙，
+  /// 单次探测会把「还没起来」当成「没有 root」。超时说明 `su` 卡在授权框上，
+  /// 再试只是多耗一个 [rootProbeTimeoutMs]，直接返回。
+  Future<pigeon.ShellExecResult> checkRoot({int attempts = 1}) async {
+    pigeon.ShellExecResult result = await run(
+      'id',
+      timeoutMs: rootProbeTimeoutMs,
+    );
+    for (int attempt = 1; attempt < attempts; attempt++) {
+      if (indicatesRoot(result) || result.timedOut) break;
+      await wait(rootCheckInterval);
+      result = await run('id', timeoutMs: rootProbeTimeoutMs);
+    }
+    return result;
+  }
 
   /// 把 [script] 包成 root 身份执行。
   Future<pigeon.ShellExecResult> run(

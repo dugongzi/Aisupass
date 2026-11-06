@@ -46,20 +46,9 @@ abstract class Payload with _$Payload {
 
     /// 载荷摘要，仅用于打包自检。
     required String sha256,
-
-    /// catalog 里登记的执行命令**文案**，含 `<payload>` 等占位符，仅展示用。
-    ///
-    /// 大部分条目写的是 `LD_PRELOAD=<payload> /system/bin/id`，跟本 App 的
-    /// 真实执行方式（助手 `dlopen`）无关，**不得当作命令执行**。
-    /// 真正的命令由 `EscalationActionRepositoryImpl` 按 [standalone] 拼。
+。
     required String command,
 
-    /// 是否为助手加载不了的独立可执行载荷。
-    ///
-    /// 助手的 `--run-payload` 只做 `dlopen`。形如 `ET_EXEC` 的可执行文件
-    /// 无法被 `dlopen`，主体挂在 `DT_PREINIT_ARRAY` 的 PIE 也会被链接器跳过。
-    /// 清单里由 `"standalone": true` 显式标注，运行时**不解析 ELF 头**；
-    /// 这类载荷参数按机型而定，因此**不参与自动执行**。
     required bool standalone,
 
     /// 来源描述，仅展示用。
