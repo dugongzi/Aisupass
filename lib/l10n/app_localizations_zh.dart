@@ -601,6 +601,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get escalationHandoffReadManagerFailed => '移交失败：读不到已选的管理器';
 
   @override
+  String get escalationHandoffNoManager =>
+      '设备上没有可移交的 root 管理器：装好一个带 libksud.so 的管理器，用右上角胶囊选中它再试。';
+
+  @override
   String get escalationMenuTitle => '更多操作';
 
   @override
@@ -774,6 +778,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get rootManagerCurrent => '当前';
+
+  @override
+  String get rootManagerEmpty => '没找到 root 管理器。';
 
   @override
   String rootManagerSwitched(String manager) {

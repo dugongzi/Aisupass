@@ -385,6 +385,7 @@
   "escalationHandoffFailed": "Handoff failed (exit code {code}). Common causes: manager version does not match the kernel module, permission was denied, or the manager is upgrading.",
   "escalationHandoffFailedNoCode": "Handoff failed: the command never ran, so there is no exit code. Check whether permission was denied or the manager is upgrading.",
   "escalationHandoffReadManagerFailed": "Handoff failed: could not read the selected root manager",
+  "escalationHandoffNoManager": "No root manager available to hand off to: install a manager that ships libksud.so, select it from the pill in the top-right corner, then retry.",
   "escalationMenuTitle": "More actions",
   "escalationMenuPayloadCatalog": "View payload catalog",
   "escalationPayloadCatalogTitle": "Payload catalog",
@@ -445,6 +446,7 @@
   "rootManagerPillTooltip": "Choose root manager",
   "rootManagerTitle": "Root manager",
   "rootManagerCurrent": "Current",
+  "rootManagerEmpty": "No root manager found.",
   "rootManagerSwitched": "Switched to {manager}",
   "rootManagerSaveFailed": "Save failed: {message}"
 }

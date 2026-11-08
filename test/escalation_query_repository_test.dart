@@ -10,6 +10,7 @@ import 'package:Aisupass/features/escalation/domain/enums/match_tier.dart';
 import 'package:Aisupass/features/escalation/domain/models/device_identity.dart';
 import 'package:Aisupass/features/escalation/domain/models/payload_match.dart';
 import 'package:Aisupass/generated/device_identity.g.dart' as pigeon;
+import 'package:Aisupass/generated/root_manager.g.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_test/flutter_test.dart';
 
@@ -65,6 +66,7 @@ class _FakeDatasource extends EscalationQueryDatasource {
     : super(
         bundle: rootBundle,
         native: pigeon.DeviceIdentityNative(),
+        managers: RootManagerNative(),
         storage: _FakeStore(),
       );
 
@@ -76,6 +78,10 @@ class _FakeDatasource extends EscalationQueryDatasource {
 
   @override
   Future<pigeon.DeviceIdentity> readDeviceIdentity() async => _identity;
+
+  @override
+  Future<List<RootManagerInfo>> scanRootManagers() async =>
+      <RootManagerInfo>[];
 }
 
 pigeon.DeviceIdentity _identity({

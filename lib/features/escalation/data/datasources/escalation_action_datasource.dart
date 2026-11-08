@@ -6,9 +6,9 @@ import 'package:Aisupass/core/utils/handoff_script.dart';
 import 'package:Aisupass/core/utils/payload_shell.dart';
 import 'package:Aisupass/core/utils/slide_offset_cache.dart';
 import 'package:Aisupass/core/utils/su_shell.dart';
-import 'package:Aisupass/features/escalation/domain/enums/root_manager.dart';
 import 'package:Aisupass/features/escalation/domain/models/handoff_outcome.dart';
 import 'package:Aisupass/features/escalation/domain/models/payload.dart';
+import 'package:Aisupass/features/escalation/domain/models/root_manager.dart';
 import 'package:Aisupass/generated/adb_shell.g.dart' as pigeon;
 
 /// 两次 `su` 之间的等待。抽成回调是为了让测试不必真的睡。
@@ -19,7 +19,7 @@ Future<void> _sleep(Duration duration) => Future<void>.delayed(duration);
 /// 提权链路执行数据源。
 ///
 /// 对外只有 [runPayload] / [observeOutput] / [handoffRoot] /
-/// [writeSelectedRootManagerName]。
+/// [writeSelectedRootManagerPackage]。
 class EscalationActionDatasource {
   EscalationActionDatasource({
     required this._native,
@@ -115,11 +115,11 @@ class EscalationActionDatasource {
   /// 把一句说明编成终端里的一行。单引号包住，中文与空格都不会被 shell 拆开。
   static String _echo(String message) => 'echo ${PayloadShell.quote(message)}';
 
-  /// 记住用户选定的 root 管理器名。
-  Future<void> writeSelectedRootManagerName(String name) =>
+  /// 记住用户选定的 root 管理器包名。
+  Future<void> writeSelectedRootManagerPackage(String packageName) =>
       _storage.write<String>(
         StorageKeys.escalationSelectedRootManager,
-        name,
+        packageName,
       );
 
   /// 把临时 root 交给设备上的 KernelSU 系管理器。

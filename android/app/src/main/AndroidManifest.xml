@@ -6,6 +6,9 @@
     <!-- 配对码输入通知：配对码必须在通知栏输入（切屏会让系统配对对话框失效），
          API 33+ 无此权限时 notify() 会被静默丢弃，整条配对路径开不了头 -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- root 管理器列表：getInstalledApplications 在 Android 11+ 受包可见性限制，
+         没有这个权限扫出来的列表是空的，用户就选不到已装的管理器 -->
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"/>
     <application
         android:label="Aisupass"
         android:name="${applicationName}"

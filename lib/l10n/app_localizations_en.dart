@@ -613,6 +613,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Handoff failed: could not read the selected root manager';
 
   @override
+  String get escalationHandoffNoManager =>
+      'No root manager available to hand off to: install a manager that ships libksud.so, select it from the pill in the top-right corner, then retry.';
+
+  @override
   String get escalationMenuTitle => 'More actions';
 
   @override
@@ -792,6 +796,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rootManagerCurrent => 'Current';
+
+  @override
+  String get rootManagerEmpty => 'No root manager found.';
 
   @override
   String rootManagerSwitched(String manager) {

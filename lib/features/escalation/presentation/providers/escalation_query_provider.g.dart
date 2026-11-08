@@ -59,7 +59,7 @@ final class EscalationQueryDatasourceProvider
 }
 
 String _$escalationQueryDatasourceHash() =>
-    r'666227f16308ac174e645eaf942f40e9816ef190';
+    r'b8442bc2e62280938975aa5a935375f2c3e46f30';
 
 /// 提权链路只读仓储。
 
@@ -158,6 +158,53 @@ final class PayloadsProvider
 
 String _$payloadsHash() => r'65474f533991bbb0e484ad042782b2667fbdffb1';
 
+/// 设备上真实安装的 root 管理器。
+
+@ProviderFor(installedRootManagers)
+const installedRootManagersProvider = InstalledRootManagersProvider._();
+
+/// 设备上真实安装的 root 管理器。
+
+final class InstalledRootManagersProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<RootManager>>,
+          List<RootManager>,
+          FutureOr<List<RootManager>>
+        >
+    with
+        $FutureModifier<List<RootManager>>,
+        $FutureProvider<List<RootManager>> {
+  /// 设备上真实安装的 root 管理器。
+  const InstalledRootManagersProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'installedRootManagersProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$installedRootManagersHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<RootManager>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<RootManager>> create(Ref ref) {
+    return installedRootManagers(ref);
+  }
+}
+
+String _$installedRootManagersHash() =>
+    r'fbe6c2c299bb213aff9346795e1fd1f6c3d4fa81';
+
 /// 当前设备身份。
 
 @ProviderFor(currentDeviceIdentity)
@@ -203,28 +250,22 @@ final class CurrentDeviceIdentityProvider
 String _$currentDeviceIdentityHash() =>
     r'466dcecb5e1b11e47df2c078781a127de9573c7b';
 
-/// 用户上次选定的 root 管理器。
-///
-/// 只读；写入走执行侧同名动作。
+/// 用户上次选定的 root 管理器；设备上一个都没装时为 `null`。
 
 @ProviderFor(selectedRootManager)
 const selectedRootManagerProvider = SelectedRootManagerProvider._();
 
-/// 用户上次选定的 root 管理器。
-///
-/// 只读；写入走执行侧同名动作。
+/// 用户上次选定的 root 管理器；设备上一个都没装时为 `null`。
 
 final class SelectedRootManagerProvider
     extends
         $FunctionalProvider<
-          AsyncValue<RootManager>,
-          RootManager,
-          FutureOr<RootManager>
+          AsyncValue<RootManager?>,
+          RootManager?,
+          FutureOr<RootManager?>
         >
-    with $FutureModifier<RootManager>, $FutureProvider<RootManager> {
-  /// 用户上次选定的 root 管理器。
-  ///
-  /// 只读；写入走执行侧同名动作。
+    with $FutureModifier<RootManager?>, $FutureProvider<RootManager?> {
+  /// 用户上次选定的 root 管理器；设备上一个都没装时为 `null`。
   const SelectedRootManagerProvider._()
     : super(
         from: null,
@@ -241,15 +282,15 @@ final class SelectedRootManagerProvider
 
   @$internal
   @override
-  $FutureProviderElement<RootManager> $createElement(
+  $FutureProviderElement<RootManager?> $createElement(
     $ProviderPointer pointer,
   ) => $FutureProviderElement(pointer);
 
   @override
-  FutureOr<RootManager> create(Ref ref) {
+  FutureOr<RootManager?> create(Ref ref) {
     return selectedRootManager(ref);
   }
 }
 
 String _$selectedRootManagerHash() =>
-    r'fe4bea92a06f32efce7ea27b7b65f43b94ca3558';
+    r'5a06e5659196e105403ef2c76958b7494581a919';

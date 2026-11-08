@@ -255,18 +255,14 @@ final class RunPayloadChoiceFamily extends $Family
 
 /// 把临时 root 移交给用户选定的 [manager]。
 ///
-/// 与 [runPayload] 分开是刻意的：提权拿到的一次性 root 与「谁接管」是两件
-/// 事，上游也把移交做成了独立入口。移交必然失败于「管理器没装」，这种情况下
-/// 返回的是 [HandoffKind.managerMissing] 而非异常，UI 直接渲染即可。
+/// 管理器未安装时返回 [HandoffKind.managerMissing]，不抛异常。
 
 @ProviderFor(handoffRoot)
 const handoffRootProvider = HandoffRootFamily._();
 
 /// 把临时 root 移交给用户选定的 [manager]。
 ///
-/// 与 [runPayload] 分开是刻意的：提权拿到的一次性 root 与「谁接管」是两件
-/// 事，上游也把移交做成了独立入口。移交必然失败于「管理器没装」，这种情况下
-/// 返回的是 [HandoffKind.managerMissing] 而非异常，UI 直接渲染即可。
+/// 管理器未安装时返回 [HandoffKind.managerMissing]，不抛异常。
 
 final class HandoffRootProvider
     extends
@@ -278,9 +274,7 @@ final class HandoffRootProvider
     with $FutureModifier<HandoffOutcome>, $FutureProvider<HandoffOutcome> {
   /// 把临时 root 移交给用户选定的 [manager]。
   ///
-  /// 与 [runPayload] 分开是刻意的：提权拿到的一次性 root 与「谁接管」是两件
-  /// 事，上游也把移交做成了独立入口。移交必然失败于「管理器没装」，这种情况下
-  /// 返回的是 [HandoffKind.managerMissing] 而非异常，UI 直接渲染即可。
+  /// 管理器未安装时返回 [HandoffKind.managerMissing]，不抛异常。
   const HandoffRootProvider._({
     required HandoffRootFamily super.from,
     required RootManager super.argument,
@@ -329,9 +323,7 @@ String _$handoffRootHash() => r'9ccac61d7f99b1fecd78537b4d1d7ef08220d1ef';
 
 /// 把临时 root 移交给用户选定的 [manager]。
 ///
-/// 与 [runPayload] 分开是刻意的：提权拿到的一次性 root 与「谁接管」是两件
-/// 事，上游也把移交做成了独立入口。移交必然失败于「管理器没装」，这种情况下
-/// 返回的是 [HandoffKind.managerMissing] 而非异常，UI 直接渲染即可。
+/// 管理器未安装时返回 [HandoffKind.managerMissing]，不抛异常。
 
 final class HandoffRootFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<HandoffOutcome>, RootManager> {
@@ -346,9 +338,7 @@ final class HandoffRootFamily extends $Family
 
   /// 把临时 root 移交给用户选定的 [manager]。
   ///
-  /// 与 [runPayload] 分开是刻意的：提权拿到的一次性 root 与「谁接管」是两件
-  /// 事，上游也把移交做成了独立入口。移交必然失败于「管理器没装」，这种情况下
-  /// 返回的是 [HandoffKind.managerMissing] 而非异常，UI 直接渲染即可。
+  /// 管理器未安装时返回 [HandoffKind.managerMissing]，不抛异常。
 
   HandoffRootProvider call({required RootManager manager}) =>
       HandoffRootProvider._(argument: manager, from: this);
@@ -359,24 +349,21 @@ final class HandoffRootFamily extends $Family
 
 /// 记住用户选定的 root 管理器。
 ///
-/// 落盘后立即失效 [selectedRootManagerProvider]，让页面上的胶囊当场刷新，
-/// 不必等下次启动。
+/// 落盘后失效 [selectedRootManagerProvider]。
 
 @ProviderFor(selectRootManager)
 const selectRootManagerProvider = SelectRootManagerFamily._();
 
 /// 记住用户选定的 root 管理器。
 ///
-/// 落盘后立即失效 [selectedRootManagerProvider]，让页面上的胶囊当场刷新，
-/// 不必等下次启动。
+/// 落盘后失效 [selectedRootManagerProvider]。
 
 final class SelectRootManagerProvider
     extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
     with $FutureModifier<void>, $FutureProvider<void> {
   /// 记住用户选定的 root 管理器。
   ///
-  /// 落盘后立即失效 [selectedRootManagerProvider]，让页面上的胶囊当场刷新，
-  /// 不必等下次启动。
+  /// 落盘后失效 [selectedRootManagerProvider]。
   const SelectRootManagerProvider._({
     required SelectRootManagerFamily super.from,
     required RootManager super.argument,
@@ -424,8 +411,7 @@ String _$selectRootManagerHash() => r'5d7f6ef19e8e6a41a9db5d64f7a8164bc9e05f06';
 
 /// 记住用户选定的 root 管理器。
 ///
-/// 落盘后立即失效 [selectedRootManagerProvider]，让页面上的胶囊当场刷新，
-/// 不必等下次启动。
+/// 落盘后失效 [selectedRootManagerProvider]。
 
 final class SelectRootManagerFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<void>, RootManager> {
@@ -440,8 +426,7 @@ final class SelectRootManagerFamily extends $Family
 
   /// 记住用户选定的 root 管理器。
   ///
-  /// 落盘后立即失效 [selectedRootManagerProvider]，让页面上的胶囊当场刷新，
-  /// 不必等下次启动。
+  /// 落盘后失效 [selectedRootManagerProvider]。
 
   SelectRootManagerProvider call({required RootManager manager}) =>
       SelectRootManagerProvider._(argument: manager, from: this);

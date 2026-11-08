@@ -850,6 +850,10 @@
   "@escalationHandoffReadManagerFailed": {
     "description": "手动提权页-移交前读取管理器选择失败"
   },
+  "escalationHandoffNoManager": "设备上没有可移交的 root 管理器：装好一个带 libksud.so 的管理器，用右上角胶囊选中它再试。",
+  "@escalationHandoffNoManager": {
+    "description": "手动提权页-扫描结果为空时移交不可用"
+  },
   "escalationMenuTitle": "更多操作",
   "@escalationMenuTitle": {
     "description": "手动提权页-底部左侧菜单按钮的提示文案"
@@ -1095,6 +1099,10 @@
   "rootManagerCurrent": "当前",
   "@rootManagerCurrent": {
     "description": "管理器列表里标记已选中的第一个"
+  },
+  "rootManagerEmpty": "没找到 root 管理器。",
+  "@rootManagerEmpty": {
+    "description": "管理器选择弹窗的扫描空态"
   },
   "rootManagerSwitched": "已切换到 {manager}",
   "@rootManagerSwitched": {

@@ -1,7 +1,7 @@
 import 'package:Aisupass/features/escalation/data/datasources/escalation_action_datasource.dart';
-import 'package:Aisupass/features/escalation/domain/enums/root_manager.dart';
 import 'package:Aisupass/features/escalation/domain/models/handoff_outcome.dart';
 import 'package:Aisupass/features/escalation/domain/models/payload.dart';
+import 'package:Aisupass/features/escalation/domain/models/root_manager.dart';
 import 'package:Aisupass/features/escalation/domain/repositories/escalation_action_repository.dart';
 
 /// 提权链路执行仓储实现。
@@ -23,5 +23,5 @@ class EscalationActionRepositoryImpl implements EscalationActionRepository {
 
   @override
   Future<void> selectRootManager({required RootManager manager}) =>
-      _datasource.writeSelectedRootManagerName(manager.name);
+      _datasource.writeSelectedRootManagerPackage(manager.packageName);
 }

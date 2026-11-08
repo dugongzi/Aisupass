@@ -6,9 +6,9 @@ import 'package:Aisupass/core/extensions/context_extensions.dart';
 import 'package:Aisupass/core/providers/adb_shell_provider.dart';
 import 'package:Aisupass/core/utils/escalation_reason.dart';
 import 'package:Aisupass/core/utils/terminal_text_writer.dart';
-import 'package:Aisupass/features/escalation/domain/enums/root_manager.dart';
 import 'package:Aisupass/features/escalation/domain/models/handoff_outcome.dart';
 import 'package:Aisupass/features/escalation/domain/models/payload.dart';
+import 'package:Aisupass/features/escalation/domain/models/root_manager.dart';
 import 'package:Aisupass/features/escalation/presentation/providers/escalation_action_provider.dart';
 import 'package:Aisupass/features/escalation/presentation/providers/escalation_query_provider.dart';
 import 'package:Aisupass/features/escalation/presentation/widgets/escalation_menu_button.dart';
@@ -241,13 +241,21 @@ class ManualEscalationPage extends HookConsumerWidget {
     ///
     /// 管理器取自 [selectedRootManagerProvider]，读取要等存储，所以是异步的。
     Future<void> startHandoff() async {
-      final RootManager manager;
+      final RootManager? manager;
       try {
         manager = await ref.read(selectedRootManagerProvider.future);
       } catch (error) {
         writer.writeLine(
           '${l10n.escalationHandoffReadManagerFailed}：$error',
           color: TerminalTextWriter.red,
+        );
+        return;
+      }
+      // 一个都没装时没有可移交的对象，普通提示即可，不必走移交。
+      if (manager == null) {
+        writer.writeLine(
+          l10n.escalationHandoffNoManager,
+          color: TerminalTextWriter.yellow,
         );
         return;
       }
@@ -356,8 +364,9 @@ class ManualEscalationPage extends HookConsumerWidget {
                     : l10n.escalationHandoffFailed(outcome.exitCode),
               HandoffKind.success => '',
             }, color: TerminalTextWriter.red);
-            // 终端会把 http(s) 识别成可点文本。
-            if (outcome.kind == HandoffKind.managerMissing) {
+            // 终端会把 http(s) 识别成可点文本；未登记包名没有下载页，不打印空行。
+            if (outcome.kind == HandoffKind.managerMissing &&
+                manager.homeUrl.isNotEmpty) {
               writer.writeLine(manager.homeUrl, color: TerminalTextWriter.dim);
             }
           }

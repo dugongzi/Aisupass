@@ -1,6 +1,6 @@
-import 'package:Aisupass/features/escalation/domain/enums/root_manager.dart';
 import 'package:Aisupass/features/escalation/domain/models/handoff_outcome.dart';
 import 'package:Aisupass/features/escalation/domain/models/payload.dart';
+import 'package:Aisupass/features/escalation/domain/models/root_manager.dart';
 
 /// 提权链路执行仓储。
 ///

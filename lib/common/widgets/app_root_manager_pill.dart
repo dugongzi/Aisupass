@@ -5,7 +5,7 @@ import 'package:Aisupass/common/widgets/ref_error.dart';
 import 'package:Aisupass/common/widgets/toast.dart';
 import 'package:Aisupass/core/extensions/context_extensions.dart';
 import 'package:Aisupass/core/themes/app_fonts.dart';
-import 'package:Aisupass/features/escalation/domain/enums/root_manager.dart';
+import 'package:Aisupass/features/escalation/domain/models/root_manager.dart';
 import 'package:Aisupass/features/escalation/presentation/providers/escalation_action_provider.dart';
 import 'package:Aisupass/features/escalation/presentation/providers/escalation_query_provider.dart';
 import 'package:Aisupass/l10n/app_localizations.dart';
@@ -24,7 +24,7 @@ class AppRootManagerPill extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLocalizations l10n = context.l10n;
     final ColorScheme scheme = context.colorScheme;
-    final AsyncValue<RootManager> selected = ref.watch(
+    final AsyncValue<RootManager?> selected = ref.watch(
       selectedRootManagerProvider,
     );
 
@@ -33,9 +33,6 @@ class AppRootManagerPill extends HookConsumerWidget {
     final bool hasError = selected.hasError;
     final bool isLoading = selected.isLoading;
     final String label = manager?.displayName ?? l10n.rootManagerTitle;
-    final IconData icon = manager == null
-        ? Icons.admin_panel_settings_rounded
-        : _iconOf(manager);
 
     return Tooltip(
       message: l10n.rootManagerPillTooltip,
@@ -74,8 +71,18 @@ class AppRootManagerPill extends HookConsumerWidget {
                       color: scheme.primary,
                     ),
                   )
+                else if (manager == null)
+                  Icon(
+                    Icons.admin_panel_settings_rounded,
+                    size: 14.sp,
+                    color: scheme.primary,
+                  )
                 else
-                  Icon(icon, size: 14.sp, color: scheme.primary),
+                  _ManagerIcon(
+                    manager: manager,
+                    size: 14.sp,
+                    color: scheme.primary,
+                  ),
                 SizedBox(width: 6.w),
                 ConstrainedBox(
                   constraints: BoxConstraints(maxWidth: 96.w),
@@ -106,7 +113,7 @@ Future<void> showRootManagerDialog(BuildContext context) => showDialog<void>(
   builder: (BuildContext context) => const _RootManagerDialog(),
 );
 
-/// root 管理器选择框：列出全部已知管理器，点一条即切换。
+/// root 管理器选择框：列出设备上已安装的管理器，点一条即切换。
 ///
 /// 切换会写存储并失效查询缓存。
 class _RootManagerDialog extends HookConsumerWidget {
@@ -116,16 +123,19 @@ class _RootManagerDialog extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLocalizations l10n = context.l10n;
     final ColorScheme scheme = context.colorScheme;
-    final AsyncValue<RootManager> selected = ref.watch(
-      selectedRootManagerProvider,
+    final AsyncValue<List<RootManager>> managers = ref.watch(
+      installedRootManagersProvider,
     );
+    // 当前项只用于打勾，读不到时就不标记，不影响列举。
+    final String currentPackage =
+        ref.watch(selectedRootManagerProvider).value?.packageName ?? '';
     // 写盘期间禁止重复点选，避免连点写出两条相互覆盖的记录。
     final ValueNotifier<bool> busy = useState<bool>(false);
 
     Future<void> pick(RootManager manager) async {
       if (busy.value) return;
       // 点当前项没有意义，直接关掉。
-      if (manager == selected.value) {
+      if (manager.packageName == currentPackage) {
         Navigator.of(context).pop();
         return;
       }
@@ -157,26 +167,32 @@ class _RootManagerDialog extends HookConsumerWidget {
             thickness: 0.5,
             color: scheme.outline.withValues(alpha: 0.24),
           ),
-          selected.when(
+          managers.when(
             loading: () => SizedBox(height: 160.h, child: const Loading()),
             error: (Object error, StackTrace stackTrace) => SizedBox(
               height: 180.h,
               child: RefError(
-                onRetry: () => ref.invalidate(selectedRootManagerProvider),
+                onRetry: () => ref.invalidate(installedRootManagersProvider),
               ),
             ),
-            data: (RootManager current) => Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                for (final RootManager manager in RootManager.values)
-                  _ManagerTile(
-                    manager: manager,
-                    isCurrent: manager == current,
-                    onTap: () => unawaited(pick(manager)),
-                  ),
-                SizedBox(height: 6.h),
-              ],
-            ),
+            data: (List<RootManager> list) {
+              if (list.isEmpty) return const _ManagerEmptyState();
+              return ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: 360.h),
+                child: ListView(
+                  shrinkWrap: true,
+                  padding: EdgeInsets.symmetric(vertical: 6.h),
+                  children: <Widget>[
+                    for (final RootManager manager in list)
+                      _ManagerTile(
+                        manager: manager,
+                        isCurrent: manager.packageName == currentPackage,
+                        onTap: () => unawaited(pick(manager)),
+                      ),
+                  ],
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -200,36 +216,17 @@ class _DialogHeader extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Icon(
-            Icons.admin_panel_settings_rounded,
-            size: 18.sp,
-            color: scheme.primary,
-          ),
-          SizedBox(width: 10.w),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  l10n.rootManagerTitle,
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w700,
-                    color: scheme.onSurface,
-                  ),
-                ),
-              ],
+            child: Text(
+              l10n.rootManagerTitle,
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w700,
+                color: scheme.onSurface,
+              ),
             ),
           ),
-          IconButton(
-            onPressed: onClose,
-            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-            icon: Icon(
-              Icons.close_rounded,
-              size: 20.sp,
-              color: scheme.onSurfaceVariant,
-            ),
-          ),
+
         ],
       ),
     );
@@ -261,8 +258,8 @@ class _ManagerTile extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
         child: Row(
           children: <Widget>[
-            Icon(
-              _iconOf(manager),
+            _ManagerIcon(
+              manager: manager,
               size: 20.sp,
               color: isCurrent ? scheme.primary : scheme.onSurfaceVariant,
             ),
@@ -317,8 +314,72 @@ class _ManagerTile extends StatelessWidget {
   }
 }
 
-/// 管理器的展示图标。
-IconData _iconOf(RootManager manager) => switch (manager) {
-  RootManager.kernelsu => Icons.shield_rounded,
-  RootManager.sukisu => Icons.bolt_rounded,
-};
+/// 管理器图标的展示：优先用安装包自带的图标，取不到时退回通用图标。
+class _ManagerIcon extends StatelessWidget {
+  const _ManagerIcon({
+    required this.manager,
+    required this.size,
+    required this.color,
+  });
+
+  final RootManager manager;
+
+  final double size;
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => manager.icon.isEmpty
+      ? Icon(Icons.admin_panel_settings_rounded, size: size, color: color)
+      : ClipRRect(
+          borderRadius: BorderRadius.circular(size * 0.24),
+          child: Image.memory(
+            manager.icon,
+            width: size,
+            height: size,
+            gaplessPlayback: true,
+            errorBuilder:
+                (BuildContext context, Object error, StackTrace? stackTrace) =>
+                    Icon(
+                      Icons.admin_panel_settings_rounded,
+                      size: size,
+                      color: color,
+                    ),
+          ),
+        );
+}
+
+/// 一个管理器都没装时的空态。
+class _ManagerEmptyState extends StatelessWidget {
+  const _ManagerEmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    final AppLocalizations l10n = context.l10n;
+    final ColorScheme scheme = context.colorScheme;
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20.w, 28.h, 20.w, 32.h),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Icon(
+            Icons.search_off_rounded,
+            size: 30.sp,
+            color: scheme.onSurfaceVariant,
+          ),
+          SizedBox(height: 10.h),
+          Text(
+            l10n.rootManagerEmpty,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 12.5.sp,
+              height: 1.5,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

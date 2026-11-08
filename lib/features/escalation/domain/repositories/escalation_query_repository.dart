@@ -1,17 +1,24 @@
-import 'package:Aisupass/features/escalation/domain/enums/root_manager.dart';
 import 'package:Aisupass/features/escalation/domain/models/device_identity.dart';
 import 'package:Aisupass/features/escalation/domain/models/payload.dart';
 import 'package:Aisupass/features/escalation/domain/models/payload_match.dart';
+import 'package:Aisupass/features/escalation/domain/models/root_manager.dart';
 
 /// 提权链路只读仓储。
 abstract class EscalationQueryRepository {
   /// 读取全部载荷条目。
   Future<List<Payload>> listPayloads();
 
-  /// 读取用户上次选定的 root 管理器。
+  /// 扫描设备上真实安装的 root 管理器。
   ///
-  /// 从未选过时返回 [RootManager.kernelsu]。
-  Future<RootManager> selectedRootManager();
+  /// 判据与移交脚本一致：安装目录里带 `libksud.so` 才算，空列表表示一个
+  /// 都没装。
+  Future<List<RootManager>> installedRootManagers();
+
+  /// 读取用户选定的 root 管理器。
+  ///
+  /// 设备上一个管理器都没装时返回 `null`；存的是已卸载的旧包名时回落到列表
+  /// 第一个。
+  Future<RootManager?> selectedRootManager();
 
   /// 采集当前设备身份。
   Future<DeviceIdentity> deviceIdentity();

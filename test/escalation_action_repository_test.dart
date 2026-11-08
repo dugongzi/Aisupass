@@ -4,15 +4,27 @@ import 'package:Aisupass/core/storage/json_codec.dart';
 import 'package:Aisupass/core/storage/key_value_store.dart';
 import 'package:Aisupass/features/escalation/data/datasources/escalation_action_datasource.dart';
 import 'package:Aisupass/features/escalation/data/repositories/escalation_action_repository_impl.dart';
-import 'package:Aisupass/features/escalation/domain/enums/root_manager.dart';
 import 'package:Aisupass/features/escalation/domain/models/handoff_outcome.dart';
 import 'package:Aisupass/features/escalation/domain/models/payload.dart';
+import 'package:Aisupass/features/escalation/domain/models/root_manager.dart';
 import 'package:Aisupass/generated/adb_shell.g.dart' as pigeon;
 import 'package:flutter_test/flutter_test.dart';
 
 /// 安装后的原生库目录。带 `~~` 和 `==`，用来验证命令里的引号没漏。
 const String _directory =
     '/data/app/~~abc==/org.supass.ai_su_pass-xyz==/lib/arm64';
+
+/// 移交只吃包名与名字，图标给空字节即可。
+final RootManager _kernelsu = RootManager(
+  packageName: 'me.weishu.kernelsu',
+  displayName: 'KernelSU',
+  icon: Uint8List(0),
+);
+final RootManager _sukisu = RootManager(
+  packageName: 'com.sukisu.ultra',
+  displayName: 'SukiSU Ultra',
+  icon: Uint8List(0),
+);
 
 Payload _payload({
   bool standalone = false,
@@ -377,7 +389,7 @@ void main() {
       });
 
       final HandoffOutcome result = await _repository(fake)
-          .handoffRoot(manager: RootManager.kernelsu);
+          .handoffRoot(manager: _kernelsu);
 
       expect(result.kind, HandoffKind.success);
       expect(result.exitCode, 0);
@@ -410,7 +422,7 @@ void main() {
       });
 
       final HandoffOutcome result = await _repository(fake)
-          .handoffRoot(manager: RootManager.kernelsu);
+          .handoffRoot(manager: _kernelsu);
 
       expect(result.kind, HandoffKind.noRoot);
       expect(result.success, isFalse);
@@ -430,7 +442,7 @@ void main() {
         fail('不该走到这里: $command');
       });
 
-      await _repository(fake).handoffRoot(manager: RootManager.kernelsu);
+      await _repository(fake).handoffRoot(manager: _kernelsu);
 
       // 探身份与移交都借 root shell；诊断命令不在这里跑（它要逐条试候选本身）。
       expect(fake.commands, hasLength(2));
@@ -454,12 +466,12 @@ void main() {
       });
 
       final HandoffOutcome result = await _repository(fake)
-          .handoffRoot(manager: RootManager.sukisu);
+          .handoffRoot(manager: _sukisu);
 
       // 这是最常见的一种失败，必须单独分型：用户唯一能自救的动作是去装管理器。
       expect(result.kind, HandoffKind.managerMissing);
       expect(result.exitCode, 3);
-      expect(result.manager, RootManager.sukisu);
+      expect(result.manager.packageName, 'com.sukisu.ultra');
       expect(fake.commands, hasLength(2));
       expect(fake.commands[1], contains('grep -F com.sukisu.ultra'));
     });
@@ -472,7 +484,7 @@ void main() {
       });
 
       final HandoffOutcome result = await _repository(fake)
-          .handoffRoot(manager: RootManager.kernelsu);
+          .handoffRoot(manager: _kernelsu);
 
       // 脚本提前挂掉时可能只留下退出码，标记未必打得出来。
       expect(result.kind, HandoffKind.managerMissing);
@@ -486,7 +498,7 @@ void main() {
       });
 
       final HandoffOutcome result = await _repository(fake)
-          .handoffRoot(manager: RootManager.kernelsu);
+          .handoffRoot(manager: _kernelsu);
 
       expect(result.kind, HandoffKind.failed);
       expect(result.output, contains('无法安全转义'));
@@ -501,7 +513,7 @@ void main() {
       });
 
       final HandoffOutcome result = await _repository(fake)
-          .handoffRoot(manager: RootManager.kernelsu);
+          .handoffRoot(manager: _kernelsu);
 
       expect(result.kind, HandoffKind.failed);
       expect(result.exitCode, 7);
@@ -518,7 +530,7 @@ void main() {
       });
 
       final HandoffOutcome result = await _repository(fake)
-          .handoffRoot(manager: RootManager.kernelsu);
+          .handoffRoot(manager: _kernelsu);
 
       expect(result.kind, HandoffKind.failed);
       expect(result.exitCode, 0);
@@ -537,7 +549,7 @@ void main() {
       });
 
       final HandoffOutcome result = await _repository(fake)
-          .handoffRoot(manager: RootManager.kernelsu);
+          .handoffRoot(manager: _kernelsu);
 
       expect(result.kind, HandoffKind.failed);
       expect(result.output, contains('failure'));
@@ -551,7 +563,7 @@ void main() {
       });
 
       final HandoffOutcome result = await _repository(fake)
-          .handoffRoot(manager: RootManager.kernelsu);
+          .handoffRoot(manager: _kernelsu);
 
       // 兜底原因交给 UI 按 kind 出文案，这里只保证退出码与分型不丢。
       expect(result.kind, HandoffKind.failed);
@@ -567,7 +579,7 @@ void main() {
       });
 
       final HandoffOutcome result = await _repository(fake)
-          .handoffRoot(manager: RootManager.kernelsu);
+          .handoffRoot(manager: _kernelsu);
 
       expect(result.kind, HandoffKind.success);
       expect(result.ksudPath, isEmpty);
@@ -581,7 +593,7 @@ void main() {
         fail('不该走到这里: $command');
       });
 
-      await _repository(fake).handoffRoot(manager: RootManager.kernelsu);
+      await _repository(fake).handoffRoot(manager: _kernelsu);
 
       expect(fake.commands, hasLength(2));
     });

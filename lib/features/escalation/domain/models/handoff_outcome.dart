@@ -1,4 +1,4 @@
-import 'package:Aisupass/features/escalation/domain/enums/root_manager.dart';
+import 'package:Aisupass/features/escalation/domain/models/root_manager.dart';
 
 /// 移交结果的四种形态，与上游 `RootHandoff.kt:78-99` 的 `HandoffResult`
 /// 一一对应。

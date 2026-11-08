@@ -1184,6 +1184,12 @@ abstract class AppLocalizations {
   /// **'移交失败：读不到已选的管理器'**
   String get escalationHandoffReadManagerFailed;
 
+  /// 手动提权页-扫描结果为空时移交不可用
+  ///
+  /// In zh, this message translates to:
+  /// **'设备上没有可移交的 root 管理器：装好一个带 libksud.so 的管理器，用右上角胶囊选中它再试。'**
+  String get escalationHandoffNoManager;
+
   /// 手动提权页-底部左侧菜单按钮的提示文案
   ///
   /// In zh, this message translates to:
@@ -1507,6 +1513,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'当前'**
   String get rootManagerCurrent;
+
+  /// 管理器选择弹窗的扫描空态
+  ///
+  /// In zh, this message translates to:
+  /// **'没找到 root 管理器。'**
+  String get rootManagerEmpty;
 
   /// 切换管理器后的轻提示
   ///
