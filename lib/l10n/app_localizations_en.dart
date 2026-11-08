@@ -583,10 +583,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get escalationHandoffSection => 'Hand off root';
 
   @override
-  String get escalationHandoffManagerKernelsu => 'KernelSU';
-
-  @override
-  String get escalationHandoffManagerSukisu => 'SukiSU Ultra';
+  String get escalationHandoffCurrent => 'Hand off to current manager';
 
   @override
   String escalationHandoffRunning(String manager) {
@@ -610,6 +607,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get escalationHandoffFailedNoCode =>
       'Handoff failed: the command never ran, so there is no exit code. Check whether permission was denied or the manager is upgrading.';
+
+  @override
+  String get escalationHandoffReadManagerFailed =>
+      'Handoff failed: could not read the selected root manager';
 
   @override
   String get escalationMenuTitle => 'More actions';
@@ -782,4 +783,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shellReasonHostPairingFailed => 'Pairing failed, please retry';
+
+  @override
+  String get rootManagerPillTooltip => 'Choose root manager';
+
+  @override
+  String get rootManagerTitle => 'Root manager';
+
+  @override
+  String get rootManagerCurrent => 'Current';
+
+  @override
+  String rootManagerSwitched(String manager) {
+    return 'Switched to $manager';
+  }
+
+  @override
+  String rootManagerSaveFailed(String message) {
+    return 'Save failed: $message';
+  }
 }

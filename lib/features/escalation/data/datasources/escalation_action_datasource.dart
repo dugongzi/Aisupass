@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:Aisupass/core/constants/storage_keys.dart';
 import 'package:Aisupass/core/storage/key_value_store.dart';
 import 'package:Aisupass/core/utils/handoff_script.dart';
 import 'package:Aisupass/core/utils/payload_shell.dart';
@@ -17,7 +18,8 @@ Future<void> _sleep(Duration duration) => Future<void>.delayed(duration);
 
 /// 提权链路执行数据源。
 ///
-/// 对外只有 [runPayload] / [observeOutput] / [handoffRoot]。
+/// 对外只有 [runPayload] / [observeOutput] / [handoffRoot] /
+/// [writeSelectedRootManagerName]。
 class EscalationActionDatasource {
   EscalationActionDatasource({
     required this._native,
@@ -112,6 +114,13 @@ class EscalationActionDatasource {
 
   /// 把一句说明编成终端里的一行。单引号包住，中文与空格都不会被 shell 拆开。
   static String _echo(String message) => 'echo ${PayloadShell.quote(message)}';
+
+  /// 记住用户选定的 root 管理器名。
+  Future<void> writeSelectedRootManagerName(String name) =>
+      _storage.write<String>(
+        StorageKeys.escalationSelectedRootManager,
+        name,
+      );
 
   /// 把临时 root 交给设备上的 KernelSU 系管理器。
   ///

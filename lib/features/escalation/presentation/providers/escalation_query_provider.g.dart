@@ -59,7 +59,7 @@ final class EscalationQueryDatasourceProvider
 }
 
 String _$escalationQueryDatasourceHash() =>
-    r'675646c0160716e9d2248e111a854679648144f7';
+    r'666227f16308ac174e645eaf942f40e9816ef190';
 
 /// 提权链路只读仓储。
 
@@ -202,3 +202,54 @@ final class CurrentDeviceIdentityProvider
 
 String _$currentDeviceIdentityHash() =>
     r'466dcecb5e1b11e47df2c078781a127de9573c7b';
+
+/// 用户上次选定的 root 管理器。
+///
+/// 只读；写入走执行侧同名动作。
+
+@ProviderFor(selectedRootManager)
+const selectedRootManagerProvider = SelectedRootManagerProvider._();
+
+/// 用户上次选定的 root 管理器。
+///
+/// 只读；写入走执行侧同名动作。
+
+final class SelectedRootManagerProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<RootManager>,
+          RootManager,
+          FutureOr<RootManager>
+        >
+    with $FutureModifier<RootManager>, $FutureProvider<RootManager> {
+  /// 用户上次选定的 root 管理器。
+  ///
+  /// 只读；写入走执行侧同名动作。
+  const SelectedRootManagerProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'selectedRootManagerProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$selectedRootManagerHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<RootManager> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<RootManager> create(Ref ref) {
+    return selectedRootManager(ref);
+  }
+}
+
+String _$selectedRootManagerHash() =>
+    r'fe4bea92a06f32efce7ea27b7b65f43b94ca3558';

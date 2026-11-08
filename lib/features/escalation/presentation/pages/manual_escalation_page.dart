@@ -10,6 +10,7 @@ import 'package:Aisupass/features/escalation/domain/enums/root_manager.dart';
 import 'package:Aisupass/features/escalation/domain/models/handoff_outcome.dart';
 import 'package:Aisupass/features/escalation/domain/models/payload.dart';
 import 'package:Aisupass/features/escalation/presentation/providers/escalation_action_provider.dart';
+import 'package:Aisupass/features/escalation/presentation/providers/escalation_query_provider.dart';
 import 'package:Aisupass/features/escalation/presentation/widgets/escalation_menu_button.dart';
 import 'package:Aisupass/features/escalation/presentation/widgets/payload_catalog_dialog.dart';
 import 'package:Aisupass/features/escalation/presentation/widgets/payload_confirm_dialog.dart';
@@ -236,7 +237,20 @@ class ManualEscalationPage extends HookConsumerWidget {
       await startPayload(picked);
     }
 
-    void startHandoff(RootManager manager) {
+    /// 把临时 root 移交给当前选定的管理器。
+    ///
+    /// 管理器取自 [selectedRootManagerProvider]，读取要等存储，所以是异步的。
+    Future<void> startHandoff() async {
+      final RootManager manager;
+      try {
+        manager = await ref.read(selectedRootManagerProvider.future);
+      } catch (error) {
+        writer.writeLine(
+          '${l10n.escalationHandoffReadManagerFailed}：$error',
+          color: TerminalTextWriter.red,
+        );
+        return;
+      }
       writer.writeLine('');
       writer.writeLine(
         l10n.escalationHandoffRunning(manager.displayName),
@@ -269,21 +283,7 @@ class ManualEscalationPage extends HookConsumerWidget {
       writer.writeLine(l10n.escalationCopied, color: TerminalTextWriter.dim);
     }
 
-    void onMenu(EscalationMenuAction action) {
-      switch (action) {
-        case EscalationMenuAction.exploit:
-          unawaited(startExploit());
-        case EscalationMenuAction.handoffKernelsu:
-          startHandoff(RootManager.kernelsu);
-        case EscalationMenuAction.handoffSukisu:
-          startHandoff(RootManager.sukisu);
-        case EscalationMenuAction.payloadCatalog:
-          // 弹窗盖在终端上，键盘收起后用户先看完再关。
-          unawaited(openPayloadCatalog());
-        case EscalationMenuAction.clear:
-          terminal.clear();
-      }
-    }
+    void clearTerminal() => terminal.clear();
 
     // 招牌等首帧末尾再画：排版宽度要等 `TerminalView` layout 出列数。
     useEffect(() {
@@ -447,7 +447,13 @@ class ManualEscalationPage extends HookConsumerWidget {
             onInput: (List<int> bytes) => unawaited(
               ref.read(shellExecProvider.notifier).writeBytes(bytes),
             ),
-            leading: EscalationMenuButton(onSelected: onMenu),
+            leading: EscalationMenuButton(
+              onExploit: () => unawaited(startExploit()),
+              onHandoff: () => unawaited(startHandoff()),
+              // 弹窗盖在终端上，键盘收起后用户先看完再关。
+              onPayloadCatalog: () => unawaited(openPayloadCatalog()),
+              onClear: clearTerminal,
+            ),
             trailing: TerminalIconKey(
               semanticLabel: l10n.escalationCopy,
               onTap: copySelection,

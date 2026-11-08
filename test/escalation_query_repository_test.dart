@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:Aisupass/core/storage/json_codec.dart';
+import 'package:Aisupass/core/storage/key_value_store.dart';
 import 'package:Aisupass/features/escalation/data/datasources/escalation_query_datasource.dart';
 import 'package:Aisupass/features/escalation/data/models/payload_dto.dart';
 import 'package:Aisupass/features/escalation/data/repositories/escalation_query_repository_impl.dart';
@@ -14,10 +16,57 @@ import 'package:flutter_test/flutter_test.dart';
 /// 载荷清单在仓库内的真实路径。
 const String _catalogPath = 'assets/escalation/payloads/catalog.json';
 
+/// 内存版键值存储。
+class _FakeStore implements KeyValueStore {
+  final Map<String, Object?> values = <String, Object?>{};
+
+  @override
+  Future<T> read<T>(
+    String key, {
+    T? defaultValue,
+    JsonDecoder<T>? fromJson,
+  }) async {
+    final Object? raw = values[key];
+    if (raw is T) return raw;
+    if (defaultValue != null) return defaultValue;
+    if (T == String) return '' as T;
+    if (T == bool) return false as T;
+    if (T == int) return -1 as T;
+    if (T == double) return -1.0 as T;
+    if (T == List<String>) return const <String>[] as T;
+    throw StateError('缺少 defaultValue：$key');
+  }
+
+  @override
+  Future<void> write<T>(String key, T value) async {
+    values[key] = value;
+  }
+
+  @override
+  Future<bool> containsKey(String key) async => values.containsKey(key);
+
+  @override
+  Future<Set<String>> keys() async => values.keys.toSet();
+
+  @override
+  Future<void> remove(String key) async {
+    values.remove(key);
+  }
+
+  @override
+  Future<void> clear() async {
+    values.clear();
+  }
+}
+
 /// 只替换 IO 两端的测试替身：清单由用例给定，设备身份由用例给定。
 class _FakeDatasource extends EscalationQueryDatasource {
   _FakeDatasource({required this._payloads, required this._identity})
-    : super(bundle: rootBundle, native: pigeon.DeviceIdentityNative());
+    : super(
+        bundle: rootBundle,
+        native: pigeon.DeviceIdentityNative(),
+        storage: _FakeStore(),
+      );
 
   final List<PayloadDto> _payloads;
   final pigeon.DeviceIdentity _identity;

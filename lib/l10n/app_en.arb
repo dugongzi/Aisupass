@@ -378,13 +378,13 @@
   "escalationExploitButton": "Start root",
   "escalationExploitStarted": "Starting root…",
   "escalationHandoffSection": "Hand off root",
-  "escalationHandoffManagerKernelsu": "KernelSU",
-  "escalationHandoffManagerSukisu": "SukiSU Ultra",
+  "escalationHandoffCurrent": "Hand off to current manager",
   "escalationHandoffRunning": "Handing off to {manager}…",
   "escalationHandoffManagerMissing": "{manager} is not installed on this device: no libksud.so found for package {package}. Install {manager} first, then retry.",
   "escalationHandoffNoRoot": "No root right now: the payload did not succeed, or the temporary root is already gone. Run root from the menu first, then hand off.",
   "escalationHandoffFailed": "Handoff failed (exit code {code}). Common causes: manager version does not match the kernel module, permission was denied, or the manager is upgrading.",
   "escalationHandoffFailedNoCode": "Handoff failed: the command never ran, so there is no exit code. Check whether permission was denied or the manager is upgrading.",
+  "escalationHandoffReadManagerFailed": "Handoff failed: could not read the selected root manager",
   "escalationMenuTitle": "More actions",
   "escalationMenuPayloadCatalog": "View payload catalog",
   "escalationPayloadCatalogTitle": "Payload catalog",
@@ -441,5 +441,10 @@
   "shellReasonPairingTimeout": "Pairing timed out, please retry",
   "shellReasonDeviceRebooted": "Device rebooted, connection dropped",
   "shellReasonCancelled": "Pairing cancelled",
-  "shellReasonHostPairingFailed": "Pairing failed, please retry"
+  "shellReasonHostPairingFailed": "Pairing failed, please retry",
+  "rootManagerPillTooltip": "Choose root manager",
+  "rootManagerTitle": "Root manager",
+  "rootManagerCurrent": "Current",
+  "rootManagerSwitched": "Switched to {manager}",
+  "rootManagerSaveFailed": "Save failed: {message}"
 }

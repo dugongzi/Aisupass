@@ -27,5 +27,8 @@ abstract class EscalationActionRepository {
   /// 「失败 + 一段 stderr」就丢掉了这些出路。管理器没装、没有 root 都是要给
   /// 用户看的信息，不是代码缺陷。
   Future<HandoffOutcome> handoffRoot({required RootManager manager});
+
+  /// 记住用户选定的 root 管理器，供下次启动与本页移交复用。
+  Future<void> selectRootManager({required RootManager manager});
 }
 

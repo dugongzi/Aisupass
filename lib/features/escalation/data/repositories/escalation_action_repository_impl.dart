@@ -4,6 +4,7 @@ import 'package:Aisupass/features/escalation/domain/models/handoff_outcome.dart'
 import 'package:Aisupass/features/escalation/domain/models/payload.dart';
 import 'package:Aisupass/features/escalation/domain/repositories/escalation_action_repository.dart';
 
+/// 提权链路执行仓储实现。
 class EscalationActionRepositoryImpl implements EscalationActionRepository {
   const EscalationActionRepositoryImpl({required this._datasource});
 
@@ -19,4 +20,8 @@ class EscalationActionRepositoryImpl implements EscalationActionRepository {
   @override
   Future<HandoffOutcome> handoffRoot({required RootManager manager}) =>
       _datasource.handoffRoot(manager: manager);
+
+  @override
+  Future<void> selectRootManager({required RootManager manager}) =>
+      _datasource.writeSelectedRootManagerName(manager.name);
 }

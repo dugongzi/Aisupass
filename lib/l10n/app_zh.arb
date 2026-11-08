@@ -804,13 +804,9 @@
   "@escalationHandoffSection": {
     "description": "手动提权页-菜单里的移交分组标题"
   },
-  "escalationHandoffManagerKernelsu": "KernelSU",
-  "@escalationHandoffManagerKernelsu": {
-    "description": "手动提权页-移交区：KernelSU 系管理器选项"
-  },
-  "escalationHandoffManagerSukisu": "SukiSU Ultra",
-  "@escalationHandoffManagerSukisu": {
-    "description": "手动提权页-移交区：SukiSU Ultra 管理器选项"
+  "escalationHandoffCurrent": "移交给当前管理器",
+  "@escalationHandoffCurrent": {
+    "description": "手动提权页-移交区：移交给标题栏胶囊选定的管理器"
   },
   "escalationHandoffRunning": "正在移交给 {manager}…",
   "@escalationHandoffRunning": {
@@ -849,6 +845,10 @@
   "escalationHandoffFailedNoCode": "移交失败：命令没跑起来，没拿到退出码。检查授权框是否被拒绝，或管理器是否在升级。",
   "@escalationHandoffFailedNoCode": {
     "description": "手动提权页-移交失败但没有退出码"
+  },
+  "escalationHandoffReadManagerFailed": "移交失败：读不到已选的管理器",
+  "@escalationHandoffReadManagerFailed": {
+    "description": "手动提权页-移交前读取管理器选择失败"
   },
   "escalationMenuTitle": "更多操作",
   "@escalationMenuTitle": {
@@ -1083,5 +1083,35 @@
   "shellReasonHostPairingFailed": "配对失败，请重试",
   "@shellReasonHostPairingFailed": {
     "description": "原因码-hostPairingFailed 兜底"
+  },
+  "rootManagerPillTooltip": "选择 root 管理器",
+  "@rootManagerPillTooltip": {
+    "description": "首页标题栏右侧胶囊：点击弹出管理器选择"
+  },
+  "rootManagerTitle": "Root 管理器",
+  "@rootManagerTitle": {
+    "description": "管理器选择弹窗标题"
+  },
+  "rootManagerCurrent": "当前",
+  "@rootManagerCurrent": {
+    "description": "管理器列表里标记已选中的第一个"
+  },
+  "rootManagerSwitched": "已切换到 {manager}",
+  "@rootManagerSwitched": {
+    "description": "切换管理器后的轻提示",
+    "placeholders": {
+      "manager": {
+        "type": "String"
+      }
+    }
+  },
+  "rootManagerSaveFailed": "保存失败：{message}",
+  "@rootManagerSaveFailed": {
+    "description": "管理器选择落盘失败",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   }
 }

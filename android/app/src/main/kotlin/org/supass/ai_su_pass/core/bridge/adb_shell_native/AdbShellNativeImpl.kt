@@ -656,14 +656,16 @@ class AdbShellNativeImpl(private val context: Context) : AdbShellNative {
         for (base in candidates) {
             // 从应用上下文启动必须带 NEW_TASK，否则直接抛 AndroidRuntimeException。
             val intent = Intent(base).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            // Intent 没有 toShortString()：类名入口取组件名，action 入口取 action。
+            val label = base.component?.flattenToShortString() ?: base.action ?: "unknown"
             try {
                 context.startActivity(intent)
-                Log.i(TAG, "openWirelessDebuggingSettings ok: ${base.toShortString()}")
+                Log.i(TAG, "openWirelessDebuggingSettings ok: $label")
                 return true
             } catch (e: Exception) {
                 Log.w(
                     TAG,
-                    "openWirelessDebuggingSettings failed: ${base.toShortString()} " +
+                    "openWirelessDebuggingSettings failed: $label " +
                         "reason=${e.javaClass.simpleName}",
                 )
             }

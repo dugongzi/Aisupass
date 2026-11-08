@@ -1,3 +1,4 @@
+import 'package:Aisupass/features/escalation/domain/enums/root_manager.dart';
 import 'package:Aisupass/features/escalation/domain/models/device_identity.dart';
 import 'package:Aisupass/features/escalation/domain/models/payload.dart';
 import 'package:Aisupass/features/escalation/domain/models/payload_match.dart';
@@ -6,6 +7,11 @@ import 'package:Aisupass/features/escalation/domain/models/payload_match.dart';
 abstract class EscalationQueryRepository {
   /// 读取全部载荷条目。
   Future<List<Payload>> listPayloads();
+
+  /// 读取用户上次选定的 root 管理器。
+  ///
+  /// 从未选过时返回 [RootManager.kernelsu]。
+  Future<RootManager> selectedRootManager();
 
   /// 采集当前设备身份。
   Future<DeviceIdentity> deviceIdentity();

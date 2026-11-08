@@ -356,3 +356,96 @@ final class HandoffRootFamily extends $Family
   @override
   String toString() => r'handoffRootProvider';
 }
+
+/// 记住用户选定的 root 管理器。
+///
+/// 落盘后立即失效 [selectedRootManagerProvider]，让页面上的胶囊当场刷新，
+/// 不必等下次启动。
+
+@ProviderFor(selectRootManager)
+const selectRootManagerProvider = SelectRootManagerFamily._();
+
+/// 记住用户选定的 root 管理器。
+///
+/// 落盘后立即失效 [selectedRootManagerProvider]，让页面上的胶囊当场刷新，
+/// 不必等下次启动。
+
+final class SelectRootManagerProvider
+    extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
+    with $FutureModifier<void>, $FutureProvider<void> {
+  /// 记住用户选定的 root 管理器。
+  ///
+  /// 落盘后立即失效 [selectedRootManagerProvider]，让页面上的胶囊当场刷新，
+  /// 不必等下次启动。
+  const SelectRootManagerProvider._({
+    required SelectRootManagerFamily super.from,
+    required RootManager super.argument,
+  }) : super(
+         retry: null,
+         name: r'selectRootManagerProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$selectRootManagerHash();
+
+  @override
+  String toString() {
+    return r'selectRootManagerProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<void> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<void> create(Ref ref) {
+    final argument = this.argument as RootManager;
+    return selectRootManager(ref, manager: argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is SelectRootManagerProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$selectRootManagerHash() => r'5d7f6ef19e8e6a41a9db5d64f7a8164bc9e05f06';
+
+/// 记住用户选定的 root 管理器。
+///
+/// 落盘后立即失效 [selectedRootManagerProvider]，让页面上的胶囊当场刷新，
+/// 不必等下次启动。
+
+final class SelectRootManagerFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<void>, RootManager> {
+  const SelectRootManagerFamily._()
+    : super(
+        retry: null,
+        name: r'selectRootManagerProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// 记住用户选定的 root 管理器。
+  ///
+  /// 落盘后立即失效 [selectedRootManagerProvider]，让页面上的胶囊当场刷新，
+  /// 不必等下次启动。
+
+  SelectRootManagerProvider call({required RootManager manager}) =>
+      SelectRootManagerProvider._(argument: manager, from: this);
+
+  @override
+  String toString() => r'selectRootManagerProvider';
+}

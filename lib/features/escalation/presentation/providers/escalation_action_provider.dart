@@ -58,9 +58,21 @@ Future<String> runPayloadChoice(Ref ref, {required Payload payload}) =>
 
 /// 把临时 root 移交给用户选定的 [manager]。
 ///
-/// 与 [runPayload] 分开是刻意的：提权拿到的一次性 root 与「谁接管」是两件
-/// 事，上游也把移交做成了独立入口。移交必然失败于「管理器没装」，这种情况下
-/// 返回的是 [HandoffKind.managerMissing] 而非异常，UI 直接渲染即可。
+/// 管理器未安装时返回 [HandoffKind.managerMissing]，不抛异常。
 @riverpod
 Future<HandoffOutcome> handoffRoot(Ref ref, {required RootManager manager}) =>
     ref.watch(escalationActionRepositoryProvider).handoffRoot(manager: manager);
+
+/// 记住用户选定的 root 管理器。
+///
+/// 落盘后失效 [selectedRootManagerProvider]。
+@riverpod
+Future<void> selectRootManager(
+  Ref ref, {
+  required RootManager manager,
+}) async {
+  await ref
+      .watch(escalationActionRepositoryProvider)
+      .selectRootManager(manager: manager);
+  ref.invalidate(selectedRootManagerProvider);
+}

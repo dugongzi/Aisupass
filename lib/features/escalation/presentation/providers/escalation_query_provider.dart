@@ -1,7 +1,9 @@
 import 'package:Aisupass/core/providers/asset_bundle_provider.dart';
 import 'package:Aisupass/core/providers/device_identity_provider.dart';
+import 'package:Aisupass/core/storage/storage_providers.dart';
 import 'package:Aisupass/features/escalation/data/datasources/escalation_query_datasource.dart';
 import 'package:Aisupass/features/escalation/data/repositories/escalation_query_repository_impl.dart';
+import 'package:Aisupass/features/escalation/domain/enums/root_manager.dart';
 import 'package:Aisupass/features/escalation/domain/models/device_identity.dart';
 import 'package:Aisupass/features/escalation/domain/models/payload.dart';
 import 'package:Aisupass/features/escalation/domain/repositories/escalation_query_repository.dart';
@@ -15,6 +17,7 @@ EscalationQueryDatasource escalationQueryDatasource(Ref ref) =>
     EscalationQueryDatasource(
       bundle: ref.watch(assetBundleProvider),
       native: ref.watch(deviceIdentityNativeProvider),
+      storage: ref.watch(preferencesStoreProvider),
     );
 
 /// 提权链路只读仓储。
@@ -33,4 +36,9 @@ Future<List<Payload>> payloads(Ref ref) =>
 @riverpod
 Future<DeviceIdentity> currentDeviceIdentity(Ref ref) =>
     ref.watch(escalationQueryRepositoryProvider).deviceIdentity();
+
+/// 用户上次选定的 root 管理器。
+@riverpod
+Future<RootManager> selectedRootManager(Ref ref) =>
+    ref.watch(escalationQueryRepositoryProvider).selectedRootManager();
 

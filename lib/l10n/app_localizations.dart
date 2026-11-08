@@ -1142,17 +1142,11 @@ abstract class AppLocalizations {
   /// **'移交 root'**
   String get escalationHandoffSection;
 
-  /// 手动提权页-移交区：KernelSU 系管理器选项
+  /// 手动提权页-移交区：移交给标题栏胶囊选定的管理器
   ///
   /// In zh, this message translates to:
-  /// **'KernelSU'**
-  String get escalationHandoffManagerKernelsu;
-
-  /// 手动提权页-移交区：SukiSU Ultra 管理器选项
-  ///
-  /// In zh, this message translates to:
-  /// **'SukiSU Ultra'**
-  String get escalationHandoffManagerSukisu;
+  /// **'移交给当前管理器'**
+  String get escalationHandoffCurrent;
 
   /// 手动提权页-终端：移交已发起，等待结果
   ///
@@ -1183,6 +1177,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'移交失败：命令没跑起来，没拿到退出码。检查授权框是否被拒绝，或管理器是否在升级。'**
   String get escalationHandoffFailedNoCode;
+
+  /// 手动提权页-移交前读取管理器选择失败
+  ///
+  /// In zh, this message translates to:
+  /// **'移交失败：读不到已选的管理器'**
+  String get escalationHandoffReadManagerFailed;
 
   /// 手动提权页-底部左侧菜单按钮的提示文案
   ///
@@ -1489,6 +1489,36 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'配对失败，请重试'**
   String get shellReasonHostPairingFailed;
+
+  /// 首页标题栏右侧胶囊：点击弹出管理器选择
+  ///
+  /// In zh, this message translates to:
+  /// **'选择 root 管理器'**
+  String get rootManagerPillTooltip;
+
+  /// 管理器选择弹窗标题
+  ///
+  /// In zh, this message translates to:
+  /// **'Root 管理器'**
+  String get rootManagerTitle;
+
+  /// 管理器列表里标记已选中的第一个
+  ///
+  /// In zh, this message translates to:
+  /// **'当前'**
+  String get rootManagerCurrent;
+
+  /// 切换管理器后的轻提示
+  ///
+  /// In zh, this message translates to:
+  /// **'已切换到 {manager}'**
+  String rootManagerSwitched(String manager);
+
+  /// 管理器选择落盘失败
+  ///
+  /// In zh, this message translates to:
+  /// **'保存失败：{message}'**
+  String rootManagerSaveFailed(String message);
 }
 
 class _AppLocalizationsDelegate

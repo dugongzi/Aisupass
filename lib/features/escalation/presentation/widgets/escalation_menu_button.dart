@@ -8,26 +8,30 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-/// 底栏菜单的选项。
-///
-/// 提权、移交、查看清单、清屏共用一个枚举，选中后只有一处 switch。
-enum EscalationMenuAction {
-  exploit,
-  handoffKernelsu,
-  handoffSukisu,
-  payloadCatalog,
-  clear,
-}
-
 /// 底栏最左侧的三点菜单键。
 ///
 /// 外观与功能键同属一套键帽（[TerminalIconKey]），位置由按键栏固定在最左，
-/// 不随功能键横向滚动。点开的是同一份菜单：提权、移交、清屏。
+/// 不随功能键横向滚动。菜单项由本组件持有，点击后回调对应的 `on*`。
 class EscalationMenuButton extends HookWidget {
-  const EscalationMenuButton({super.key, required this.onSelected});
+  const EscalationMenuButton({
+    super.key,
+    required this.onExploit,
+    required this.onHandoff,
+    required this.onPayloadCatalog,
+    required this.onClear,
+  });
 
-  /// 选中菜单项后回调，具体干什么由页面决定。
-  final ValueChanged<EscalationMenuAction> onSelected;
+  /// 用户选择「提权」。
+  final VoidCallback onExploit;
+
+  /// 用户选择「移交给当前管理器」。
+  final VoidCallback onHandoff;
+
+  /// 用户选择「查看载荷清单」。
+  final VoidCallback onPayloadCatalog;
+
+  /// 用户选择「清屏」。
+  final VoidCallback onClear;
 
   @override
   Widget build(BuildContext context) {
@@ -54,13 +58,23 @@ class EscalationMenuButton extends HookWidget {
         ),
         Offset.zero & overlay.size,
       );
-      final EscalationMenuAction? action = await showMenu<EscalationMenuAction>(
+      final _MenuAction? action = await showMenu<_MenuAction>(
         context: context,
         position: position,
         items: _menuEntries(l10n, theme),
       );
       // 菜单要等用户选完才回来，期间页面可能已经被销毁。
-      if (action != null && context.mounted) onSelected(action);
+      if (action == null || !context.mounted) return;
+      switch (action) {
+        case _MenuAction.exploit:
+          onExploit();
+        case _MenuAction.handoff:
+          onHandoff();
+        case _MenuAction.payloadCatalog:
+          onPayloadCatalog();
+        case _MenuAction.clear:
+          onClear();
+      }
     }
 
     return Tooltip(
@@ -85,12 +99,12 @@ class EscalationMenuButton extends HookWidget {
   }
 
   /// 菜单内容。
-  List<PopupMenuEntry<EscalationMenuAction>> _menuEntries(
+  List<PopupMenuEntry<_MenuAction>> _menuEntries(
     AppLocalizations l10n,
     ThemeData theme,
-  ) => <PopupMenuEntry<EscalationMenuAction>>[
+  ) => <PopupMenuEntry<_MenuAction>>[
     _item(
-      EscalationMenuAction.exploit,
+      _MenuAction.exploit,
       Icons.security_rounded,
       l10n.escalationExploitButton,
     ),
@@ -98,33 +112,28 @@ class EscalationMenuButton extends HookWidget {
     // 分组头不可点，菜单长了才好找。
     _header(theme, l10n.escalationHandoffSection),
     _item(
-      EscalationMenuAction.handoffKernelsu,
+      _MenuAction.handoff,
       Icons.verified_user_rounded,
-      l10n.escalationHandoffManagerKernelsu,
-    ),
-    _item(
-      EscalationMenuAction.handoffSukisu,
-      Icons.verified_user_rounded,
-      l10n.escalationHandoffManagerSukisu,
+      l10n.escalationHandoffCurrent,
     ),
     const PopupMenuDivider(),
     _item(
-      EscalationMenuAction.payloadCatalog,
+      _MenuAction.payloadCatalog,
       Icons.inventory_2_outlined,
       l10n.escalationMenuPayloadCatalog,
     ),
     _item(
-      EscalationMenuAction.clear,
+      _MenuAction.clear,
       Icons.cleaning_services_rounded,
       l10n.escalationMenuClear,
     ),
   ];
 
-  PopupMenuItem<EscalationMenuAction> _item(
-    EscalationMenuAction action,
+  PopupMenuItem<_MenuAction> _item(
+    _MenuAction action,
     IconData icon,
     String label,
-  ) => PopupMenuItem<EscalationMenuAction>(
+  ) => PopupMenuItem<_MenuAction>(
     value: action,
     child: Row(
       children: <Widget>[
@@ -135,8 +144,8 @@ class EscalationMenuButton extends HookWidget {
     ),
   );
 
-  PopupMenuItem<EscalationMenuAction> _header(ThemeData theme, String label) =>
-      PopupMenuItem<EscalationMenuAction>(
+  PopupMenuItem<_MenuAction> _header(ThemeData theme, String label) =>
+      PopupMenuItem<_MenuAction>(
         enabled: false,
         height: 32.h,
         child: Text(
@@ -147,3 +156,6 @@ class EscalationMenuButton extends HookWidget {
         ),
       );
 }
+
+/// 菜单项。只在本文件内流转，不对外暴露。
+enum _MenuAction { exploit, handoff, payloadCatalog, clear }

@@ -5,6 +5,7 @@ import 'package:Aisupass/common/tabs/setting/setting_tab.dart';
 import 'package:Aisupass/common/widgets/app_ai_quick_panel.dart';
 import 'package:Aisupass/common/widgets/app_bottom_bar.dart';
 import 'package:Aisupass/common/widgets/app_bottom_center_ball.dart';
+import 'package:Aisupass/common/widgets/app_root_manager_pill.dart';
 import 'package:Aisupass/core/extensions/context_extensions.dart';
 import 'package:Aisupass/core/routes/app_route.dart';
 import 'package:Aisupass/features/ai/presentation/providers/ai_config_query_provider.dart';
@@ -75,6 +76,13 @@ class MainPage extends HookConsumerWidget {
                 ? null
                 : Text(titles[currentIndex.value]),
             centerTitle: true,
+            // 右上角常驻 root 管理器胶囊。
+            actions: <Widget>[
+              Padding(
+                padding: EdgeInsets.only(right: 12.w),
+                child: const AppRootManagerPill(),
+              ),
+            ],
           ),
           body: PageView(
             controller: pageController,

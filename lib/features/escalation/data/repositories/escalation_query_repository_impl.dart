@@ -2,6 +2,7 @@ import 'package:Aisupass/features/escalation/data/datasources/escalation_query_d
 import 'package:Aisupass/features/escalation/data/models/device_identity_dto.dart';
 import 'package:Aisupass/features/escalation/data/models/payload_dto.dart';
 import 'package:Aisupass/features/escalation/domain/enums/match_tier.dart';
+import 'package:Aisupass/features/escalation/domain/enums/root_manager.dart';
 import 'package:Aisupass/features/escalation/domain/models/device_identity.dart';
 import 'package:Aisupass/features/escalation/domain/models/payload.dart';
 import 'package:Aisupass/features/escalation/domain/models/payload_match.dart';
@@ -43,6 +44,13 @@ class EscalationQueryRepositoryImpl implements EscalationQueryRepository {
   Future<List<Payload>> listPayloads() async {
     final List<PayloadDto> dtos = await _datasource.loadPayloadCatalog();
     return dtos.map((PayloadDto dto) => dto.toEntity()).toList(growable: false);
+  }
+
+  @override
+  Future<RootManager> selectedRootManager() async {
+    final String name = await _datasource.readSelectedRootManagerName();
+    // 存储里可能是被卸载的旧管理器的枚举名，交给 fromName 收敛成默认值。
+    return RootManager.fromName(name);
   }
 
   @override

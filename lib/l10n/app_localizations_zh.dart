@@ -572,10 +572,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get escalationHandoffSection => '移交 root';
 
   @override
-  String get escalationHandoffManagerKernelsu => 'KernelSU';
-
-  @override
-  String get escalationHandoffManagerSukisu => 'SukiSU Ultra';
+  String get escalationHandoffCurrent => '移交给当前管理器';
 
   @override
   String escalationHandoffRunning(String manager) {
@@ -599,6 +596,9 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get escalationHandoffFailedNoCode =>
       '移交失败：命令没跑起来，没拿到退出码。检查授权框是否被拒绝，或管理器是否在升级。';
+
+  @override
+  String get escalationHandoffReadManagerFailed => '移交失败：读不到已选的管理器';
 
   @override
   String get escalationMenuTitle => '更多操作';
@@ -765,4 +765,23 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get shellReasonHostPairingFailed => '配对失败，请重试';
+
+  @override
+  String get rootManagerPillTooltip => '选择 root 管理器';
+
+  @override
+  String get rootManagerTitle => 'Root 管理器';
+
+  @override
+  String get rootManagerCurrent => '当前';
+
+  @override
+  String rootManagerSwitched(String manager) {
+    return '已切换到 $manager';
+  }
+
+  @override
+  String rootManagerSaveFailed(String message) {
+    return '保存失败：$message';
+  }
 }
