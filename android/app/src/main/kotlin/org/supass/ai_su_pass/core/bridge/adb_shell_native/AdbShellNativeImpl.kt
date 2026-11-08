@@ -7,6 +7,8 @@ import android.os.SystemClock
 import android.util.Log
 import org.supass.ai_su_pass.core.adb.AdbConnectionManager
 import org.supass.ai_su_pass.core.adb.AdbShellChannel
+import org.supass.ai_su_pass.core.adb.ExecChunkResult
+import org.supass.ai_su_pass.core.adb.ExecJob
 import org.supass.ai_su_pass.core.adb.PairingNotification
 import org.supass.ai_su_pass.core.shell.ShellResult
 import org.supass.ai_su_pass.core.shell.ShellStatus
@@ -60,6 +62,29 @@ class AdbShellNativeImpl(private val context: Context) : AdbShellNative {
     /** 配对会话表；配对是长动作，跑在独立线程里，轮询只读快照。 */
     private val pairingLock = Any()
     private val pairingSessions = LinkedHashMap<String, PairingJob>()
+
+    /**
+     * 流式执行会话表。
+     *
+     * 与配对会话一样只活到命令结束：收尾的那次 [pollExec] 顺手把它摘掉，
+     * 不额外开清扫线程——终端同时最多跑一两条命令，留着也只是几个空壳。
+     */
+    private val execLock = Any()
+    private val execSessions = LinkedHashMap<String, ExecJob>()
+
+    /** 会话编号；只在 [execExecutor] 单线程里自增，不需要同步。 */
+    private var execSeq = 0L
+
+    /**
+     * 取增量的专用线程。
+     *
+     * [ExecJob.poll] 会把已交付的字节从缓冲里**摘走**，两个 poll 并发跑就会把同一段
+     * 输出切成两半。Pigeon 的调用线程不保证串行，所以自己收敛到单线程。
+     *
+     * 也不能复用 [executor] 与 [execExecutor]：前者被 `connection()` 这类即时调用
+     * 共用，后者会被一条长 `exec` 整个占住，轮询就会跟着停摆。
+     */
+    private val pollExecutor = Executors.newSingleThreadExecutor()
 
     override fun connection(callback: (Result<ShellConnection>) -> Unit) {
         executor.execute {
@@ -226,6 +251,122 @@ class AdbShellNativeImpl(private val context: Context) : AdbShellNative {
         }
     }
 
+    override fun startExec(
+        command: String,
+        timeoutMs: Long,
+        callback: (Result<ExecStartResult>) -> Unit,
+    ) {
+        val trimmed = command.trim()
+        if (trimmed.isEmpty()) {
+            mainHandler.post { callback(Result.success(execRejected(ExecReasons.EMPTY_COMMAND))) }
+            return
+        }
+
+        // 负值与 0 表示「不限时」，用于常驻交互 shell：这种会话必须一直活着，
+        // 一旦被超时掐断，用户 `cd` 过去的目录、`export` 的变量全都没了。
+        // 正数才按普通命令夹取（过小会被系统开销吃光，过大则长期占住连接）。
+        val budget = if (timeoutMs <= 0L) UNBOUNDED_TIMEOUT else timeoutMs.coerceIn(MIN_EXEC_TIMEOUT_MS, MAX_EXEC_TIMEOUT_MS)
+        // 开流会阻塞（要等 adbd 分配流），放进 execExecutor 排队，顺带挡住并发。
+        execExecutor.execute {
+            val result = try {
+                if (adb.status() != ShellStatus.READY) {
+                    Log.w(TAG, "startExec rejected: channel not ready")
+                    execRejected(ExecReasons.CHANNEL_NOT_READY)
+                } else {
+                    val sessionId = "exec-${++execSeq}"
+                    // 流式会话一律走 pty：界面就是终端，需要回显、行编辑、SIGINT、
+                    // 窗口尺寸与 ANSI 控制序列。一次性 exec() 仍留在 raw（见 ShellProtocol）。
+                    val job = ExecJob(sessionId, trimmed, adb.openPtyStream(trimmed), budget)
+                    synchronized(execLock) {
+                        pruneExecSessions()
+                        execSessions[sessionId] = job
+                    }
+                    // 读线程从这里起跑，之后输出全由 pollExec 增量取走。
+                    job.start()
+                    Log.i(
+                        TAG,
+                        "startExec accepted session=$sessionId " +
+                            "timeout=${if (budget > 0) "${budget}ms" else "unbounded"} " +
+                            "cmd='${trimmed.take(LOG_SNIPPET)}'",
+                    )
+                    ExecStartResult(accepted = true, sessionId = sessionId, reasons = emptyList())
+                }
+            } catch (t: Throwable) {
+                // 开流被拒 / 连接恰好断开：命令根本没跑起来。这里按「不受理」回，
+                // 不能建一个永远不会有输出的会话让上层一直轮询。
+                Log.w(TAG, "startExec failed to open stream: ${t.javaClass.simpleName}")
+                execRejected(ExecReasons.STREAM_OPEN_FAILED)
+            }
+            mainHandler.post { callback(Result.success(result)) }
+        }
+    }
+
+    override fun pollExec(sessionId: String, callback: (Result<ExecChunk>) -> Unit) {
+        pollExecutor.execute {
+            val job = synchronized(execLock) { execSessions[sessionId] }
+            val chunk = if (job == null) {
+                // 会话不存在：要么本来就传错，要么上一次已经拿到 finished 被回收了。
+                // 统一回一个终态，避免上层陷入「永远轮询一个死会话」。
+                ExecChunk(
+                    sessionId = sessionId,
+                    stdout = "",
+                    stderr = UNKNOWN_SESSION,
+                    finished = true,
+                    exitCode = EXIT_NOT_STARTED.toLong(),
+                    timedOut = false,
+                    durationMs = 0L,
+                    droppedBytes = 0L,
+                    failure = UNKNOWN_SESSION,
+                )
+            } else {
+                val snapshot = job.poll()
+                // finished 之后再无人取增量，就地回收，免得表里攒一堆空壳。
+                if (snapshot.finished) synchronized(execLock) { execSessions.remove(sessionId) }
+                snapshot.toPayload()
+            }
+            mainHandler.post { callback(Result.success(chunk)) }
+        }
+    }
+
+    override fun writeExecStdin(
+        sessionId: String,
+        data: ByteArray,
+        callback: (Result<Boolean>) -> Unit,
+    ) {
+        val job = synchronized(execLock) { execSessions[sessionId] }
+        // false = 会话已结束或 stdin 已关；调用方据此停止喂输入，不要重试。
+        val accepted = job?.writeStdin(data) ?: false
+        mainHandler.post { callback(Result.success(accepted)) }
+    }
+
+    override fun resizeExec(
+        sessionId: String,
+        rows: Long,
+        cols: Long,
+        callback: (Result<Unit>) -> Unit,
+    ) {
+        val job = synchronized(execLock) { execSessions[sessionId] }
+        // 尺寸变化只影响远端排版，丢了也无害；主要用途是让全屏程序（top/vi）
+        // 和长输出的折行跟本地视口一致。
+        // 契约里的 int 走 Pigeon 会变成 Long（Dart 侧是 64 位），而 pty 的
+        // winsize 是 16 位字段，这里先夹到合理范围再转 Int：越界的视口尺寸
+        // 只会让远端按错误的列宽折行，不如直接丢掉。
+        val safeRows = rows.coerceIn(1L, MAX_WINSIZE.toLong()).toInt()
+        val safeCols = cols.coerceIn(1L, MAX_WINSIZE.toLong()).toInt()
+        val applied = job?.resize(safeRows, safeCols) ?: false
+        if (!applied) Log.d(TAG, "resizeExec session=$sessionId dropped rows=$rows cols=$cols")
+        mainHandler.post { callback(Result.success(Unit)) }
+    }
+
+    override fun cancelExec(sessionId: String, callback: (Result<Unit>) -> Unit) {
+        val job = synchronized(execLock) { execSessions[sessionId] }
+        // 只发中断不删表：pty 下这一步是往 stdin 写 ^C，会话本身还活着（sh 会打新提示符），
+        // 之后仍要靠 pollExec 取走残留输出；万一远端不理会 SIGINT，ExecJob 会自行关流。
+        job?.cancel()
+        Log.i(TAG, "cancelExec session=$sessionId found=${job != null}")
+        mainHandler.post { callback(Result.success(Unit)) }
+    }
+
     /** 内部结果 → 契约结果。两者字段一一对应，只换承载类型。 */
     private fun ShellResult.toPayload(): ShellExecResult = ShellExecResult(
         exitCode = exitCode.toLong(),
@@ -234,6 +375,45 @@ class AdbShellNativeImpl(private val context: Context) : AdbShellNative {
         durationMs = durationMs,
         timedOut = timedOut,
     )
+
+    /** 流式增量 → 契约结果。同样是字段一一对应，只换承载类型。 */
+    private fun ExecChunkResult.toPayload(): ExecChunk = ExecChunk(
+        sessionId = sessionId,
+        stdout = stdout,
+        stderr = stderr,
+        finished = finished,
+        exitCode = exitCode.toLong(),
+        timedOut = timedOut,
+        durationMs = durationMs,
+        droppedBytes = droppedBytes,
+        failure = failure,
+    )
+
+    /** 会话没能开起来时的统一返回：只回原因码，不向 Dart 抛异常。 */
+    private fun execRejected(reason: String): ExecStartResult = ExecStartResult(
+        accepted = false,
+        sessionId = "",
+        reasons = listOf(reason),
+    )
+
+    /**
+     * 挤掉会话表里的旧条目，保证新建会话一定进得去。
+     *
+     * 顺序是「先清已结束的，再淘汰最早的」：正常使用下第一步就够，
+     * 走到第二步只可能是上层漏了收尾（连续 start 却没有 poll 到 finished）。
+     * 被淘汰的会话必须先 [ExecJob.cancel] 关流，否则它的读线程会一直挂着。
+     *
+     * 调用方必须已持有 [execLock]。
+     */
+    private fun pruneExecSessions() {
+        execSessions.entries.removeAll { it.value.finished }
+        while (execSessions.size >= MAX_EXEC_SESSIONS) {
+            val victim = execSessions.entries.firstOrNull() ?: return
+            execSessions.remove(victim.key)
+            Log.w(TAG, "pruneExecSessions: evicting ${victim.key}")
+            victim.value.cancel()
+        }
+    }
 
     /**
      * 读原生库解压目录。
@@ -436,10 +616,17 @@ class AdbShellNativeImpl(private val context: Context) : AdbShellNative {
         Log.i(TAG, "dispose")
         // 页面已销毁，通知留着也没人收结果，一并撤掉。
         pairingNotification.dismiss()
+        // 流式会话的读线程不会自己退，先逐个关流；否则断开连接后它们会各自
+        // 抛一次异常再收尾，logcat 里留下一片无意义的堆栈。
+        val leftovers = synchronized(execLock) {
+            execSessions.values.toList().also { execSessions.clear() }
+        }
+        leftovers.forEach { it.cancel() }
         // 只断连接，不 close()：close() 会 destroy 掉当前私钥对象。
         adb.disconnect()
         executor.shutdownNow()
         execExecutor.shutdownNow()
+        pollExecutor.shutdownNow()
     }
 
     /** 配对输入方式。 */
@@ -470,6 +657,31 @@ class AdbShellNativeImpl(private val context: Context) : AdbShellNative {
         const val PAIRING_THREAD_NAME = "adb-pairing"
         const val MAX_PAIRING_SESSIONS = 8
         const val UNKNOWN_UID = -1L
+
+        /** 同时存活的流式会话上限；终端只会跑一两条，4 已足够宽裕。 */
+        const val MAX_EXEC_SESSIONS = 4
+
+        /**
+         * 「不限时」的哨兵值。
+         *
+         * 用 0 而不是 `Long.MAX_VALUE`：`elapsedRealtime() + MAX_VALUE` 会溢出成负数，
+         * 看守线程第一轮就判超时。0 走「不起看守」分支，不参与任何加法。
+         */
+        const val UNBOUNDED_TIMEOUT = 0L
+
+        /** 会话查不到时的说明，写进 stderr / failure，供上层区分「真没输出」与「查错会话」。 */
+        const val UNKNOWN_SESSION = "unknown session"
+
+        /**
+         * pty `winsize` 里行列字段的实际上限。
+         *
+         * 内核结构体是 `unsigned short`，超出会被截断成莫名其妙的列宽；而
+         * Dart 侧的 int 是 64 位，经 Pigeon 原样变成 Long 传进来，必须自己夹。
+         */
+        const val MAX_WINSIZE = 10_000
+
+        /** 日志里截取命令片段的长度，避免一条日志刷满屏幕。 */
+        const val LOG_SNIPPET = 120
 
         /** 整条配对流程上限：可达性 3s + 握手 + mDNS 发现 15s 的宽松余量。 */
         const val PAIRING_TIMEOUT_MS = 60_000L

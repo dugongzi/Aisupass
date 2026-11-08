@@ -46,7 +46,7 @@ abstract class Payload with _$Payload {
 
     /// 载荷摘要，仅用于打包自检。
     required String sha256,
-。
+
     required String command,
 
     required bool standalone,

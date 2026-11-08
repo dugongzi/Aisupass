@@ -99,6 +99,10 @@ dependencies:
   # 属于生产代码引用，必须显式声明依赖，否则触发 depend_on_referenced_packages。
   meta: ^1.18.3
 
+  # 终端模拟器（渲染 + 键盘输入）。注意：6.x 起为 AGPL-3.0-or-later，
+  # 分发本应用时需按 AGPL 开源整体代码。
+  xterm3: ^6.3.7
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -132,6 +136,8 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/ai_icons/
+    # 终端按键栏用的界面图标（三点菜单等）。
+    - assets/images/icons/
     # Flutter 的目录声明只包含该目录下的直接文件，不会递归子目录，
     # 因此 escalation 下的清单必须逐个文件声明。
     - assets/escalation/payloads/catalog.json

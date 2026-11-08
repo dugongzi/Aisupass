@@ -1094,47 +1094,11 @@ abstract class AppLocalizations {
   /// **'手动提权'**
   String get escalationTitle;
 
-  /// 手动提权页顶部说明
+  /// 手动提权页-终端：常驻 shell 正常退出后的说明行
   ///
   /// In zh, this message translates to:
-  /// **'手动提权会按当前设备匹配本地内核载荷并尝试提升权限，操作不可逆，请先备份重要数据。'**
-  String get escalationDesc;
-
-  /// 手动提权页-环境信息小标题
-  ///
-  /// In zh, this message translates to:
-  /// **'当前环境'**
-  String get escalationEnvTitle;
-
-  /// 手动提权页-SELinux 状态行
-  ///
-  /// In zh, this message translates to:
-  /// **'SELinux'**
-  String get escalationSelinuxTitle;
-
-  /// 手动提权页-命令输入框标题
-  ///
-  /// In zh, this message translates to:
-  /// **'命令'**
-  String get escalationCommandLabel;
-
-  /// 手动提权页-执行按钮
-  ///
-  /// In zh, this message translates to:
-  /// **'执行'**
-  String get escalationRunButton;
-
-  /// 手动提权页-执行中按钮态
-  ///
-  /// In zh, this message translates to:
-  /// **'执行中…'**
-  String get escalationRunningButton;
-
-  /// 手动提权页-清空按钮
-  ///
-  /// In zh, this message translates to:
-  /// **'清空'**
-  String get escalationClearButton;
+  /// **'shell 会话已结束，再次输入会自动重连'**
+  String get escalationTerminalClosed;
 
   /// 手动提权页-已连接状态行
   ///
@@ -1160,95 +1124,23 @@ abstract class AppLocalizations {
   /// **'（超时）'**
   String get escalationTimedOutTag;
 
-  /// 手动提权页-原生库目录缺失提示
-  ///
-  /// In zh, this message translates to:
-  /// **'原生库目录不可用：当前安装没有解压 jniLibs 里的 so（需 extractNativeLibs / useLegacyPackaging 为 true）'**
-  String get escalationNativeDirUnavailable;
-
-  /// 手动提权页-预置命令：列出原生库目录
-  ///
-  /// In zh, this message translates to:
-  /// **'库目录'**
-  String get escalationPresetLibDir;
-
-  /// 手动提权页-预置命令：LD_PRELOAD 注入验证
-  ///
-  /// In zh, this message translates to:
-  /// **'L1 注入'**
-  String get escalationPresetInject;
-
-  /// 手动提权页-预置命令：so 校验和
-  ///
-  /// In zh, this message translates to:
-  /// **'so 校验'**
-  String get escalationPresetChecksum;
-
-  /// 手动提权页-自动匹配并执行载荷提权的按钮
+  /// 手动提权页-菜单里的提权项
   ///
   /// In zh, this message translates to:
   /// **'开始提权'**
   String get escalationExploitButton;
 
-  /// 手动提权页-匹配摘要：设备行标签
+  /// 手动提权页-终端：提权已发起
   ///
   /// In zh, this message translates to:
-  /// **'设备'**
-  String get escalationDeviceLabel;
+  /// **'开始提权…'**
+  String get escalationExploitStarted;
 
-  /// 手动提权页-匹配摘要：条目总数行标签
-  ///
-  /// In zh, this message translates to:
-  /// **'清单条目'**
-  String get escalationCatalogLabel;
-
-  /// 手动提权页-匹配摘要：命中载荷行标签
-  ///
-  /// In zh, this message translates to:
-  /// **'命中载荷'**
-  String get escalationMatchLabel;
-
-  /// 手动提权页-匹配摘要：无候选提示
-  ///
-  /// In zh, this message translates to:
-  /// **'当前设备在清单里没有候选'**
-  String get escalationMatchNone;
-
-  /// 手动提权页-匹配摘要：加载态文案
-  ///
-  /// In zh, this message translates to:
-  /// **'匹配中…'**
-  String get escalationMatchLoading;
-
-  /// 手动提权页-匹配摘要：同机型/同厂商兜底命中的警告
-  ///
-  /// In zh, this message translates to:
-  /// **'降级命中，可能不可用'**
-  String get escalationMatchDegraded;
-
-  /// 手动提权页-匹配摘要：内核版本读不出来时的占位
-  ///
-  /// In zh, this message translates to:
-  /// **'未知内核'**
-  String get escalationKernelUnknown;
-
-  /// 手动提权页-移交区标题
+  /// 手动提权页-菜单里的移交分组标题
   ///
   /// In zh, this message translates to:
   /// **'移交 root'**
   String get escalationHandoffSection;
-
-  /// 手动提权页-移交区说明：为什么必须移交
-  ///
-  /// In zh, this message translates to:
-  /// **'提权拿到的是临时 root，重启即失效。把它交给已安装的管理器，由管理器加载内核模块后才会持久。'**
-  String get escalationHandoffDesc;
-
-  /// 手动提权页-移交区：管理器选择标签
-  ///
-  /// In zh, this message translates to:
-  /// **'管理器'**
-  String get escalationHandoffManagerLabel;
 
   /// 手动提权页-移交区：KernelSU 系管理器选项
   ///
@@ -1262,17 +1154,11 @@ abstract class AppLocalizations {
   /// **'SukiSU Ultra'**
   String get escalationHandoffManagerSukisu;
 
-  /// 手动提权页-移交区的执行按钮
+  /// 手动提权页-终端：移交已发起，等待结果
   ///
   /// In zh, this message translates to:
-  /// **'移交给管理器'**
-  String get escalationHandoffButton;
-
-  /// 手动提权页-移交成功：告诉用户下一步去哪确认
-  ///
-  /// In zh, this message translates to:
-  /// **'已移交给 {manager}，请打开 {manager} 确认模块已加载。'**
-  String escalationHandoffSuccess(String manager);
+  /// **'正在移交给 {manager}…'**
+  String escalationHandoffRunning(String manager);
 
   /// 手动提权页-管理器没装：给出包名与安装出路
   ///
@@ -1283,7 +1169,7 @@ abstract class AppLocalizations {
   /// 手动提权页-移交时没有 root
   ///
   /// In zh, this message translates to:
-  /// **'当前没有 root：载荷没跑成功，或者临时 root 已经失效。先回到上面执行一次提权，再来移交。'**
+  /// **'当前没有 root：载荷没跑成功，或者临时 root 已经失效。先在菜单里执行一次提权，再来移交。'**
   String get escalationHandoffNoRoot;
 
   /// 手动提权页-移交失败：带上退出码
@@ -1298,11 +1184,47 @@ abstract class AppLocalizations {
   /// **'移交失败：命令没跑起来，没拿到退出码。检查授权框是否被拒绝，或管理器是否在升级。'**
   String get escalationHandoffFailedNoCode;
 
-  /// 手动提权页-管理器没装时给出的下载页按钮
+  /// 手动提权页-底部左侧菜单按钮的提示文案
   ///
   /// In zh, this message translates to:
-  /// **'打开 {manager} 下载页'**
-  String escalationHandoffOpenHome(String manager);
+  /// **'更多操作'**
+  String get escalationMenuTitle;
+
+  /// 手动提权页-菜单里的清屏项
+  ///
+  /// In zh, this message translates to:
+  /// **'清屏'**
+  String get escalationMenuClear;
+
+  /// 手动提权页-终端：消费不及时导致输出被截断
+  ///
+  /// In zh, this message translates to:
+  /// **'输出过多，最早 {bytes} 字节已被丢弃（只保留最新部分）'**
+  String escalationOutputTruncated(int bytes);
+
+  /// 手动提权页-终端：流式会话被拒
+  ///
+  /// In zh, this message translates to:
+  /// **'命令没能启动：{reason}'**
+  String escalationExecStartFailed(String reason);
+
+  /// 手动提权页-原因码 emptyCommand
+  ///
+  /// In zh, this message translates to:
+  /// **'命令为空'**
+  String get escalationExecReasonEmpty;
+
+  /// 手动提权页-原因码 channelNotReady
+  ///
+  /// In zh, this message translates to:
+  /// **'shell 通道未连接'**
+  String get escalationExecReasonNotReady;
+
+  /// 手动提权页-原因码 streamOpenFailed
+  ///
+  /// In zh, this message translates to:
+  /// **'开流被拒绝或连接已断开'**
+  String get escalationExecReasonStreamFailed;
 
   /// 设置项-语言（语言名称本身在组件内硬编码，不走 l10n）
   ///

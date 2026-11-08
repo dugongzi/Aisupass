@@ -4,6 +4,7 @@ import android.os.SystemClock
 import android.util.Log
 import io.github.muntashirakon.adb.AdbStream
 import org.supass.ai_su_pass.core.shell.ShellChannel
+import org.supass.ai_su_pass.core.shell.ShellProtocol
 import org.supass.ai_su_pass.core.shell.ShellResult
 import org.supass.ai_su_pass.core.shell.ShellStatus
 import java.io.ByteArrayOutputStream
@@ -104,19 +105,19 @@ internal class AdbShellChannel(
     override fun exec(command: String, timeoutMs: Long, stdin: ByteArray?): ShellResult {
         val startedAt = SystemClock.elapsedRealtime()
         if (status() != ShellStatus.READY) {
-            return ShellResult(EXIT_NOT_STARTED, "", "channel not ready", 0L, false)
+            return ShellResult(ShellProtocol.EXIT_NOT_STARTED, "", "channel not ready", 0L, false)
         }
 
         val out = ByteArrayOutputStream()
         val err = ByteArrayOutputStream()
-        // -1 表示「还没收到 kIdExit」；收到即写入真实退出码。
-        val exitCode = AtomicInteger(EXIT_NOT_STARTED)
+        // 还没收到 kIdExit 时为 -1；收到即写入真实退出码。
+        val exitCode = AtomicInteger(ShellProtocol.EXIT_NOT_STARTED)
         val streamRef = AtomicReference<AdbStream?>(null)
         val failure = AtomicReference<String?>(null)
 
         val worker = Thread({
             try {
-                val stream = manager.openStream("$SERVICE_PREFIX$command")
+                val stream = openShellStream(command)
                 streamRef.set(stream)
                 // 写 stdin 单独一条线程：`AdbStream.write` 会等在写窗口上，可能长时间阻塞。
                 Thread({ pumpStdin(stream, stdin) }, "adb-shell-stdin").apply {
@@ -160,7 +161,7 @@ internal class AdbShellChannel(
         }
 
         val code = exitCode.get()
-        if (code == EXIT_NOT_STARTED) {
+        if (code == ShellProtocol.EXIT_NOT_STARTED) {
             // 流正常关闭却始终没收到 kIdExit：adbd 那边命令根本没跑起来（开流被拒、
             // 设备掉线、连接被掐）。这里原本完全静默，上层只看到 -1，无从判断原因。
             val notes = listOfNotNull(
@@ -172,11 +173,30 @@ internal class AdbShellChannel(
                 "exec missing exit frame failure=${failure.get() ?: "-"} " +
                     "out='${outText.take(LOG_SNIPPET)}' err='${errText.take(LOG_SNIPPET)}'",
             )
-            return ShellResult(EXIT_NOT_STARTED, outText, notes, durationMs, false)
+            return ShellResult(ShellProtocol.EXIT_NOT_STARTED, outText, notes, durationMs, false)
         }
 
         return ShellResult(code, outText, errText, durationMs, false)
     }
+
+    /**
+     * 在已连接的 ADB 上开一条 shell 流（`raw`，无 pty）。
+     *
+     * 开流本身可能失败（对端拒绝、连接已断），调用方必须把它当成
+     * 「命令没跑起来」而不是「命令跑失败」。
+     */
+    internal fun openShellStream(command: String): AdbStream =
+        manager.openStream("${ShellProtocol.SERVICE_PREFIX}$command")
+
+    /**
+     * 在已连接的 ADB 上开一条带 pty 的 shell 流。
+     *
+     * 只给流式会话（[ExecJob]）用：远端 `sh` 拿到控制终端后才会自己回显、
+     * 自己处理行编辑与 `^C`，页面也就不必再做一套假的。一次性 [exec] 继续走
+     * [openShellStream]，因为提权流程要按分离的 stdout 文本做判定。
+     */
+    internal fun openPtyStream(command: String): AdbStream =
+        manager.openStream("${ShellProtocol.PTY_SERVICE_PREFIX}$command")
 
     /**
      * 读取并解析 shell protocol v2 的帧，直到收到退出帧或流出错/关闭。
@@ -191,25 +211,25 @@ internal class AdbShellChannel(
         exitCode: AtomicInteger,
     ) {
         val input: InputStream = stream.openInputStream()
-        val header = ByteArray(HEADER_SIZE)
-        val chunk = ByteArray(BUFFER_SIZE)
+        val header = ByteArray(ShellProtocol.HEADER_SIZE)
+        val chunk = ByteArray(ShellProtocol.BUFFER_SIZE)
 
         while (true) {
             // 读到 -1 说明对端已关流；此时再读会抛 IOException，必须直接退出。
-            if (!readFully(input, header, HEADER_SIZE)) return
+            if (!readFully(input, header, ShellProtocol.HEADER_SIZE)) return
 
             val id = header[0].toInt() and 0xFF
             val length = (header[1].toInt() and 0xFF) or
                 ((header[2].toInt() and 0xFF) shl 8) or
                 ((header[3].toInt() and 0xFF) shl 16) or
                 ((header[4].toInt() and 0xFF) shl 24)
-            if (length < 0 || length > MAX_FRAME_BYTES) {
+            if (length < 0 || length > ShellProtocol.MAX_FRAME_BYTES) {
                 throw IOException("bad frame id=$id length=$length")
             }
 
             when (id) {
-                ID_STDOUT, ID_STDERR -> {
-                    val sink = if (id == ID_STDOUT) out else err
+                ShellProtocol.ID_STDOUT, ShellProtocol.ID_STDERR -> {
+                    val sink = if (id == ShellProtocol.ID_STDOUT) out else err
                     var remaining = length
                     while (remaining > 0) {
                         val want = minOf(remaining, chunk.size)
@@ -220,7 +240,7 @@ internal class AdbShellChannel(
                     }
                 }
 
-                ID_EXIT -> {
+                ShellProtocol.ID_EXIT -> {
                     // 退出帧长度是 1 字节（AOSP 客户端就是取 data()[0]），值 0..255。
                     // 被信号杀死时是 128 + signal。
                     val payload = ByteArray(length)
@@ -250,13 +270,13 @@ internal class AdbShellChannel(
             if (stdin != null && stdin.isNotEmpty()) {
                 var offset = 0
                 while (offset < stdin.size) {
-                    val len = minOf(stdin.size - offset, MAX_STDIN_CHUNK)
-                    val frame = buildFrame(ID_STDIN, stdin, offset, len)
+                    val len = minOf(stdin.size - offset, ShellProtocol.MAX_STDIN_CHUNK)
+                    val frame = ShellProtocol.buildFrame(ShellProtocol.ID_STDIN, stdin, offset, len)
                     output.write(frame, 0, frame.size)
                     offset += len
                 }
             }
-            val eof = buildFrame(ID_CLOSE_STDIN, null, 0, 0)
+            val eof = ShellProtocol.buildFrame(ShellProtocol.ID_CLOSE_STDIN, null, 0, 0)
             output.write(eof, 0, eof.size)
             output.flush()
         } catch (t: Throwable) {
@@ -264,20 +284,6 @@ internal class AdbShellChannel(
             // 不能覆盖读线程给出的主结果。
             Log.d(TAG, "stdin pump stopped: ${t.javaClass.simpleName}")
         }
-    }
-
-    /** 拼一帧：`[1B id][4B 小端长度][payload]`。 */
-    private fun buildFrame(id: Int, src: ByteArray?, offset: Int, length: Int): ByteArray {
-        val frame = ByteArray(HEADER_SIZE + length)
-        frame[0] = id.toByte()
-        frame[1] = (length and 0xFF).toByte()
-        frame[2] = ((length ushr 8) and 0xFF).toByte()
-        frame[3] = ((length ushr 16) and 0xFF).toByte()
-        frame[4] = ((length ushr 24) and 0xFF).toByte()
-        if (src != null && length > 0) {
-            System.arraycopy(src, offset, frame, HEADER_SIZE, length)
-        }
-        return frame
     }
 
     /** 读满 [length] 字节；流提前关闭返回 false。 */
@@ -294,7 +300,7 @@ internal class AdbShellChannel(
     /** 丢弃 [length] 字节的 payload；流提前关闭返回 false。 */
     private fun skip(input: InputStream, length: Int): Boolean {
         var remaining = length
-        val scratch = ByteArray(minOf(length, BUFFER_SIZE))
+        val scratch = ByteArray(minOf(length, ShellProtocol.BUFFER_SIZE))
         while (remaining > 0) {
             val want = minOf(remaining, scratch.size)
             val read = input.read(scratch, 0, want)
@@ -329,30 +335,12 @@ internal class AdbShellChannel(
 
         const val SOURCE = "adb"
         const val UNKNOWN_UID = -1L
-        const val EXIT_NOT_STARTED = -1
 
-        /** `raw` 禁 pty：只有 raw 模式才分离 stdout/stderr 且 stdin 直通进程。 */
-        const val SERVICE_PREFIX = "shell,v2,raw:"
-
-        // shell protocol v2 packet id（AOSP shell_protocol.h）。
-        const val ID_STDIN = 0
-        const val ID_STDOUT = 1
-        const val ID_STDERR = 2
-        const val ID_EXIT = 3
-        const val ID_CLOSE_STDIN = 4
-
-        /** 1B id + 4B 小端长度。 */
-        const val HEADER_SIZE = 5
-
-        /** 帧长度上限：ADB 单包最大 1MB（api >= 28），超过说明流已错位。 */
-        const val MAX_FRAME_BYTES = 1024 * 1024
-
-        /** 单帧 stdin 大小，留足余量避免一次挤爆写窗口。 */
-        const val MAX_STDIN_CHUNK = 32 * 1024
+        // 线格式（帧 id、长度上限、分包大小）统一在 [ShellProtocol]，
+        // 一次性 exec 与流式 [ExecJob] 共用同一份，避免两边各写一份改漏。
 
         /** 日志里截取输出片段的长度，避免一条日志刷满屏幕。 */
         const val LOG_SNIPPET = 200
-        const val BUFFER_SIZE = 4096
         const val STREAM_JOIN_MS = 300L
         const val ID_TIMEOUT_MS = 5_000L
 

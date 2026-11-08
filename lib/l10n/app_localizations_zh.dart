@@ -546,25 +546,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get escalationTitle => '手动提权';
 
   @override
-  String get escalationDesc => '手动提权会按当前设备匹配本地内核载荷并尝试提升权限，操作不可逆，请先备份重要数据。';
-
-  @override
-  String get escalationEnvTitle => '当前环境';
-
-  @override
-  String get escalationSelinuxTitle => 'SELinux';
-
-  @override
-  String get escalationCommandLabel => '命令';
-
-  @override
-  String get escalationRunButton => '执行';
-
-  @override
-  String get escalationRunningButton => '执行中…';
-
-  @override
-  String get escalationClearButton => '清空';
+  String get escalationTerminalClosed => 'shell 会话已结束，再次输入会自动重连';
 
   @override
   String escalationShellConnected(int uid) {
@@ -581,51 +563,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get escalationTimedOutTag => '（超时）';
 
   @override
-  String get escalationNativeDirUnavailable =>
-      '原生库目录不可用：当前安装没有解压 jniLibs 里的 so（需 extractNativeLibs / useLegacyPackaging 为 true）';
-
-  @override
-  String get escalationPresetLibDir => '库目录';
-
-  @override
-  String get escalationPresetInject => 'L1 注入';
-
-  @override
-  String get escalationPresetChecksum => 'so 校验';
-
-  @override
   String get escalationExploitButton => '开始提权';
 
   @override
-  String get escalationDeviceLabel => '设备';
-
-  @override
-  String get escalationCatalogLabel => '清单条目';
-
-  @override
-  String get escalationMatchLabel => '命中载荷';
-
-  @override
-  String get escalationMatchNone => '当前设备在清单里没有候选';
-
-  @override
-  String get escalationMatchLoading => '匹配中…';
-
-  @override
-  String get escalationMatchDegraded => '降级命中，可能不可用';
-
-  @override
-  String get escalationKernelUnknown => '未知内核';
+  String get escalationExploitStarted => '开始提权…';
 
   @override
   String get escalationHandoffSection => '移交 root';
-
-  @override
-  String get escalationHandoffDesc =>
-      '提权拿到的是临时 root，重启即失效。把它交给已安装的管理器，由管理器加载内核模块后才会持久。';
-
-  @override
-  String get escalationHandoffManagerLabel => '管理器';
 
   @override
   String get escalationHandoffManagerKernelsu => 'KernelSU';
@@ -634,11 +578,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get escalationHandoffManagerSukisu => 'SukiSU Ultra';
 
   @override
-  String get escalationHandoffButton => '移交给管理器';
-
-  @override
-  String escalationHandoffSuccess(String manager) {
-    return '已移交给 $manager，请打开 $manager 确认模块已加载。';
+  String escalationHandoffRunning(String manager) {
+    return '正在移交给 $manager…';
   }
 
   @override
@@ -648,7 +589,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get escalationHandoffNoRoot =>
-      '当前没有 root：载荷没跑成功，或者临时 root 已经失效。先回到上面执行一次提权，再来移交。';
+      '当前没有 root：载荷没跑成功，或者临时 root 已经失效。先在菜单里执行一次提权，再来移交。';
 
   @override
   String escalationHandoffFailed(int code) {
@@ -660,9 +601,29 @@ class AppLocalizationsZh extends AppLocalizations {
       '移交失败：命令没跑起来，没拿到退出码。检查授权框是否被拒绝，或管理器是否在升级。';
 
   @override
-  String escalationHandoffOpenHome(String manager) {
-    return '打开 $manager 下载页';
+  String get escalationMenuTitle => '更多操作';
+
+  @override
+  String get escalationMenuClear => '清屏';
+
+  @override
+  String escalationOutputTruncated(int bytes) {
+    return '输出过多，最早 $bytes 字节已被丢弃（只保留最新部分）';
   }
+
+  @override
+  String escalationExecStartFailed(String reason) {
+    return '命令没能启动：$reason';
+  }
+
+  @override
+  String get escalationExecReasonEmpty => '命令为空';
+
+  @override
+  String get escalationExecReasonNotReady => 'shell 通道未连接';
+
+  @override
+  String get escalationExecReasonStreamFailed => '开流被拒绝或连接已断开';
 
   @override
   String get languageTitle => '语言';

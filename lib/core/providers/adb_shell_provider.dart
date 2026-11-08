@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:Aisupass/generated/adb_shell.g.dart';
 import 'package:flutter/foundation.dart';
@@ -178,91 +179,255 @@ class ShellPairingController extends Notifier<ShellPairingState> {
   }
 }
 
-/// 本 App 的原生库解压目录（`nativeLibraryDir`）。
+/// 终端会话的当前状态。
 ///
-/// 打进 `jniLibs` 的 so 由 PackageManager 解压到这里，`shell` 身份能直接
-/// `LD_PRELOAD`，所以注入不必再把字节写进 `/data/local/tmp`。
-///
-/// 路径含安装随机后缀、每次安装都会变，因此只在进程内存里缓存，
-/// 不做任何落盘持久化。空串表示目录不可用。
-///
-/// 桌面端没有这项能力，固定返回空串。
-final FutureProvider<String> nativeLibraryDirProvider = FutureProvider<String>((
-  ref,
-) async {
-  if (!Platform.isAndroid) return '';
-  try {
-    return await ref.watch(adbShellNativeProvider).nativeLibraryDir();
-  } catch (_) {
-    // 原生未注册或调用失败时按不可用处理，由调用方给出可读提示。
-    return '';
-  }
-});
-
-/// 命令执行面板的状态：最近一条命令与它的结果。
+/// 只有三项：会话能不能用、丢了多少字节、最近一次通道故障。
+/// 刻意没有「有没有命令在跑」和退出码——pty 会话是交互式的，屏幕上的提示符
+/// 就是它的心跳，`ls` 跑完也不存在一个「本次执行结束」的边界可以汇报。
 @immutable
-class ShellConsoleState {
-  const ShellConsoleState({
-    this.running = false,
-    this.command,
-    this.result,
-    this.error,
+class ShellTerminalState {
+  const ShellTerminalState({
+    this.ready = false,
+    this.droppedBytes = 0,
+    this.failure = '',
   });
 
-  /// 是否正在执行。
-  final bool running;
+  /// 会话是否可用。pty 会话没有「忙 / 闲」，只有「流活着 / 流断了」。
+  final bool ready;
 
-  /// 最近一条命令；为 null 表示还没跑过。
-  final String? command;
+  /// 因消费不及时被丢弃的累计字节数；`0` 表示输出完整。
+  final int droppedBytes;
 
-  /// 原生回传的结构化结果。
-  final ShellExecResult? result;
-
-  /// Pigeon 调用本身失败时的描述（通道未注册等），与 [result] 互斥。
-  final String? error;
+  /// 原因码或读流出错的异常类名；空串表示没有故障。
+  final String failure;
 }
 
-/// 在已连接的 shell 上执行单条命令。
+/// 输出的接收方：`isStderr` 为 true 时是标准错误。
 ///
-/// 只服务于调试面板：不做命令白名单，也不做历史记录。
-final NotifierProvider<ShellConsoleController, ShellConsoleState>
-shellConsoleProvider =
-    NotifierProvider<ShellConsoleController, ShellConsoleState>(
-      ShellConsoleController.new,
-    );
+/// 用回调而不是 `Stream`：终端只要一个「把这段字节写到屏幕上」的入口，
+/// `Stream` 还要额外处理订阅时机、取消和「谁来关」。
+///
+/// pty 下远端已经把 stdout/stderr 合并，`isStderr` 恒为 false；保留这个参数
+/// 是为了让页面仍能区分一次性 [AdbShellNative.exec] 的两路输出。
+typedef TerminalExecSink = void Function(String text, bool isStderr);
 
-class ShellConsoleController extends Notifier<ShellConsoleState> {
-  /// 单条命令的默认上限：足以跑 `sha256sum` 这类操作，又不至于长时间占住连接。
-  static const Duration _timeout = Duration(seconds: 20);
+/// 终端里那条常驻 shell，以及它的输出通路。
+///
+/// 会话开在 **pty**（`shell,v2,pty,TERM=xterm-256color:`）上：远端 `sh` 拿到了
+/// 一条真正的控制终端，于是它自己回显、自己打提示符、自己处理退格与方向键，
+/// `Ctrl+C` 由 line discipline 翻译成 SIGINT 送给前台进程组。所以本端**不做**
+/// 任何行缓冲、本地回显或命令切分——键盘字节原样转发，屏幕字节原样写回。
+///
+/// 也正因为它是交互式的，「一条命令什么时候跑完」没有信号，也不需要有：
+/// 页面里预置命令只是「替用户敲一行再回车」，输出和退出状态由 shell 自己表达。
+///
+/// 为什么要常驻：每条命令各开一个 `shell,v2,...:<cmd>`，adbd 会为它 fork 一个
+/// 新进程，进程一退工作目录跟着消失，于是 `cd /data/local/tmp` 敲完毫无效果、
+/// `export` 也不跨行。常驻 shell 下所有输入都进同一个 `sh`，状态一直活着。
+final NotifierProvider<ShellExecController, ShellTerminalState>
+shellExecProvider = NotifierProvider<ShellExecController, ShellTerminalState>(
+  ShellExecController.new,
+);
+
+class ShellExecController extends Notifier<ShellTerminalState> {
+  /// 轮询间隔。
+  ///
+  /// 原生 `pollExec` 是纯内存取增量，一次调用的成本只有 Pigeon 往返；
+  /// 60ms 让回显和流式输出看起来是跟着手指走的，再密只是平白多出跨进程调用。
+  static const Duration _pollInterval = Duration(milliseconds: 60);
+
+  /// 常驻 shell 的入口命令。
+  ///
+  /// adbd 把这段当成 `sh -c <这段>` 执行，最后一步 `exec sh -i` 把进程换成挂在
+  /// pty 上的交互式 shell：远端自己打提示符、开行编辑、接作业控制。`-i` 写明白，
+  /// 不去赌「stdin 是终端就自动进交互模式」这条隐式规则。
+  ///
+  /// 前面那句 `PS1` 让提示符带上**当前绝对路径**：mksh 打印提示符时会做参数
+  /// 展开，所以 `${PWD}` 在每次 `cd` 之后都会重新求值。默认的 `$ ` 什么都不显示，
+  /// 用户 `cd` 过去就不知道自己在哪。
+  ///
+  /// 为什么写在命令行里而不是等提示符出来再往 stdin 灌一行：命令行参数不经过
+  /// pty，不会被回显；灌进去的那条赋值会明晃晃留在首屏上。
+  ///
+  /// `export` 是必需的：`exec` 换掉的是进程镜像，没导出的 shell 变量不会传给
+  /// 内层 shell。
+  ///
+  /// 注意 `,` 与 `:` 不能出现在这里：服务串是 `shell,v2,pty,TERM=...:<命令>`，
+  /// 逗号分隔选项、第一个冒号之后才是命令。
+  static const String _shellCommand = "PS1='\${PWD} \$ '; export PS1; exec sh -i";
+
+  /// 常驻会话 id；为空表示还没建（或已经断了，下次写入时重建）。
+  String? _sessionId;
+
+  /// 正在建立的会话。同一时刻只允许一条 `startExec`，否则连点两下菜单就会
+  /// 拿到两条会话、两块互相往同一个屏幕上写的输出。
+  Future<String?>? _opening;
+
+  Timer? _timer;
+
+  /// 上一次轮询还没回来就不再叠新请求：增量是按顺序摘走的，
+  /// 堆积只会让输出晚到，不会更快。
+  bool _polling = false;
+
+  /// 输出接收方。页面每次 build 重挂一次——回调要拿到最新的终端实例。
+  TerminalExecSink? _sink;
 
   @override
-  ShellConsoleState build() => const ShellConsoleState();
+  ShellTerminalState build() {
+    ref.onDispose(close);
+    return const ShellTerminalState();
+  }
 
-  /// 执行一条命令；已有命令在跑时直接忽略，避免把原生串行队列堆起来。
+  /// 挂上输出通路。传 `null` 表示暂时不要输出。
+  void attachSink(TerminalExecSink? sink) => _sink = sink;
+
+  /// 建立会话，幂等。页面进来就调一次，让远端提示符立刻出现。
+  Future<void> open() async {
+    await _ensureSession();
+  }
+
+  /// 把键盘字节原样转发给 pty。
   ///
-  /// [timeout] 供长耗时命令（如内核利用）单独放宽；不传则用默认上限。
-  Future<void> run(String command, {Duration? timeout}) async {
-    final String trimmed = command.trim();
-    if (trimmed.isEmpty || state.running) return;
-
-    state = ShellConsoleState(running: true, command: trimmed);
+  /// 不做任何加工：退格、方向键、`Ctrl+C`、粘贴进来的整段文本都只是字节，
+  /// 该由远端的 line discipline 与 shell 决定怎么解释。本地再消化一遍的结果
+  /// 就是和远端重复回显、或者把全屏程序的按键吃掉。
+  Future<bool> writeBytes(List<int> bytes) async {
+    if (bytes.isEmpty) return false;
+    final String? sessionId = await _ensureSession();
+    if (sessionId == null) return false;
     try {
-      final ShellExecResult result = await ref
+      return await ref
           .read(adbShellNativeProvider)
-          .exec(trimmed, (timeout ?? _timeout).inMilliseconds, null);
-      state = ShellConsoleState(command: trimmed, result: result);
-    } catch (error) {
-      state = ShellConsoleState(command: trimmed, error: '$error');
+          .writeExecStdin(sessionId, Uint8List.fromList(bytes));
+    } catch (_) {
+      // 会话刚好断开时写必然失败；调用方按「这次按键丢了」处理即可。
+      return false;
     }
   }
 
-  /// 清空面板。
-  void clear() => state = const ShellConsoleState();
-
-  /// 直接切到失败态。
+  /// 把视口的字符尺寸同步给 pty。
   ///
-  /// 用于「命令还没发出去就已经确定跑不通」的本地校验（例如原生库目录不可用），
-  /// 免得去设备上绕一圈、最后拿到一条容易误读的 `CANNOT LINK`。
-  void fail(String message) =>
-      state = ShellConsoleState(command: state.command, error: message);
+  /// pty 的 `winsize` 决定远端怎么折行、全屏程序画多大。不传的话远端一直按
+  /// 80x24 排版：`top` 只占左上角一块，长输出在 80 列处硬折。
+  Future<void> resize(int rows, int cols) async {
+    final String? sessionId = _sessionId;
+    if (sessionId == null || rows <= 0 || cols <= 0) return;
+    try {
+      await ref.read(adbShellNativeProvider).resizeExec(sessionId, rows, cols);
+    } catch (_) {
+      // 尺寸只影响远端排版，丢了也无害，不值得打扰用户。
+    }
+  }
+
+  /// 关掉常驻 shell。页面销毁时调用，别留一条没人管的会话。
+  void close() {
+    final String? sessionId = _sessionId;
+    _sessionId = null;
+    _opening = null;
+    _sink = null;
+    _stopTimer();
+    if (sessionId != null) _cancelQuietly(sessionId);
+  }
+
+  /// 确保有一条可用的常驻 shell，没有就建一条。
+  Future<String?> _ensureSession() {
+    final String? existing = _sessionId;
+    if (existing != null) return Future<String?>.value(existing);
+    return _opening ??= _startSession().whenComplete(() {
+      _opening = null;
+    });
+  }
+
+  Future<String?> _startSession() async {
+    final ExecStartResult started;
+    try {
+      // 0 = 不限时：这条会话本来就不该因为「活得久」被掐断。
+      started = await ref
+          .read(adbShellNativeProvider)
+          .startExec(_shellCommand, 0);
+    } catch (error) {
+      state = ShellTerminalState(failure: '$error');
+      return null;
+    }
+
+    if (!started.accepted || started.sessionId.isEmpty) {
+      state = ShellTerminalState(
+        failure: started.reasons.isEmpty ? 'unknown' : started.reasons.first,
+      );
+      return null;
+    }
+
+    _sessionId = started.sessionId;
+    state = const ShellTerminalState(ready: true);
+    _stopTimer();
+    _timer = Timer.periodic(_pollInterval, (_) => unawaited(_poll()));
+    // 提示符可能在第一个间隔之前就到了，立刻取一次，别白等。
+    unawaited(_poll());
+    return started.sessionId;
+  }
+
+  Future<void> _poll() async {
+    final String? sessionId = _sessionId;
+    if (sessionId == null || _polling) return;
+    _polling = true;
+
+    final ExecChunk chunk;
+    try {
+      chunk = await ref.read(adbShellNativeProvider).pollExec(sessionId);
+    } catch (error) {
+      _polling = false;
+      // 会话已经换人或结束：这条结果属于旧会话，丢掉。
+      if (_sessionId != sessionId) return;
+      _dropSession(failure: '$error');
+      return;
+    }
+    _polling = false;
+
+    // 会话已经换人或结束：同上。
+    if (_sessionId != sessionId) return;
+
+    // pty 下两路已在远端合并，stderr 恒为空；两条分支都留着，免得将来切回
+    // raw 时这里悄悄吞掉错误输出。
+    if (chunk.stderr.isNotEmpty) _sink?.call(chunk.stderr, true);
+    if (chunk.stdout.isNotEmpty) _sink?.call(chunk.stdout, false);
+
+    if (chunk.droppedBytes > state.droppedBytes) {
+      state = ShellTerminalState(
+        ready: state.ready,
+        droppedBytes: chunk.droppedBytes,
+        failure: state.failure,
+      );
+    }
+
+    // 用户在终端里敲了 `exit`、设备掉线、读流异常：会话没了，通路跟着收摊。
+    if (chunk.finished) _dropSession(failure: chunk.failure);
+  }
+
+  /// 会话不可再用：收掉轮询，把原因记进状态，让页面说明一句。
+  void _dropSession({String failure = ''}) {
+    final String? sessionId = _sessionId;
+    _sessionId = null;
+    _stopTimer();
+    state = ShellTerminalState(droppedBytes: state.droppedBytes, failure: failure);
+    if (sessionId != null) _cancelQuietly(sessionId);
+  }
+
+  /// 尽力中断；失败不影响本端状态。
+  void _cancelQuietly(String sessionId) {
+    try {
+      unawaited(
+        ref
+            .read(adbShellNativeProvider)
+            .cancelExec(sessionId)
+            .then<void>((_) {}, onError: (Object _, StackTrace _) {}),
+      );
+    } catch (_) {
+      // 原生未注册或容器已销毁，这里无从下手。
+    }
+  }
+
+  void _stopTimer() {
+    _timer?.cancel();
+    _timer = null;
+  }
 }

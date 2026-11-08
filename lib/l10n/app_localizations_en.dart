@@ -555,26 +555,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get escalationTitle => 'Manual root';
 
   @override
-  String get escalationDesc =>
-      'Manual root matches a local kernel payload for this device and attempts to elevate privileges. The change is irreversible — back up important data first.';
-
-  @override
-  String get escalationEnvTitle => 'Current environment';
-
-  @override
-  String get escalationSelinuxTitle => 'SELinux';
-
-  @override
-  String get escalationCommandLabel => 'Command';
-
-  @override
-  String get escalationRunButton => 'Run';
-
-  @override
-  String get escalationRunningButton => 'Running…';
-
-  @override
-  String get escalationClearButton => 'Clear';
+  String get escalationTerminalClosed =>
+      'The shell session has ended — typing again reconnects automatically';
 
   @override
   String escalationShellConnected(int uid) {
@@ -592,52 +574,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get escalationTimedOutTag => ' (timed out)';
 
   @override
-  String get escalationNativeDirUnavailable =>
-      'Native library directory unavailable: this install has no extracted jniLibs .so (extractNativeLibs / useLegacyPackaging must be true)';
-
-  @override
-  String get escalationPresetLibDir => 'lib dir';
-
-  @override
-  String get escalationPresetInject => 'L1 inject';
-
-  @override
-  String get escalationPresetChecksum => 'so checksum';
-
-  @override
   String get escalationExploitButton => 'Start root';
 
   @override
-  String get escalationDeviceLabel => 'Device';
-
-  @override
-  String get escalationCatalogLabel => 'Catalog entries';
-
-  @override
-  String get escalationMatchLabel => 'Matched payload';
-
-  @override
-  String get escalationMatchNone =>
-      'No candidate for this device in the catalog';
-
-  @override
-  String get escalationMatchLoading => 'Matching…';
-
-  @override
-  String get escalationMatchDegraded => 'Degraded match — may not work';
-
-  @override
-  String get escalationKernelUnknown => 'unknown kernel';
+  String get escalationExploitStarted => 'Starting root…';
 
   @override
   String get escalationHandoffSection => 'Hand off root';
-
-  @override
-  String get escalationHandoffDesc =>
-      'The root you just got is temporary and dies on reboot. Hand it to an installed manager so it can load the kernel module and make it persist.';
-
-  @override
-  String get escalationHandoffManagerLabel => 'Manager';
 
   @override
   String get escalationHandoffManagerKernelsu => 'KernelSU';
@@ -646,11 +589,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get escalationHandoffManagerSukisu => 'SukiSU Ultra';
 
   @override
-  String get escalationHandoffButton => 'Hand off to manager';
-
-  @override
-  String escalationHandoffSuccess(String manager) {
-    return 'Handed off to $manager. Open $manager to confirm the module is loaded.';
+  String escalationHandoffRunning(String manager) {
+    return 'Handing off to $manager…';
   }
 
   @override
@@ -660,7 +600,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get escalationHandoffNoRoot =>
-      'No root right now: the payload did not succeed, or the temporary root is already gone. Run the escalation above first, then hand off.';
+      'No root right now: the payload did not succeed, or the temporary root is already gone. Run root from the menu first, then hand off.';
 
   @override
   String escalationHandoffFailed(int code) {
@@ -672,9 +612,30 @@ class AppLocalizationsEn extends AppLocalizations {
       'Handoff failed: the command never ran, so there is no exit code. Check whether permission was denied or the manager is upgrading.';
 
   @override
-  String escalationHandoffOpenHome(String manager) {
-    return 'Open $manager download page';
+  String get escalationMenuTitle => 'More actions';
+
+  @override
+  String get escalationMenuClear => 'Clear screen';
+
+  @override
+  String escalationOutputTruncated(int bytes) {
+    return 'Too much output — the earliest $bytes bytes were dropped (only the newest part is kept)';
   }
+
+  @override
+  String escalationExecStartFailed(String reason) {
+    return 'Command could not start: $reason';
+  }
+
+  @override
+  String get escalationExecReasonEmpty => 'empty command';
+
+  @override
+  String get escalationExecReasonNotReady => 'shell channel not connected';
+
+  @override
+  String get escalationExecReasonStreamFailed =>
+      'stream rejected or connection dropped';
 
   @override
   String get languageTitle => 'Language';
