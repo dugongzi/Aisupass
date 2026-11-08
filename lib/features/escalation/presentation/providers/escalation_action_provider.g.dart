@@ -116,33 +116,23 @@ final class EscalationActionRepositoryProvider
 String _$escalationActionRepositoryHash() =>
     r'874eb12d3417e136b6da44f7903cdf1a1a2dafe8';
 
-/// 自动匹配并执行一次载荷提权。
+/// 自动匹配并拼出执行载荷的那一行命令。
 ///
-/// 「选哪份」归查询仓储，「跑」归执行仓储，两者的装配只在这里发生。
-/// 成功后刷新查询侧，避免 UI 还拿着旧的匹配结果。
+/// 「选哪份」归查询仓储，「拼命令」归执行仓储，两者的装配只在这里发生。
 
 @ProviderFor(runPayload)
 const runPayloadProvider = RunPayloadProvider._();
 
-/// 自动匹配并执行一次载荷提权。
+/// 自动匹配并拼出执行载荷的那一行命令。
 ///
-/// 「选哪份」归查询仓储，「跑」归执行仓储，两者的装配只在这里发生。
-/// 成功后刷新查询侧，避免 UI 还拿着旧的匹配结果。
+/// 「选哪份」归查询仓储，「拼命令」归执行仓储，两者的装配只在这里发生。
 
 final class RunPayloadProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<EscalationRunResult>,
-          EscalationRunResult,
-          FutureOr<EscalationRunResult>
-        >
-    with
-        $FutureModifier<EscalationRunResult>,
-        $FutureProvider<EscalationRunResult> {
-  /// 自动匹配并执行一次载荷提权。
+    extends $FunctionalProvider<AsyncValue<String>, String, FutureOr<String>>
+    with $FutureModifier<String>, $FutureProvider<String> {
+  /// 自动匹配并拼出执行载荷的那一行命令。
   ///
-  /// 「选哪份」归查询仓储，「跑」归执行仓储，两者的装配只在这里发生。
-  /// 成功后刷新查询侧，避免 UI 还拿着旧的匹配结果。
+  /// 「选哪份」归查询仓储，「拼命令」归执行仓储，两者的装配只在这里发生。
   const RunPayloadProvider._()
     : super(
         from: null,
@@ -159,17 +149,109 @@ final class RunPayloadProvider
 
   @$internal
   @override
-  $FutureProviderElement<EscalationRunResult> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
+  $FutureProviderElement<String> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
 
   @override
-  FutureOr<EscalationRunResult> create(Ref ref) {
+  FutureOr<String> create(Ref ref) {
     return runPayload(ref);
   }
 }
 
-String _$runPayloadHash() => r'c9539072bc7e90f512f033291eb3162b27cd6944';
+String _$runPayloadHash() => r'a30cc1e659d1860e8f111ae4dd2d1bd4c9bc4193';
+
+/// 用指定载荷拼出执行命令，跳过自动匹配。
+///
+/// 与 [runPayload] 共用执行仓储，区别只在「哪一条」是调用方给的，还是查出来的。
+/// 用户在载荷清单里手动指定时走这里。
+
+@ProviderFor(runPayloadChoice)
+const runPayloadChoiceProvider = RunPayloadChoiceFamily._();
+
+/// 用指定载荷拼出执行命令，跳过自动匹配。
+///
+/// 与 [runPayload] 共用执行仓储，区别只在「哪一条」是调用方给的，还是查出来的。
+/// 用户在载荷清单里手动指定时走这里。
+
+final class RunPayloadChoiceProvider
+    extends $FunctionalProvider<AsyncValue<String>, String, FutureOr<String>>
+    with $FutureModifier<String>, $FutureProvider<String> {
+  /// 用指定载荷拼出执行命令，跳过自动匹配。
+  ///
+  /// 与 [runPayload] 共用执行仓储，区别只在「哪一条」是调用方给的，还是查出来的。
+  /// 用户在载荷清单里手动指定时走这里。
+  const RunPayloadChoiceProvider._({
+    required RunPayloadChoiceFamily super.from,
+    required Payload super.argument,
+  }) : super(
+         retry: null,
+         name: r'runPayloadChoiceProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$runPayloadChoiceHash();
+
+  @override
+  String toString() {
+    return r'runPayloadChoiceProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<String> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<String> create(Ref ref) {
+    final argument = this.argument as Payload;
+    return runPayloadChoice(ref, payload: argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is RunPayloadChoiceProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$runPayloadChoiceHash() => r'8ccf60befdebf6f7959aaf38a6725b3b0541f4d8';
+
+/// 用指定载荷拼出执行命令，跳过自动匹配。
+///
+/// 与 [runPayload] 共用执行仓储，区别只在「哪一条」是调用方给的，还是查出来的。
+/// 用户在载荷清单里手动指定时走这里。
+
+final class RunPayloadChoiceFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<String>, Payload> {
+  const RunPayloadChoiceFamily._()
+    : super(
+        retry: null,
+        name: r'runPayloadChoiceProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// 用指定载荷拼出执行命令，跳过自动匹配。
+  ///
+  /// 与 [runPayload] 共用执行仓储，区别只在「哪一条」是调用方给的，还是查出来的。
+  /// 用户在载荷清单里手动指定时走这里。
+
+  RunPayloadChoiceProvider call({required Payload payload}) =>
+      RunPayloadChoiceProvider._(argument: payload, from: this);
+
+  @override
+  String toString() => r'runPayloadChoiceProvider';
+}
 
 /// 把临时 root 移交给用户选定的 [manager]。
 ///

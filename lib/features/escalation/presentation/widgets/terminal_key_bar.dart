@@ -119,8 +119,7 @@ List<int> encodeTerminalInput(String data, Set<TerminalModifier> armed) {
   // 只有 ASCII 字母与 `@[\]^_` 有对应的控制字符，其余字符 Ctrl 无意义。
   final bool ctrlApplicable =
       (code >= 0x40 && code <= 0x5f) || (code >= 0x61 && code <= 0x7a);
-  final bool ctrl =
-      armed.contains(TerminalModifier.ctrl) && ctrlApplicable;
+  final bool ctrl = armed.contains(TerminalModifier.ctrl) && ctrlApplicable;
 
   final List<int> body = ctrl ? <int>[code & 0x1f] : utf8.encode(data);
   if (!armed.contains(TerminalModifier.alt)) return body;
@@ -141,6 +140,7 @@ class TerminalKeyBar extends StatelessWidget {
     required this.armed,
     required this.onInput,
     this.leading,
+    this.trailing,
     this.theme = TerminalThemes.defaultTheme,
   });
 
@@ -174,12 +174,16 @@ class TerminalKeyBar extends StatelessWidget {
   /// 最左侧常驻的按钮（菜单），不参与横向滚动。
   final Widget? leading;
 
+  /// 最右侧常驻的按钮（复制），不参与横向滚动。
+  final Widget? trailing;
+
   /// 配色，默认与终端画布同一套。
   final TerminalTheme theme;
 
   @override
   Widget build(BuildContext context) {
     final Widget? leading = this.leading;
+    final Widget? trailing = this.trailing;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -215,6 +219,19 @@ class TerminalKeyBar extends StatelessWidget {
                         SizedBox(width: 8.w),
                       ],
                       Expanded(child: _buildKeys(context, modifiers)),
+                      if (trailing != null) ...<Widget>[
+                        SizedBox(width: 8.w),
+                        SizedBox(
+                          height: 22.h,
+                          child: const VerticalDivider(
+                            width: 1,
+                            thickness: 1,
+                            color: hairline,
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                        trailing,
+                      ],
                     ],
                   );
                 },

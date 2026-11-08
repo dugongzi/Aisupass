@@ -1,10 +1,11 @@
 import 'package:Aisupass/core/providers/adb_shell_provider.dart';
 import 'package:Aisupass/core/storage/storage_providers.dart';
+import 'package:Aisupass/core/utils/payload_shell.dart';
 import 'package:Aisupass/features/escalation/data/datasources/escalation_action_datasource.dart';
 import 'package:Aisupass/features/escalation/data/repositories/escalation_action_repository_impl.dart';
 import 'package:Aisupass/features/escalation/domain/enums/root_manager.dart';
-import 'package:Aisupass/features/escalation/domain/models/escalation_run_result.dart';
 import 'package:Aisupass/features/escalation/domain/models/handoff_outcome.dart';
+import 'package:Aisupass/features/escalation/domain/models/payload.dart';
 import 'package:Aisupass/features/escalation/domain/models/payload_match.dart';
 import 'package:Aisupass/features/escalation/domain/repositories/escalation_action_repository.dart';
 import 'package:Aisupass/features/escalation/domain/repositories/escalation_query_repository.dart';
@@ -28,12 +29,11 @@ EscalationActionRepository escalationActionRepository(Ref ref) =>
       datasource: ref.watch(escalationActionDatasourceProvider),
     );
 
-/// 自动匹配并执行一次载荷提权。
+/// 自动匹配并拼出执行载荷的那一行命令。
 ///
-/// 「选哪份」归查询仓储，「跑」归执行仓储，两者的装配只在这里发生。
-/// 成功后刷新查询侧，避免 UI 还拿着旧的匹配结果。
+/// 「选哪份」归查询仓储，「拼命令」归执行仓储，两者的装配只在这里发生。
 @riverpod
-Future<EscalationRunResult> runPayload(Ref ref) async {
+Future<String> runPayload(Ref ref) async {
   final EscalationQueryRepository query = ref.watch(
     escalationQueryRepositoryProvider,
   );
@@ -43,13 +43,18 @@ Future<EscalationRunResult> runPayload(Ref ref) async {
 
   final PayloadMatch? match = await query.resolve();
   if (match == null) {
-    return EscalationRunResult.failure('当前设备在载荷清单里没有候选');
+    return 'echo ${PayloadShell.quote('当前设备在载荷清单里没有候选')}';
   }
-
-  final EscalationRunResult result = await action.runPayload(match.payload);
-  if (result.success) ref.invalidate(resolvedPayloadProvider);
-  return result;
+  return action.runPayload(match.payload);
 }
+
+/// 用指定载荷拼出执行命令，跳过自动匹配。
+///
+/// 与 [runPayload] 共用执行仓储，区别只在「哪一条」是调用方给的，还是查出来的。
+/// 用户在载荷清单里手动指定时走这里。
+@riverpod
+Future<String> runPayloadChoice(Ref ref, {required Payload payload}) =>
+    ref.watch(escalationActionRepositoryProvider).runPayload(payload);
 
 /// 把临时 root 移交给用户选定的 [manager]。
 ///

@@ -194,6 +194,15 @@ abstract class AdbShellNative {
   @async
   PairingStartResult startPairing(String host, int port, String code);
 
+  /// 打开系统的「开发者选项 → 无线调试」页面。
+  ///
+  /// 配对码只能由系统页面生成，用户没必要自己一层层翻设置，所以配对前把用户
+  /// 直接送到那页。返回 `false` 表示所有候选入口都被这个 ROM 拒了
+  /// （`ActivityNotFound` / `SecurityException`），此时调用方应保留「手动前往」
+  /// 的提示，不能假装已经跳过去了。
+  @async
+  bool openWirelessDebuggingSettings();
+
   /// 轮询配对进度。
   @async
   PairingSnapshot pollPairing(String sessionId);

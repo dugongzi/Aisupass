@@ -854,9 +854,95 @@
   "@escalationMenuTitle": {
     "description": "手动提权页-底部左侧菜单按钮的提示文案"
   },
+  "escalationMenuPayloadCatalog": "查看载荷清单",
+  "@escalationMenuPayloadCatalog": {
+    "description": "手动提权页-菜单里的查看载荷清单项"
+  },
+  "escalationPayloadCatalogTitle": "载荷清单",
+  "@escalationPayloadCatalogTitle": {
+    "description": "手动提权页-载荷清单弹窗标题"
+  },
+  "escalationPayloadCatalogCount": "共 {count} 条",
+  "@escalationPayloadCatalogCount": {
+    "description": "手动提权页-载荷清单弹窗的条数",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "escalationPayloadCatalogEmpty": "清单里没有载荷条目",
+  "@escalationPayloadCatalogEmpty": {
+    "description": "手动提权页-载荷清单弹窗的空态"
+  },
+  "escalationPayloadCatalogSearch": "搜索机型、厂商或文件名",
+  "@escalationPayloadCatalogSearch": {
+    "description": "手动提权页-载荷清单弹窗的搜索框提示"
+  },
+  "escalationPayloadCatalogNoMatch": "没有匹配的载荷",
+  "@escalationPayloadCatalogNoMatch": {
+    "description": "手动提权页-载荷清单弹窗搜索无结果"
+  },
+  "escalationPayloadKernelUnknown": "内核未知",
+  "@escalationPayloadKernelUnknown": {
+    "description": "手动提权页-载荷条目标记：内核版本未知"
+  },
+  "escalationPayloadKernelAgnostic": "不限内核",
+  "@escalationPayloadKernelAgnostic": {
+    "description": "手动提权页-载荷条目标记：不限内核版本"
+  },
+  "escalationPayloadManualStarted": "用 {name} 提权…",
+  "@escalationPayloadManualStarted": {
+    "description": "手动提权页-终端：开始执行手工指定的载荷",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "escalationPayloadConfirmTitle": "用这份载荷提权？",
+  "@escalationPayloadConfirmTitle": {
+    "description": "手动提权页-手工指定载荷的二次确认标题"
+  },
+  "escalationPayloadConfirmModel": "机型",
+  "@escalationPayloadConfirmModel": {
+    "description": "手动提权页-二次确认里的字段名"
+  },
+  "escalationPayloadConfirmVendor": "厂商",
+  "@escalationPayloadConfirmVendor": {
+    "description": "手动提权页-二次确认里的字段名"
+  },
+  "escalationPayloadConfirmKernel": "内核",
+  "@escalationPayloadConfirmKernel": {
+    "description": "手动提权页-二次确认里的字段名"
+  },
+  "escalationPayloadConfirmLibrary": "文件",
+  "@escalationPayloadConfirmLibrary": {
+    "description": "手动提权页-二次确认里的字段名"
+  },
+  "escalationPayloadConfirmBody": "会在设备上实际运行该载荷，可能造成系统不稳定或重启。执行前请确认机型与内核版本一致。",
+  "@escalationPayloadConfirmBody": {
+    "description": "手动提权页-二次确认里的风险提示"
+  },
+  "escalationPayloadConfirmAction": "开始提权",
+  "@escalationPayloadConfirmAction": {
+    "description": "手动提权页-二次确认的确认按钮"
+  },
   "escalationMenuClear": "清屏",
   "@escalationMenuClear": {
     "description": "手动提权页-菜单里的清屏项"
+  },
+  "escalationCopy": "复制选区",
+  "@escalationCopy": {
+    "description": "手动提权页-底栏复制键：按钮名与读屏文案"
+  },
+  "escalationCopied": "已复制选中文本",
+  "@escalationCopied": {
+    "description": "手动提权页-复制成功后的终端提示"
+  },
+  "escalationCopyEmpty": "没有选中文本：长按终端选中内容后再复制",
+  "@escalationCopyEmpty": {
+    "description": "手动提权页-没有选区时按复制键的提示"
   },
   "escalationOutputTruncated": "输出过多，最早 {bytes} 字节已被丢弃（只保留最新部分）",
   "@escalationOutputTruncated": {

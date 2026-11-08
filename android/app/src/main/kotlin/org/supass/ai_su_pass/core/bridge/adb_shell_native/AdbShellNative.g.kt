@@ -674,6 +674,15 @@ interface AdbShellNative {
    * 三个参数全为空 = 通知栏模式：配对码在通知里输入，地址与端口由 mDNS 发现。
    */
   fun startPairing(host: String, port: Long, code: String, callback: (Result<PairingStartResult>) -> Unit)
+  /**
+   * 打开系统的「开发者选项 → 无线调试」页面。
+   *
+   * 配对码只能由系统页面生成，用户没必要自己一层层翻设置，所以配对前把用户
+   * 直接送到那页。返回 `false` 表示所有候选入口都被这个 ROM 拒了
+   * （`ActivityNotFound` / `SecurityException`），此时调用方应保留「手动前往」
+   * 的提示，不能假装已经跳过去了。
+   */
+  fun openWirelessDebuggingSettings(callback: (Result<Boolean>) -> Unit)
   /** 轮询配对进度。 */
   fun pollPairing(sessionId: String, callback: (Result<PairingSnapshot>) -> Unit)
   /** 取消配对会话。 */
@@ -794,6 +803,24 @@ interface AdbShellNative {
             val portArg = args[1] as Long
             val codeArg = args[2] as String
             api.startPairing(hostArg, portArg, codeArg) { result: Result<PairingStartResult> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(AdbShellNativePigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(AdbShellNativePigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.Aisupass.AdbShellNative.openWirelessDebuggingSettings$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.openWirelessDebuggingSettings{ result: Result<Boolean> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(AdbShellNativePigeonUtils.wrapError(error))

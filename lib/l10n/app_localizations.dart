@@ -1190,11 +1190,125 @@ abstract class AppLocalizations {
   /// **'更多操作'**
   String get escalationMenuTitle;
 
+  /// 手动提权页-菜单里的查看载荷清单项
+  ///
+  /// In zh, this message translates to:
+  /// **'查看载荷清单'**
+  String get escalationMenuPayloadCatalog;
+
+  /// 手动提权页-载荷清单弹窗标题
+  ///
+  /// In zh, this message translates to:
+  /// **'载荷清单'**
+  String get escalationPayloadCatalogTitle;
+
+  /// 手动提权页-载荷清单弹窗的条数
+  ///
+  /// In zh, this message translates to:
+  /// **'共 {count} 条'**
+  String escalationPayloadCatalogCount(int count);
+
+  /// 手动提权页-载荷清单弹窗的空态
+  ///
+  /// In zh, this message translates to:
+  /// **'清单里没有载荷条目'**
+  String get escalationPayloadCatalogEmpty;
+
+  /// 手动提权页-载荷清单弹窗的搜索框提示
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索机型、厂商或文件名'**
+  String get escalationPayloadCatalogSearch;
+
+  /// 手动提权页-载荷清单弹窗搜索无结果
+  ///
+  /// In zh, this message translates to:
+  /// **'没有匹配的载荷'**
+  String get escalationPayloadCatalogNoMatch;
+
+  /// 手动提权页-载荷条目标记：内核版本未知
+  ///
+  /// In zh, this message translates to:
+  /// **'内核未知'**
+  String get escalationPayloadKernelUnknown;
+
+  /// 手动提权页-载荷条目标记：不限内核版本
+  ///
+  /// In zh, this message translates to:
+  /// **'不限内核'**
+  String get escalationPayloadKernelAgnostic;
+
+  /// 手动提权页-终端：开始执行手工指定的载荷
+  ///
+  /// In zh, this message translates to:
+  /// **'用 {name} 提权…'**
+  String escalationPayloadManualStarted(String name);
+
+  /// 手动提权页-手工指定载荷的二次确认标题
+  ///
+  /// In zh, this message translates to:
+  /// **'用这份载荷提权？'**
+  String get escalationPayloadConfirmTitle;
+
+  /// 手动提权页-二次确认里的字段名
+  ///
+  /// In zh, this message translates to:
+  /// **'机型'**
+  String get escalationPayloadConfirmModel;
+
+  /// 手动提权页-二次确认里的字段名
+  ///
+  /// In zh, this message translates to:
+  /// **'厂商'**
+  String get escalationPayloadConfirmVendor;
+
+  /// 手动提权页-二次确认里的字段名
+  ///
+  /// In zh, this message translates to:
+  /// **'内核'**
+  String get escalationPayloadConfirmKernel;
+
+  /// 手动提权页-二次确认里的字段名
+  ///
+  /// In zh, this message translates to:
+  /// **'文件'**
+  String get escalationPayloadConfirmLibrary;
+
+  /// 手动提权页-二次确认里的风险提示
+  ///
+  /// In zh, this message translates to:
+  /// **'会在设备上实际运行该载荷，可能造成系统不稳定或重启。执行前请确认机型与内核版本一致。'**
+  String get escalationPayloadConfirmBody;
+
+  /// 手动提权页-二次确认的确认按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'开始提权'**
+  String get escalationPayloadConfirmAction;
+
   /// 手动提权页-菜单里的清屏项
   ///
   /// In zh, this message translates to:
   /// **'清屏'**
   String get escalationMenuClear;
+
+  /// 手动提权页-底栏复制键：按钮名与读屏文案
+  ///
+  /// In zh, this message translates to:
+  /// **'复制选区'**
+  String get escalationCopy;
+
+  /// 手动提权页-复制成功后的终端提示
+  ///
+  /// In zh, this message translates to:
+  /// **'已复制选中文本'**
+  String get escalationCopied;
+
+  /// 手动提权页-没有选区时按复制键的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'没有选中文本：长按终端选中内容后再复制'**
+  String get escalationCopyEmpty;
 
   /// 手动提权页-终端：消费不及时导致输出被截断
   ///

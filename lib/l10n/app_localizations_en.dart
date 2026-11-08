@@ -615,7 +615,72 @@ class AppLocalizationsEn extends AppLocalizations {
   String get escalationMenuTitle => 'More actions';
 
   @override
+  String get escalationMenuPayloadCatalog => 'View payload catalog';
+
+  @override
+  String get escalationPayloadCatalogTitle => 'Payload catalog';
+
+  @override
+  String escalationPayloadCatalogCount(int count) {
+    return '$count entries';
+  }
+
+  @override
+  String get escalationPayloadCatalogEmpty =>
+      'The catalog has no payload entries';
+
+  @override
+  String get escalationPayloadCatalogSearch =>
+      'Search model, vendor or file name';
+
+  @override
+  String get escalationPayloadCatalogNoMatch => 'No payload matches';
+
+  @override
+  String get escalationPayloadKernelUnknown => 'Kernel unknown';
+
+  @override
+  String get escalationPayloadKernelAgnostic => 'Any kernel';
+
+  @override
+  String escalationPayloadManualStarted(String name) {
+    return 'Escalating with $name…';
+  }
+
+  @override
+  String get escalationPayloadConfirmTitle => 'Escalate with this payload?';
+
+  @override
+  String get escalationPayloadConfirmModel => 'Model';
+
+  @override
+  String get escalationPayloadConfirmVendor => 'Vendor';
+
+  @override
+  String get escalationPayloadConfirmKernel => 'Kernel';
+
+  @override
+  String get escalationPayloadConfirmLibrary => 'File';
+
+  @override
+  String get escalationPayloadConfirmBody =>
+      'This payload will actually run on the device and may cause instability or a reboot. Make sure the model and kernel version match before continuing.';
+
+  @override
+  String get escalationPayloadConfirmAction => 'Start';
+
+  @override
   String get escalationMenuClear => 'Clear screen';
+
+  @override
+  String get escalationCopy => 'Copy selection';
+
+  @override
+  String get escalationCopied => 'Selection copied';
+
+  @override
+  String get escalationCopyEmpty =>
+      'Nothing selected — long-press the terminal to select text first';
 
   @override
   String escalationOutputTruncated(int bytes) {

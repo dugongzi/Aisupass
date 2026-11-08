@@ -21,10 +21,6 @@ enum HandoffKind {
 }
 
 /// 一次「把临时 root 移交给管理器」的结果。
-///
-/// 与 [EscalationRunResult] 分开是刻意的：载荷执行是「后台起 + 轮询日志」，
-/// 移交是「一条命令等它跑完」，两种结果的判据与字段都不同，共用一个类型
-/// 只会让两边的语义互相稀释。上游同样把它们拆成两套。
 class HandoffOutcome {
   const HandoffOutcome({
     required this.kind,

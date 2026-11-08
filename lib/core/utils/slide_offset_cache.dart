@@ -8,7 +8,7 @@ import 'package:Aisupass/generated/adb_shell.g.dart' as pigeon;
 /// 同一 boot 会话内 slide 固定，缓存下来能让后续尝试跳过最贵的 P0 阶段；
 /// 以 boot token 作会话凭据，跨 boot 不复用。
 class SlideOffsetCache {
-  const SlideOffsetCache({required this.exec, required this.storage});
+  SlideOffsetCache({required this.exec, required this.storage});
 
   /// 读 `boot_id` 走它。
   final ShellExec exec;
@@ -27,10 +27,16 @@ class SlideOffsetCache {
   /// slide 偏移掩码。偏移必须对齐此掩码。
   static const int offsetMask = 0xffff;
 
-  /// 从载荷日志中抓取 slide 值。
+  /// 增量拼接时保留的重叠字符数：一条记录可能被两次读数切开。
+  static const int windowChars = 512;
+
+  /// 从载荷输出中抓取 slide 值。
   static final RegExp _slidePattern = RegExp(
     r'slide-kaslr-ok[^\n]*slide=([0-9a-fA-F]{16})',
   );
+
+  /// 上一段读数的尾部，用来拼回被切开的记录。
+  String _carry = '';
 
   /// 读取当前 boot 会话 token。取不到返回 null，调用方退化成不读也不写缓存，
   /// 那条路依然能跑通，只是每轮都重做 P0。
@@ -61,9 +67,22 @@ class SlideOffsetCache {
     return '0x${cachedOffset.toRadixString(16)}';
   }
 
-  /// 从日志片段中提取并缓存 slide 值。
+  /// 屏幕上来一段输出就喂一次。
   ///
-  /// [log] 可以是全量日志，也可以是「上一轮尾部 + 本轮新增」的窗口。取**最后
+  /// 单次读数的切分点不固定，一条记录可能被切成两段，用 [windowChars] 的重叠
+  /// 把它拼回来。
+  Future<void> observe(String chunk, String bootToken) async {
+    if (chunk.isEmpty) return;
+    final String window = _carry + chunk;
+    await cacheFromLog(window, bootToken);
+    _carry = window.length > windowChars
+        ? window.substring(window.length - windowChars)
+        : window;
+  }
+
+  /// 从一段输出中提取并缓存 slide 值。
+  ///
+  /// [log] 可以是全量输出，也可以是「上一段尾部 + 本次新增」的窗口。取**最后
   /// 一个**匹配，与上游 `cacheP0Offset` 的 `findAll(...).lastOrNull()` 等价：
   /// 载荷会反复试 P0，只有最后那次成功的候选值得记。
   Future<void> cacheFromLog(String log, String bootToken) async {

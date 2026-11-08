@@ -604,7 +604,69 @@ class AppLocalizationsZh extends AppLocalizations {
   String get escalationMenuTitle => '更多操作';
 
   @override
+  String get escalationMenuPayloadCatalog => '查看载荷清单';
+
+  @override
+  String get escalationPayloadCatalogTitle => '载荷清单';
+
+  @override
+  String escalationPayloadCatalogCount(int count) {
+    return '共 $count 条';
+  }
+
+  @override
+  String get escalationPayloadCatalogEmpty => '清单里没有载荷条目';
+
+  @override
+  String get escalationPayloadCatalogSearch => '搜索机型、厂商或文件名';
+
+  @override
+  String get escalationPayloadCatalogNoMatch => '没有匹配的载荷';
+
+  @override
+  String get escalationPayloadKernelUnknown => '内核未知';
+
+  @override
+  String get escalationPayloadKernelAgnostic => '不限内核';
+
+  @override
+  String escalationPayloadManualStarted(String name) {
+    return '用 $name 提权…';
+  }
+
+  @override
+  String get escalationPayloadConfirmTitle => '用这份载荷提权？';
+
+  @override
+  String get escalationPayloadConfirmModel => '机型';
+
+  @override
+  String get escalationPayloadConfirmVendor => '厂商';
+
+  @override
+  String get escalationPayloadConfirmKernel => '内核';
+
+  @override
+  String get escalationPayloadConfirmLibrary => '文件';
+
+  @override
+  String get escalationPayloadConfirmBody =>
+      '会在设备上实际运行该载荷，可能造成系统不稳定或重启。执行前请确认机型与内核版本一致。';
+
+  @override
+  String get escalationPayloadConfirmAction => '开始提权';
+
+  @override
   String get escalationMenuClear => '清屏';
+
+  @override
+  String get escalationCopy => '复制选区';
+
+  @override
+  String get escalationCopied => '已复制选中文本';
+
+  @override
+  String get escalationCopyEmpty => '没有选中文本：长按终端选中内容后再复制';
 
   @override
   String escalationOutputTruncated(int bytes) {

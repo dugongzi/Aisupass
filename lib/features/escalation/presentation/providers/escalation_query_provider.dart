@@ -4,7 +4,6 @@ import 'package:Aisupass/features/escalation/data/datasources/escalation_query_d
 import 'package:Aisupass/features/escalation/data/repositories/escalation_query_repository_impl.dart';
 import 'package:Aisupass/features/escalation/domain/models/device_identity.dart';
 import 'package:Aisupass/features/escalation/domain/models/payload.dart';
-import 'package:Aisupass/features/escalation/domain/models/payload_match.dart';
 import 'package:Aisupass/features/escalation/domain/repositories/escalation_query_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -35,7 +34,3 @@ Future<List<Payload>> payloads(Ref ref) =>
 Future<DeviceIdentity> currentDeviceIdentity(Ref ref) =>
     ref.watch(escalationQueryRepositoryProvider).deviceIdentity();
 
-/// 当前设备的自动匹配结果，`null` 表示无候选。
-@riverpod
-Future<PayloadMatch?> resolvedPayload(Ref ref) =>
-    ref.watch(escalationQueryRepositoryProvider).resolve();

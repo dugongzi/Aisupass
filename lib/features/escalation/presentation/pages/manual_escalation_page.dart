@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:Aisupass/core/extensions/context_extensions.dart';
@@ -6,14 +7,17 @@ import 'package:Aisupass/core/providers/adb_shell_provider.dart';
 import 'package:Aisupass/core/utils/escalation_reason.dart';
 import 'package:Aisupass/core/utils/terminal_text_writer.dart';
 import 'package:Aisupass/features/escalation/domain/enums/root_manager.dart';
-import 'package:Aisupass/features/escalation/domain/models/escalation_run_result.dart';
 import 'package:Aisupass/features/escalation/domain/models/handoff_outcome.dart';
+import 'package:Aisupass/features/escalation/domain/models/payload.dart';
 import 'package:Aisupass/features/escalation/presentation/providers/escalation_action_provider.dart';
 import 'package:Aisupass/features/escalation/presentation/widgets/escalation_menu_button.dart';
+import 'package:Aisupass/features/escalation/presentation/widgets/payload_catalog_dialog.dart';
+import 'package:Aisupass/features/escalation/presentation/widgets/payload_confirm_dialog.dart';
 import 'package:Aisupass/features/escalation/presentation/widgets/terminal_key_bar.dart';
 import 'package:Aisupass/generated/adb_shell.g.dart';
 import 'package:Aisupass/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -22,8 +26,8 @@ import 'package:xterm3/xterm.dart';
 
 /// 手动提权页：一条常驻 pty shell，提权与移交挂在底部左侧菜单。
 ///
-/// 提权与移交走一次性 `exec()`（raw 通道，输出要按文本判定，不能被 pty 合并），
-/// 结果以文本落到同一个终端。
+/// 提权把载荷的命令行直接敲进这条 pty：输出实时上屏，`Ctrl+C` 中止，退出码看
+/// `$?`。移交是一条命令等它跑完，因为要按退出码与输出分型。
 class ManualEscalationPage extends HookConsumerWidget {
   const ManualEscalationPage({super.key});
 
@@ -52,6 +56,14 @@ class ManualEscalationPage extends HookConsumerWidget {
     );
     useEffect(() => scroll.dispose, <Object?>[scroll]);
 
+    // 选区记在控制器里。不自己传的话 `TerminalView` 会在内部另建一个，外部读
+    // 不到选区，底栏的复制键就无从复制。
+    final TerminalController controller = useMemoized(
+      TerminalController.new,
+      const <Object?>[],
+    );
+    useEffect(() => controller.dispose, <Object?>[controller]);
+
     // 写屏与招牌都在这层做，页面只管什么时候写什么。
     final TerminalTextWriter writer = useMemoized(
       () => TerminalTextWriter(terminal: terminal, scroll: scroll),
@@ -72,12 +84,8 @@ class ManualEscalationPage extends HookConsumerWidget {
     final bool connected = link?.connected ?? false;
     final int uid = link?.uid ?? -1;
 
-    // 提权与移交都有副作用，不能在 build 里自动触发：先记「用户点过了」，
-    // 之后才开始 watch 对应的 FutureProvider，由菜单决定何时开跑。
-    final ValueNotifier<bool> exploitRequested = useState<bool>(false);
-    final AsyncValue<EscalationRunResult>? exploit = exploitRequested.value
-        ? ref.watch(runPayloadProvider)
-        : null;
+    // 拼命令要读设备身份、解载荷清单，可能耗一小会儿；这段时间挂个转圈。
+    final ValueNotifier<bool> busy = useState<bool>(false);
 
     // 记「哪个管理器被点过」而不是「点没点过」：换目标时不能自动开跑。
     final ValueNotifier<RootManager?> handoffTarget = useState<RootManager?>(
@@ -88,8 +96,7 @@ class ManualEscalationPage extends HookConsumerWidget {
         ? null
         : ref.watch(handoffRootProvider(manager: handoffManager));
 
-    final bool running =
-        (exploit?.isLoading ?? false) || (handoff?.isLoading ?? false);
+    final bool running = busy.value || (handoff?.isLoading ?? false);
 
     // 招牌要按真实列数挑排版；画好之前到达的输出先攒着，顺序才不会颠倒。
     final ObjectRef<bool> bannerDrawn = useRef<bool>(false);
@@ -134,6 +141,8 @@ class ManualEscalationPage extends HookConsumerWidget {
           };
 
       shell.attachSink((String text, bool isStderr) {
+        // 载荷输出里可能带着 KASLR 偏移，喂给执行仓储的滑动缓存。
+        ref.read(escalationActionRepositoryProvider).observeOutput(text);
         // 招牌还没画：先攒着，画完再补。
         if (!bannerDrawn.value) {
           bannerBacklog.write(text);
@@ -160,7 +169,35 @@ class ManualEscalationPage extends HookConsumerWidget {
       };
     }, <Object?>[terminal]);
 
-    void startExploit() {
+    /// 把拼出来的一行命令敲进 pty。
+    ///
+    /// pty 是交互式的，命令要跟一个回车才会执行；`\r` 就是回车键的字节，交给
+    /// 远端行编辑处理，和手动敲进去没有区别。
+    Future<void> writeCommand(String command) async {
+      await ref
+          .read(shellExecProvider.notifier)
+          .writeBytes(utf8.encode('$command\r'));
+    }
+
+    /// 拼命令并敲进终端。跑不起来的原因（设备身份读不到、参数补不齐）由命令
+    /// 自己 echo 出来；真正抛异常时在这里补一句。
+    Future<void> runCommand(Future<String> Function() build) async {
+      if (busy.value) return;
+      busy.value = true;
+      try {
+        await writeCommand(await build());
+      } catch (error) {
+        writer.writeLine(
+          '${l10n.escalationInvokeFailed}：$error',
+          color: TerminalTextWriter.red,
+        );
+      } finally {
+        busy.value = false;
+      }
+    }
+
+    Future<void> startExploit() async {
+      if (busy.value) return;
       // 光标停在远端提示符后面，先回车，否则这行接在 `$ ` 后面。
       writer.writeLine('');
       writer.writeLine(
@@ -168,12 +205,35 @@ class ManualEscalationPage extends HookConsumerWidget {
         color: TerminalTextWriter.yellow,
       );
       ref.invalidate(shellConnectionProvider);
-      if (exploitRequested.value) {
-        // 再来一次就重跑。
-        ref.invalidate(runPayloadProvider);
-      } else {
-        exploitRequested.value = true;
-      }
+      // 每次都要重拼：设备状态可能变了，别吃上次的缓存。
+      ref.invalidate(runPayloadProvider);
+      await runCommand(() => ref.read(runPayloadProvider.future));
+    }
+
+    /// 用清单里挑出来的这一条提权，跳过自动匹配。
+    Future<void> startPayload(Payload payload) async {
+      if (busy.value) return;
+      writer.writeLine('');
+      writer.writeLine(
+        l10n.escalationPayloadManualStarted(payload.displayName),
+        color: TerminalTextWriter.yellow,
+      );
+      ref.invalidate(shellConnectionProvider);
+      ref.invalidate(runPayloadChoiceProvider(payload: payload));
+      await runCommand(
+        () => ref.read(runPayloadChoiceProvider(payload: payload).future),
+      );
+    }
+
+    /// 打开载荷清单，选中一条后先二次确认，确认了才真的跑。
+    Future<void> openPayloadCatalog() async {
+      final Payload? picked = await showPayloadCatalogDialog(context);
+      if (picked == null) return;
+      // 弹窗之间隔着一次 await，页面可能已经退出。
+      if (!context.mounted) return;
+      final bool confirmed = await showPayloadConfirmDialog(context, picked);
+      if (!confirmed || !context.mounted) return;
+      await startPayload(picked);
     }
 
     void startHandoff(RootManager manager) {
@@ -189,14 +249,37 @@ class ManualEscalationPage extends HookConsumerWidget {
       }
     }
 
+    /// 把终端里选中的文本复制到剪贴板。
+    ///
+    /// 安卓上没有 `Ctrl+Shift+C`，xterm3 的复制只挂在桌面快捷键上，触摸端唯一
+    /// 的入口就是底栏这个常驻键：先长按选中，再按它。
+    void copySelection() {
+      final BufferRange? range = controller.selectionFor(terminal.buffer);
+      final String text = range == null
+          ? ''
+          : terminal.buffer.getText(range, true);
+      if (text.isEmpty) {
+        writer.writeLine(
+          l10n.escalationCopyEmpty,
+          color: TerminalTextWriter.yellow,
+        );
+        return;
+      }
+      unawaited(Clipboard.setData(ClipboardData(text: text)));
+      writer.writeLine(l10n.escalationCopied, color: TerminalTextWriter.dim);
+    }
+
     void onMenu(EscalationMenuAction action) {
       switch (action) {
         case EscalationMenuAction.exploit:
-          startExploit();
+          unawaited(startExploit());
         case EscalationMenuAction.handoffKernelsu:
           startHandoff(RootManager.kernelsu);
         case EscalationMenuAction.handoffSukisu:
           startHandoff(RootManager.sukisu);
+        case EscalationMenuAction.payloadCatalog:
+          // 弹窗盖在终端上，键盘收起后用户先看完再关。
+          unawaited(openPayloadCatalog());
         case EscalationMenuAction.clear:
           terminal.clear();
       }
@@ -245,31 +328,6 @@ class ManualEscalationPage extends HookConsumerWidget {
       return null;
     }, <Object?>[shellState]);
 
-    // 提权结果直接写进终端，不再另做结果面板。
-    useEffect(() {
-      final AsyncValue<EscalationRunResult>? state = exploit;
-      if (state == null) return null;
-      state.when(
-        loading: () {},
-        error: (Object error, StackTrace stackTrace) {
-          writer.writeLine(
-            '${l10n.escalationInvokeFailed}：$error',
-            color: TerminalTextWriter.red,
-          );
-        },
-        data: (EscalationRunResult result) {
-          writer.writeStream(result.stdout);
-          writer.writeStream(result.stderr, color: TerminalTextWriter.red);
-          writer.writeLine(
-            '[${escalationExitTag(result.exitCode)} · ${result.durationMs} ms'
-            '${result.timedOut ? l10n.escalationTimedOutTag : ''}]',
-            color: TerminalTextWriter.dim,
-          );
-        },
-      );
-      return null;
-    }, <Object?>[exploit]);
-
     // 移交按 kind 分支：只有失败才多写一句，告诉用户接着该干什么。
     useEffect(() {
       final AsyncValue<HandoffOutcome>? state = handoff;
@@ -285,27 +343,22 @@ class ManualEscalationPage extends HookConsumerWidget {
         data: (HandoffOutcome outcome) {
           final RootManager manager = outcome.manager;
           if (!outcome.success) {
-            writer.writeLine(
-              switch (outcome.kind) {
-                HandoffKind.managerMissing =>
-                  l10n.escalationHandoffManagerMissing(
-                    manager.displayName,
-                    manager.packageName,
-                  ),
-                HandoffKind.noRoot => l10n.escalationHandoffNoRoot,
-                HandoffKind.failed => outcome.exitCode < 0
+            writer.writeLine(switch (outcome.kind) {
+              HandoffKind.managerMissing =>
+                l10n.escalationHandoffManagerMissing(
+                  manager.displayName,
+                  manager.packageName,
+                ),
+              HandoffKind.noRoot => l10n.escalationHandoffNoRoot,
+              HandoffKind.failed =>
+                outcome.exitCode < 0
                     ? l10n.escalationHandoffFailedNoCode
                     : l10n.escalationHandoffFailed(outcome.exitCode),
-                HandoffKind.success => '',
-              },
-              color: TerminalTextWriter.red,
-            );
+              HandoffKind.success => '',
+            }, color: TerminalTextWriter.red);
             // 终端会把 http(s) 识别成可点文本。
             if (outcome.kind == HandoffKind.managerMissing) {
-              writer.writeLine(
-                manager.homeUrl,
-                color: TerminalTextWriter.dim,
-              );
+              writer.writeLine(manager.homeUrl, color: TerminalTextWriter.dim);
             }
           }
           if (outcome.ksudPath.isNotEmpty) {
@@ -365,6 +418,8 @@ class ManualEscalationPage extends HookConsumerWidget {
               color: TerminalThemes.defaultTheme.background,
               child: TerminalView(
                 terminal,
+                // 选区要能被底栏的复制键读到，所以控制器由页面持有。
+                controller: controller,
                 // 自己拿着滚动控制器：写屏之后要靠它补一次「跳到最新一行」。
                 scrollController: scroll,
                 padding: EdgeInsets.all(8.r),
@@ -377,18 +432,31 @@ class ManualEscalationPage extends HookConsumerWidget {
                 // （TerminalView 在 tap-down 时请求焦点）。
                 autofocus: false,
                 onHyperlinkTap: (String uri) => unawaited(
-                  launchUrl(Uri.parse(uri), mode: LaunchMode.externalApplication),
+                  launchUrl(
+                    Uri.parse(uri),
+                    mode: LaunchMode.externalApplication,
+                  ),
                 ),
               ),
             ),
           ),
-          // 底栏：左侧菜单固定，右侧功能键放得下就居中、放不下就横向滚动。
+          // 底栏：左侧菜单固定，右侧复制键固定，中间功能键放得下就居中、
+          // 放不下就横向滚动。
           TerminalKeyBar(
             armed: armedModifiers,
             onInput: (List<int> bytes) => unawaited(
               ref.read(shellExecProvider.notifier).writeBytes(bytes),
             ),
             leading: EscalationMenuButton(onSelected: onMenu),
+            trailing: TerminalIconKey(
+              semanticLabel: l10n.escalationCopy,
+              onTap: copySelection,
+              icon: Icon(
+                Icons.content_copy_rounded,
+                size: 18.r,
+                color: TerminalKeyBar.keyForeground,
+              ),
+            ),
           ),
         ],
       ),

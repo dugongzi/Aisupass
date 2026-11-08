@@ -10,8 +10,14 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 /// 底栏菜单的选项。
 ///
-/// 提权、移交、清屏共用一个枚举，选中后只有一处 switch。
-enum EscalationMenuAction { exploit, handoffKernelsu, handoffSukisu, clear }
+/// 提权、移交、查看清单、清屏共用一个枚举，选中后只有一处 switch。
+enum EscalationMenuAction {
+  exploit,
+  handoffKernelsu,
+  handoffSukisu,
+  payloadCatalog,
+  clear,
+}
 
 /// 底栏最左侧的三点菜单键。
 ///
@@ -102,6 +108,11 @@ class EscalationMenuButton extends HookWidget {
       l10n.escalationHandoffManagerSukisu,
     ),
     const PopupMenuDivider(),
+    _item(
+      EscalationMenuAction.payloadCatalog,
+      Icons.inventory_2_outlined,
+      l10n.escalationMenuPayloadCatalog,
+    ),
     _item(
       EscalationMenuAction.clear,
       Icons.cleaning_services_rounded,

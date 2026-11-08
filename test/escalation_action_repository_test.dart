@@ -2,11 +2,9 @@ import 'dart:typed_data';
 
 import 'package:Aisupass/core/storage/json_codec.dart';
 import 'package:Aisupass/core/storage/key_value_store.dart';
-import 'package:Aisupass/core/utils/payload_shell.dart';
 import 'package:Aisupass/features/escalation/data/datasources/escalation_action_datasource.dart';
 import 'package:Aisupass/features/escalation/data/repositories/escalation_action_repository_impl.dart';
 import 'package:Aisupass/features/escalation/domain/enums/root_manager.dart';
-import 'package:Aisupass/features/escalation/domain/models/escalation_run_result.dart';
 import 'package:Aisupass/features/escalation/domain/models/handoff_outcome.dart';
 import 'package:Aisupass/features/escalation/domain/models/payload.dart';
 import 'package:Aisupass/generated/adb_shell.g.dart' as pigeon;
@@ -15,12 +13,6 @@ import 'package:flutter_test/flutter_test.dart';
 /// 安装后的原生库目录。带 `~~` 和 `==`，用来验证命令里的引号没漏。
 const String _directory =
     '/data/app/~~abc==/org.supass.ai_su_pass-xyz==/lib/arm64';
-
-/// 轮询间隔拉到和停滞阈值一样大，让停滞在一轮内就能触发。
-///
-/// 生产是 2 秒一轮，这里把间隔拉大、等待注入成空实现，判定路径一样但
-/// 不用真的等 180 秒。
-const Duration _fastPoll = Duration(seconds: 180);
 
 Payload _payload({
   bool standalone = false,
@@ -59,17 +51,13 @@ pigeon.ShellExecResult _fail(int exitCode, {String stderr = ''}) =>
       timedOut: false,
     );
 
-bool _isLaunch(String command) => command.contains('env EXPLOIT_ATTEMPTS');
+bool _isLaunch(String command) => command.contains('EXPLOIT_ATTEMPTS=24');
 bool _isStandaloneLaunch(String command) =>
-    !_isLaunch(command) && command.contains('wait \$assist');
+    command.contains('</dev/null') && !command.contains('--run-payload');
 bool _isKernelRelease(String command) => command.contains('uname -r');
-bool _isProbe(String command) => command.contains('state=');
-bool _isTerminate(String command) => command.contains('kill -TERM');
-bool _isCollect(String command) => command.contains('helper output');
 bool _isRootCheck(String command) => command.contains('-c "id"');
 bool _isBootId(String command) =>
     command.contains('/proc/sys/kernel/random/boot_id');
-bool _isLogTail(String command) => command.contains('tail -c +');
 
 /// 内存版键值存储。兜底值与生产实现保持一致，才能复现
 /// 「`read<int>` 对缺失键返回 -1 而不是 null」这个坑。
@@ -117,15 +105,14 @@ class _FakeStore implements KeyValueStore {
 
 /// 假的原生桥：按命令内容分流，同时记录真正下发的命令。
 ///
-/// 数据源用真的，命令拼装照样被这些断言覆盖；仓储只拿到返回值去判定。
-/// `boot_id` 读取与日志增量读属于基础设施命令，由这里直接应答，不进
-/// [commands]，免得把业务断言里的命令条数搅乱。
+/// 数据源现在只**拼**命令，不执行它；真正被下发的只有 `boot_id`（读缓存凭据）
+/// 与独立载荷的 `uname -r`（补参数）。前者由这里直接应答、不进 [commands]，
+/// 免得把业务断言里的命令条数搅乱。
 class _FakeNative extends pigeon.AdbShellNative {
   _FakeNative(
     this.handler, {
     this.directory = _directory,
     this.bootToken = 'boot-session-1',
-    this.logTail = '',
   });
 
   final pigeon.ShellExecResult Function(String command) handler;
@@ -134,14 +121,7 @@ class _FakeNative extends pigeon.AdbShellNative {
   /// `boot_id` 的读数；置空表示读不到。
   final String bootToken;
 
-  /// 增量读日志时返回的新增内容。
-  final String logTail;
-
   final List<String> commands = <String>[];
-  final List<String> logTails = <String>[];
-
-  int get probes => commands.where(_isProbe).length;
-  int get terminations => commands.where(_isTerminate).length;
 
   @override
   Future<pigeon.ShellExecResult> exec(
@@ -151,10 +131,6 @@ class _FakeNative extends pigeon.AdbShellNative {
   ) async {
     if (_isBootId(command)) {
       return bootToken.isEmpty ? _fail(1) : _ok('$bootToken\n');
-    }
-    if (_isLogTail(command)) {
-      logTails.add(command);
-      return _ok(logTail);
     }
     commands.add(command);
     return handler(command);
@@ -166,110 +142,82 @@ class _FakeNative extends pigeon.AdbShellNative {
 
 EscalationActionRepositoryImpl _repository(
   _FakeNative native, {
-  Duration pollInterval = _fastPoll,
   KeyValueStore? storage,
 }) => EscalationActionRepositoryImpl(
   datasource: EscalationActionDatasource(
     native: native,
     storage: storage ?? _FakeStore(),
     delay: (Duration _) async {},
-    pollInterval: pollInterval,
   ),
 );
 
 void main() {
-  group('启动阶段', () {
-    test('命令里带 helper 与载荷两道存在性闸门', () async {
-      final _FakeNative fake = _FakeNative((String command) {
-        if (_isLaunch(command)) return _ok('4242\n');
-        if (_isProbe(command)) return _ok('state=gone size=1');
-        if (_isCollect(command)) {
-          return _ok('exploit completed\ndone=1 root=1\nexitCode=0\n');
-        }
-        if (_isRootCheck(command)) return _ok('uid=0(root) gid=0(root)');
-        fail('不该走到这里: $command');
-      });
+  group('拼命令阶段', () {
+    test('命令里带 helper 与载荷两道存在性闸门，输出落点是 /dev/stdout', () async {
+      final _FakeNative fake = _FakeNative(
+        (String command) => fail('拼命令阶段不该真的下发命令: $command'),
+      );
 
-      await _repository(fake).runPayload(_payload());
+      final String launch = await _repository(fake).runPayload(_payload());
 
-      final String launch = fake.commands.first;
       expect(_isLaunch(launch), isTrue);
-      expect(launch, contains('[ -x '));
-      expect(launch, contains('exit 2'));
-      expect(launch, contains('[ -e '));
-      expect(launch, contains('exit 3'));
-      // 后台起：进程号必须记进文件，且标准输入要接到 /dev/null，
-      // 否则 shell 退出后载荷读 stdin 会拿到 EIO。
-      expect(launch, contains('</dev/null &'));
-      // 记下的必须是**助手本身**的号：先 `env ... &` 拿到 `$!`，再写文件，
-      // 再由外层子 shell `wait` 回收退出码。写 `$!` 之外的东西（比如包一层
-      // 子 shell 的号）会让终止只杀掉壳、留下孤儿载荷。
-      expect(launch, contains('assist=\$!;'));
-      expect(launch, contains('echo \$assist > '));
-      expect(launch, contains('wait \$assist;'));
-      expect(launch, contains('echo \$? > '));
-      // 重试参数要显式传给助手，不能指望环境里已经有。
+      // 缺文件时只打印一句，不退出整个会话；用 `||` 打、`&&` 串。
+      expect(launch, contains('echo "helper not executable: '));
+      expect(launch, contains('echo "payload missing: '));
+      expect(launch, contains('{ [ -x '));
+      expect(launch, contains('] && [ -e '));
+      expect(launch, contains('; } && '));
+      // 绝不用 `exit`：那会关掉整条终端会话，用户还得重连。
+      expect(launch, isNot(contains('exit ')));
+      // 环境变量直接做命令前缀，不能借 `env`：目录里的 `==` 会被 `env` 当成
+      // 变量赋值吞掉，助手路径消失，设备上只剩 `env: exec --run-payload: ...`。
+      expect(launch, isNot(contains('env ')));
       expect(launch, contains('EXPLOIT_ATTEMPTS=24'));
       expect(launch, contains('P0_ATTEMPT_TIMEOUT_SEC=45'));
       expect(launch, contains('EXPLOIT_ATTEMPT_TIMEOUT_SEC=120'));
       // 路径必须被单引号包住，否则 `~~` 和 `==` 会被 shell 解释。
-      expect(launch, contains("'$_directory/libcve43499root.so'"));
-      expect(launch, contains("'$_directory/libksu_vivo_iqoo13_6657_a.so'"));
-    });
-
-    test('载荷缺失的退出码原样透传，且按打包缺失说明，不再轮询', () async {
-      final _FakeNative fake = _FakeNative(
-        (String command) => _fail(3, stderr: 'payload missing: /x/y.so'),
+      expect(
+        launch,
+        contains(
+          "'$_directory/libcve43499root.so' --run-payload "
+          "'$_directory/libksu_vivo_iqoo13_6657_a.so' "
+          "'$_directory/libcve43499root.so' /dev/stdout",
+        ),
       );
-
-      final EscalationRunResult result = await _repository(fake)
-          .runPayload(_payload());
-
-      expect(result.success, isFalse);
-      expect(result.exitCode, 3);
-      // 退出码 3 = 这份 so 没进安装包。文案必须说成打包缺失，
-      // 否则用户会以为是自己设备 / 内核的问题，白白去折腾系统。
-      expect(result.stderr, contains('没有打进安装包'));
-      expect(result.stderr, contains('打包缺失'));
-      expect(fake.commands, hasLength(1));
-      expect(fake.probes, 0);
+      // 载荷不该等键盘；这不妨碍 Ctrl+C（SIGINT 按前台进程组投递）。
+      expect(launch, contains('</dev/null'));
+      // 站桩确认：拼命令没有真的下发任何命令。
+      expect(fake.commands, isEmpty);
     });
 
-    test('原生库目录为空直接失败，不发命令', () async {
+    test('原生库目录为空时返回一句 echo，不拼助手命令', () async {
       final _FakeNative fake = _FakeNative(
         (String command) => fail('不该发命令: $command'),
         directory: '',
       );
 
-      final EscalationRunResult result = await _repository(fake)
-          .runPayload(_payload());
+      final String command = await _repository(fake).runPayload(_payload());
 
-      expect(result.success, isFalse);
+      expect(command, contains('echo'));
+      expect(command, contains('原生库目录不可用'));
+      expect(command, isNot(contains('--run-payload')));
       expect(fake.commands, isEmpty);
     });
 
     test('standalone 载荷直接跑本体，参数按设备内核补齐', () async {
       final _FakeNative fake = _FakeNative((String command) {
         if (_isKernelRelease(command)) return _ok('6.6.89-android15-8-gabcd\n');
-        if (_isStandaloneLaunch(command)) return _ok('4242\n');
-        if (_isProbe(command)) return _ok('state=gone size=42');
-        // 独立载荷的日志格式不由本项目约定，没有那两条标记。
-        if (_isCollect(command)) return _ok('[*] runner\nexitCode=0\n');
-        if (_isRootCheck(command)) return _ok('uid=0(root) gid=0(root)');
         fail('不该走到这里: $command');
       });
 
-      final EscalationRunResult result = await _repository(fake)
-          .runPayload(
-            _payload(
-              standalone: true,
-              command:
-                  '/data/local/tmp/mi_mt6895_43499 --target <内核版本的后三位>',
-            ),
-          );
+      final String launch = await _repository(fake).runPayload(
+        _payload(
+          standalone: true,
+          command: '/data/local/tmp/mi_mt6895_43499 --target <内核版本的后三位>',
+        ),
+      );
 
-      expect(result.success, isTrue);
-      final String launch = fake.commands.firstWhere(_isStandaloneLaunch);
+      expect(_isStandaloneLaunch(launch), isTrue);
       // 执行的是本 App 目录下那份，不是 catalog 文案里的落点。
       expect(
         launch,
@@ -278,253 +226,31 @@ void main() {
       // 不过助手：没有 --run-payload，也没有助手的环境变量。
       expect(launch, isNot(contains('--run-payload')));
       expect(launch, isNot(contains('EXPLOIT_ATTEMPTS')));
-      // 日志落点必须与助手链一致，否则探测按体积判停滞会恒判卡死。
-      expect(launch, contains(">'${PayloadShell.logPath}'"));
+      // 本体也必须过存在性闸门，并接 /dev/null，避免等键盘。
+      expect(launch, contains('[ -x '));
+      expect(launch, contains('</dev/null'));
+      // 补参数要靠设备真实内核版本，所以确实读了 `uname -r`。
+      expect(fake.commands.where(_isKernelRelease), hasLength(1));
     });
 
-    test('standalone 占位符补不齐时拒绝执行，不发启动命令', () async {
+    test('standalone 占位符补不齐时返回 echo，不拼启动命令', () async {
       final _FakeNative fake = _FakeNative((String command) {
         if (_isKernelRelease(command)) return _fail(1);
         fail('不该走到这里: $command');
       });
 
-      final EscalationRunResult result = await _repository(fake)
-          .runPayload(
-            _payload(
-              standalone: true,
-              command:
-                  '/data/local/tmp/mi_mt6895_43499 --target <内核版本的后三位>',
-            ),
-          );
+      final String command = await _repository(fake).runPayload(
+        _payload(
+          standalone: true,
+          command: '/data/local/tmp/mi_mt6895_43499 --target <内核版本的后三位>',
+        ),
+      );
 
-      expect(result.success, isFalse);
-      expect(result.stderr, contains('参数无法在设备上补齐'));
-      expect(fake.commands.where(_isStandaloneLaunch), isEmpty);
-      expect(fake.probes, 0);
-    });
-  });
-
-  group('轮询阶段', () {
-    test('探测到两条标记即判成功，且不去 kill', () async {
-      final _FakeNative fake = _FakeNative((String command) {
-        if (_isLaunch(command)) return _ok('4242\n');
-        if (_isProbe(command)) return _ok('state=gone size=987');
-        if (_isCollect(command)) {
-          return _ok('[*] done\nexploit completed\ndone=1 root=1\nexitCode=0\n');
-        }
-        if (_isRootCheck(command)) return _ok('uid=0(root) gid=0(root)');
-        fail('不该走到这里: $command');
-      });
-
-      final EscalationRunResult result = await _repository(fake)
-          .runPayload(_payload());
-
-      expect(result.success, isTrue);
-      expect(result.exitCode, 0);
-      expect(result.stderr, isEmpty);
-      expect(result.timedOut, isFalse);
-      expect(result.stdout, contains('done=1 root=1'));
-      expect(result.stdout, contains('uid=0(root)'));
-      expect(fake.commands.where(_isRootCheck), hasLength(1));
-      expect(fake.probes, 1);
-      // 进程自己退了，进程号已经不在，kill 是多余动作。
-      expect(fake.terminations, 0);
-    });
-
-    test('载荷报告成功但 su 未确认 uid=0 时判失败', () async {
-      final _FakeNative fake = _FakeNative((String command) {
-        if (_isLaunch(command)) return _ok('4242\n');
-        if (_isProbe(command)) return _ok('state=gone size=987');
-        if (_isCollect(command)) {
-          return _ok('exploit completed\ndone=1 root=1\nexitCode=0\n');
-        }
-        if (_isRootCheck(command)) {
-          return _ok('uid=2000(shell) gid=2000(shell)');
-        }
-        fail('不该走到这里: $command');
-      });
-
-      final EscalationRunResult result = await _repository(fake)
-          .runPayload(_payload());
-
-      expect(result.success, isFalse);
-      expect(result.exitCode, -1);
-      expect(result.stderr, contains('uid=2000'));
-    });
-
-    test('su 还没起来时多探几轮，不把间隙当没 root', () async {
-      int rootChecks = 0;
-      final _FakeNative fake = _FakeNative((String command) {
-        if (_isLaunch(command)) return _ok('4242\n');
-        if (_isProbe(command)) return _ok('state=gone size=987');
-        if (_isCollect(command)) {
-          return _ok('exploit completed\ndone=1 root=1\nexitCode=0\n');
-        }
-        if (_isRootCheck(command)) {
-          rootChecks++;
-          return rootChecks < 3
-              ? _ok('uid=2000(shell) gid=2000(shell)')
-              : _ok('uid=0(root) gid=0(root)');
-        }
-        fail('不该走到这里: $command');
-      });
-
-      final EscalationRunResult result = await _repository(fake)
-          .runPayload(_payload());
-
-      expect(result.success, isTrue);
-      expect(rootChecks, 3);
-    });
-
-    test('进程退出但标记不全判失败，且不算超时', () async {
-      final _FakeNative fake = _FakeNative((String command) {
-        if (_isLaunch(command)) return _ok('4242\n');
-        if (_isProbe(command)) return _ok('state=gone size=64');
-        if (_isCollect(command)) {
-          return _ok('[-] open /dev/kmsg failed\nexitCode=0\n');
-        }
-        if (_isRootCheck(command)) fail('载荷未报告成功时不应复核 root');
-        fail('不该走到这里: $command');
-      });
-
-      final EscalationRunResult result = await _repository(fake)
-          .runPayload(_payload());
-
-      expect(result.success, isFalse);
-      // 退出码是 0，失败原因只能落在「标记不全」上，不能是空串。
-      expect(result.exitCode, 0);
-      expect(result.stderr, contains('没有成功标记'));
-      expect(result.timedOut, isFalse);
-      expect(result.stdout, contains('/dev/kmsg'));
-    });
-
-    test('退出码取最后一行，不被载荷自己输出里的 exitCode= 带偏', () async {
-      final _FakeNative fake = _FakeNative((String command) {
-        if (_isLaunch(command)) return _ok('4242\n');
-        if (_isProbe(command)) return _ok('state=gone size=120');
-        if (_isCollect(command)) {
-          // 载荷自己打了一行 exitCode=1（例如上一轮子进程的残留），
-          // 收日志脚本追加的真实退出码在最后一行。
-          return _ok(
-            'exitCode=1\nexploit completed\ndone=1 root=1\nexitCode=0\n',
-          );
-        }
-        if (_isRootCheck(command)) return _ok('uid=0(root) gid=0(root)');
-        fail('不该走到这里: $command');
-      });
-
-      final EscalationRunResult result = await _repository(fake)
-          .runPayload(_payload());
-
-      expect(result.success, isTrue);
-      expect(result.exitCode, 0);
-    });
-
-    test('行内的 exitCode= 字样不参与退出码判定', () async {
-      final _FakeNative fake = _FakeNative((String command) {
-        if (_isLaunch(command)) return _ok('4242\n');
-        if (_isProbe(command)) return _ok('state=gone size=120');
-        if (_isCollect(command)) {
-          // 只在行中出现，不是收尾脚本写的整行，不能当成退出码。
-          return _ok(
-            '[*] child exitCode=9 ignored\n'
-            'exploit completed\ndone=1 root=1\nexitCode=0\n',
-          );
-        }
-        if (_isRootCheck(command)) return _ok('uid=0(root) gid=0(root)');
-        fail('不该走到这里: $command');
-      });
-
-      final EscalationRunResult result = await _repository(fake)
-          .runPayload(_payload());
-
-      expect(result.success, isTrue);
-      expect(result.exitCode, 0);
-    });
-
-    test('日志 180 秒不增长即判停滞，并显式终止', () async {
-      final _FakeNative fake = _FakeNative((String command) {
-        if (_isLaunch(command)) return _ok('4242\n');
-        // 进程活着，但体积一直停在 100 字节：正是卡死的特征。
-        if (_isProbe(command)) return _ok('state=running size=100');
-        if (_isTerminate(command)) return _ok('');
-        if (_isCollect(command)) return _ok('[*] spraying...\n');
-        fail('不该走到这里: $command');
-      });
-
-      final EscalationRunResult result = await _repository(fake)
-          .runPayload(_payload());
-
-      expect(result.success, isFalse);
-      expect(result.timedOut, isTrue);
-      expect(result.stderr, contains('180 秒'));
-      // 第一次探测把体积从「未知」变成 100，第二次还停在 100 就判停滞。
-      expect(fake.probes, 2);
-      expect(fake.terminations, 1);
-    });
-
-    test('日志持续增长时不判停滞', () async {
-      int size = 0;
-      final _FakeNative fake = _FakeNative((String command) {
-        if (_isLaunch(command)) return _ok('4242\n');
-        if (_isProbe(command)) {
-          size += 100;
-          // 前几轮都还在长，最后一轮退出。
-          return _ok(
-            size >= 400 ? 'state=gone size=$size' : 'state=running size=$size',
-          );
-        }
-        if (_isCollect(command)) {
-          return _ok('exploit completed\ndone=1 root=1\nexitCode=0\n');
-        }
-        if (_isRootCheck(command)) return _ok('uid=0(root) gid=0(root)');
-        fail('不该走到这里: $command');
-      });
-
-      final EscalationRunResult result = await _repository(fake)
-          .runPayload(_payload());
-
-      expect(result.success, isTrue);
-      expect(fake.probes, 4);
-      expect(fake.terminations, 0);
-    });
-
-    test('探测本身连续失败三次即判通道中断', () async {
-      final _FakeNative fake = _FakeNative((String command) {
-        if (_isLaunch(command)) return _ok('4242\n');
-        if (_isProbe(command)) return _fail(-1);
-        if (_isTerminate(command)) return _ok('');
-        if (_isCollect(command)) {
-          return _ok('exploit completed\ndone=1 root=1\n');
-        }
-        fail('不该走到这里: $command');
-      });
-
-      final EscalationRunResult result = await _repository(fake)
-          .runPayload(_payload());
-
-      expect(result.stderr, contains('探测通道中断'));
-      expect(fake.probes, 3);
-      // 通道断了也得尝试收尸，否则载荷会在设备上继续跑。
-      expect(fake.terminations, 1);
-    });
-
-    test('探测读不懂时宁可提前收尾，不能当成还在跑', () async {
-      final _FakeNative fake = _FakeNative((String command) {
-        if (_isLaunch(command)) return _ok('4242\n');
-        if (_isProbe(command)) return _ok('garbage');
-        if (_isCollect(command)) {
-          return _ok('exploit completed\ndone=1 root=1\nexitCode=0\n');
-        }
-        if (_isRootCheck(command)) return _ok('uid=0(root) gid=0(root)');
-        fail('不该走到这里: $command');
-      });
-
-      final EscalationRunResult result = await _repository(fake)
-          .runPayload(_payload());
-
-      expect(fake.probes, 1);
-      expect(result.success, isTrue);
+      expect(command, contains('参数无法在设备上补齐'));
+      expect(_isStandaloneLaunch(command), isFalse);
+      // 只有一句说明：没有闸门也不执行本体。
+      expect(command, startsWith('echo '));
+      expect(command, isNot(contains('</dev/null')));
     });
   });
 
@@ -532,43 +258,41 @@ void main() {
     /// 合法 slide：不超过 0x1f0000，且按 0x10000 对齐。
     const String slideLine = 'slide-kaslr-ok slide=00000000001a0000\n';
 
-    _FakeNative payloadRun({String logTail = '', String bootToken = 'boot-session-1'}) {
-      int size = 0;
-      return _FakeNative(
-        (String command) {
-          if (_isLaunch(command)) return _ok('4242\n');
-          if (_isProbe(command)) {
-            size += 100;
-            return _ok(
-              size >= 200 ? 'state=gone size=$size' : 'state=running size=$size',
-            );
-          }
-          if (_isCollect(command)) {
-            return _ok('exploit completed\ndone=1 root=1\nexitCode=0\n');
-          }
-          if (_isRootCheck(command)) return _ok('uid=0(root) gid=0(root)');
-          fail('不该走到这里: $command');
-        },
-        bootToken: bootToken,
-        logTail: logTail,
-      );
-    }
+    _FakeNative planner({String bootToken = 'boot-session-1'}) => _FakeNative(
+      (String command) => fail('拼命令阶段不该真的下发命令: $command'),
+      bootToken: bootToken,
+    );
 
-    test('日志里抓到 slide 就写盘，键是 boot_id 与偏移', () async {
+    test('屏幕上出现 slide 就写盘，键是 boot_id 与偏移', () async {
       final _FakeStore store = _FakeStore();
-      final _FakeNative fake = payloadRun(logTail: slideLine);
-
-      final EscalationRunResult result = await _repository(
-        fake,
+      final EscalationActionRepositoryImpl repository = _repository(
+        planner(),
         storage: store,
-      ).runPayload(_payload());
+      );
 
-      expect(result.success, isTrue);
+      // 先拼一次，让数据源挂住本次运行的 boot token。
+      await repository.runPayload(_payload());
+      repository.observeOutput(slideLine);
+      await pumpEventQueue();
+
       expect(store.values['p0_cache.offset'], 0x1a0000);
       expect(store.values['p0_cache.boot_id'], 'boot-session-1');
-      // 增量读日志：只读新增的那一段，不是每轮把整份日志搬一遍。
-      expect(fake.logTails, isNotEmpty);
-      expect(fake.logTails.first, contains('tail -c +1 '));
+    });
+
+    test('被切开的记录跨两次输出也能拼回来', () async {
+      final _FakeStore store = _FakeStore();
+      final EscalationActionRepositoryImpl repository = _repository(
+        planner(),
+        storage: store,
+      );
+
+      await repository.runPayload(_payload());
+      repository.observeOutput('[*] slide-kaslr-ok slide=00000000001a');
+      await pumpEventQueue();
+      repository.observeOutput('0000\n');
+      await pumpEventQueue();
+
+      expect(store.values['p0_cache.offset'], 0x1a0000);
     });
 
     test('同一次开机内第二次运行直接带 SLIDE_P0_OFFSET 起载荷', () async {
@@ -576,10 +300,12 @@ void main() {
       await store.write<String>('p0_cache.boot_id', 'boot-session-1');
       await store.write<int>('p0_cache.offset', 0x1a0000);
 
-      final _FakeNative fake = payloadRun();
-      await _repository(fake, storage: store).runPayload(_payload());
+      final String launch = await _repository(
+        planner(),
+        storage: store,
+      ).runPayload(_payload());
 
-      expect(fake.commands.first, contains('SLIDE_P0_OFFSET=0x1a0000'));
+      expect(launch, contains('SLIDE_P0_OFFSET=0x1a0000'));
     });
 
     test('boot 会话变了就不复用上一次的偏移', () async {
@@ -587,39 +313,46 @@ void main() {
       await store.write<String>('p0_cache.boot_id', '上一次开机');
       await store.write<int>('p0_cache.offset', 0x1a0000);
 
-      final _FakeNative fake = payloadRun();
-      await _repository(fake, storage: store).runPayload(_payload());
+      final String launch = await _repository(
+        planner(),
+        storage: store,
+      ).runPayload(_payload());
 
-      expect(fake.commands.first, isNot(contains('SLIDE_P0_OFFSET')));
+      expect(launch, isNot(contains('SLIDE_P0_OFFSET')));
     });
 
     test('偏移越界时不写盘，宁可下一轮重做 P0', () async {
       final _FakeStore store = _FakeStore();
+      final EscalationActionRepositoryImpl repository = _repository(
+        planner(),
+        storage: store,
+      );
+
+      await repository.runPayload(_payload());
 
       // 0x20000 超过上限 0x1f0000；0x1f8000 没按 0x10000 对齐。
       for (final String slide in <String>[
         '0000000000200000',
         '00000000001f8000',
       ]) {
-        await _repository(
-          payloadRun(logTail: 'slide-kaslr-ok slide=$slide\n'),
-          storage: store,
-        ).runPayload(_payload());
+        repository.observeOutput('slide-kaslr-ok slide=$slide\n');
+        await pumpEventQueue();
         expect(store.values['p0_cache.offset'], isNull, reason: slide);
       }
     });
 
     test('读不到 boot_id 时既不读缓存也不写缓存', () async {
       final _FakeStore store = _FakeStore();
-      final _FakeNative fake = payloadRun(logTail: slideLine, bootToken: '');
-
-      final EscalationRunResult result = await _repository(
-        fake,
+      final EscalationActionRepositoryImpl repository = _repository(
+        planner(bootToken: ''),
         storage: store,
-      ).runPayload(_payload());
+      );
 
-      expect(result.success, isTrue);
-      expect(fake.commands.first, isNot(contains('SLIDE_P0_OFFSET')));
+      final String launch = await repository.runPayload(_payload());
+      repository.observeOutput(slideLine);
+      await pumpEventQueue();
+
+      expect(launch, isNot(contains('SLIDE_P0_OFFSET')));
       expect(store.values, isEmpty);
     });
   });
@@ -643,9 +376,8 @@ void main() {
         fail('不该走到这里: $command');
       });
 
-      final HandoffOutcome result = await _repository(
-        fake,
-      ).handoffRoot(manager: RootManager.kernelsu);
+      final HandoffOutcome result = await _repository(fake)
+          .handoffRoot(manager: RootManager.kernelsu);
 
       expect(result.kind, HandoffKind.success);
       expect(result.exitCode, 0);
@@ -677,9 +409,8 @@ void main() {
         fail('没 root 不该继续: $command');
       });
 
-      final HandoffOutcome result = await _repository(
-        fake,
-      ).handoffRoot(manager: RootManager.kernelsu);
+      final HandoffOutcome result = await _repository(fake)
+          .handoffRoot(manager: RootManager.kernelsu);
 
       expect(result.kind, HandoffKind.noRoot);
       expect(result.success, isFalse);
@@ -722,9 +453,8 @@ void main() {
         fail('不该走到这里: $command');
       });
 
-      final HandoffOutcome result = await _repository(
-        fake,
-      ).handoffRoot(manager: RootManager.sukisu);
+      final HandoffOutcome result = await _repository(fake)
+          .handoffRoot(manager: RootManager.sukisu);
 
       // 这是最常见的一种失败，必须单独分型：用户唯一能自救的动作是去装管理器。
       expect(result.kind, HandoffKind.managerMissing);
@@ -741,9 +471,8 @@ void main() {
         fail('不该走到这里: $command');
       });
 
-      final HandoffOutcome result = await _repository(
-        fake,
-      ).handoffRoot(manager: RootManager.kernelsu);
+      final HandoffOutcome result = await _repository(fake)
+          .handoffRoot(manager: RootManager.kernelsu);
 
       // 脚本提前挂掉时可能只留下退出码，标记未必打得出来。
       expect(result.kind, HandoffKind.managerMissing);
@@ -756,9 +485,8 @@ void main() {
         fail('不该走到这里: $command');
       });
 
-      final HandoffOutcome result = await _repository(
-        fake,
-      ).handoffRoot(manager: RootManager.kernelsu);
+      final HandoffOutcome result = await _repository(fake)
+          .handoffRoot(manager: RootManager.kernelsu);
 
       expect(result.kind, HandoffKind.failed);
       expect(result.output, contains('无法安全转义'));
@@ -772,9 +500,8 @@ void main() {
         fail('不该走到这里: $command');
       });
 
-      final HandoffOutcome result = await _repository(
-        fake,
-      ).handoffRoot(manager: RootManager.kernelsu);
+      final HandoffOutcome result = await _repository(fake)
+          .handoffRoot(manager: RootManager.kernelsu);
 
       expect(result.kind, HandoffKind.failed);
       expect(result.exitCode, 7);
@@ -790,9 +517,8 @@ void main() {
         fail('不该走到这里: $command');
       });
 
-      final HandoffOutcome result = await _repository(
-        fake,
-      ).handoffRoot(manager: RootManager.kernelsu);
+      final HandoffOutcome result = await _repository(fake)
+          .handoffRoot(manager: RootManager.kernelsu);
 
       expect(result.kind, HandoffKind.failed);
       expect(result.exitCode, 0);
@@ -810,9 +536,8 @@ void main() {
         fail('不该走到这里: $command');
       });
 
-      final HandoffOutcome result = await _repository(
-        fake,
-      ).handoffRoot(manager: RootManager.kernelsu);
+      final HandoffOutcome result = await _repository(fake)
+          .handoffRoot(manager: RootManager.kernelsu);
 
       expect(result.kind, HandoffKind.failed);
       expect(result.output, contains('failure'));
@@ -825,9 +550,8 @@ void main() {
         fail('不该走到这里: $command');
       });
 
-      final HandoffOutcome result = await _repository(
-        fake,
-      ).handoffRoot(manager: RootManager.kernelsu);
+      final HandoffOutcome result = await _repository(fake)
+          .handoffRoot(manager: RootManager.kernelsu);
 
       // 兜底原因交给 UI 按 kind 出文案，这里只保证退出码与分型不丢。
       expect(result.kind, HandoffKind.failed);
@@ -842,16 +566,15 @@ void main() {
         fail('不该走到这里: $command');
       });
 
-      final HandoffOutcome result = await _repository(
-        fake,
-      ).handoffRoot(manager: RootManager.kernelsu);
+      final HandoffOutcome result = await _repository(fake)
+          .handoffRoot(manager: RootManager.kernelsu);
 
       expect(result.kind, HandoffKind.success);
       expect(result.ksudPath, isEmpty);
       expect(result.output, isEmpty);
     });
 
-    test('移交不动载荷的进程号与日志，只发探 root 与移交两条', () async {
+    test('移交只发探 root 与移交两条命令', () async {
       final _FakeNative fake = _FakeNative((String command) {
         if (_isRootCheck(command)) return _ok('uid=0(root) gid=0(root)');
         if (isHandoff(command)) return _ok('KSUD=$ksudPath\nok\n');
@@ -861,9 +584,6 @@ void main() {
       await _repository(fake).handoffRoot(manager: RootManager.kernelsu);
 
       expect(fake.commands, hasLength(2));
-      expect(fake.probes, 0);
-      expect(fake.terminations, 0);
-      expect(fake.logTails, isEmpty);
     });
   });
 }

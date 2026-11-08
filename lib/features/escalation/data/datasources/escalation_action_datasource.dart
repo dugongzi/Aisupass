@@ -1,29 +1,28 @@
+import 'dart:async';
+
 import 'package:Aisupass/core/storage/key_value_store.dart';
 import 'package:Aisupass/core/utils/handoff_script.dart';
 import 'package:Aisupass/core/utils/payload_shell.dart';
 import 'package:Aisupass/core/utils/slide_offset_cache.dart';
 import 'package:Aisupass/core/utils/su_shell.dart';
 import 'package:Aisupass/features/escalation/domain/enums/root_manager.dart';
-import 'package:Aisupass/features/escalation/domain/models/escalation_run_result.dart';
 import 'package:Aisupass/features/escalation/domain/models/handoff_outcome.dart';
 import 'package:Aisupass/features/escalation/domain/models/payload.dart';
 import 'package:Aisupass/generated/adb_shell.g.dart' as pigeon;
 
-/// 两次探测之间的等待。抽成回调是为了让测试不必真的睡。
+/// 两次 `su` 之间的等待。抽成回调是为了让测试不必真的睡。
 typedef EscalationDelay = Future<void> Function(Duration duration);
 
 Future<void> _sleep(Duration duration) => Future<void>.delayed(duration);
 
-/// 提权链路执行数据源。对外只有 [runPayload]、[handoffRoot]。
+/// 提权链路执行数据源。
 ///
-/// 例外（已批准，2026-11）：成功与否在本层判定，与 §5「只做转发」不同，
-/// 登记见 `coding.md` §8.2。
+/// 对外只有 [runPayload] / [observeOutput] / [handoffRoot]。
 class EscalationActionDatasource {
   EscalationActionDatasource({
     required this._native,
     required this._storage,
     this._delay = _sleep,
-    this._pollInterval = const Duration(seconds: 2),
   });
 
   final pigeon.AdbShellNative _native;
@@ -32,10 +31,7 @@ class EscalationActionDatasource {
 
   final EscalationDelay _delay;
 
-  /// 两次探测的间隔，总轮数与停滞轮数由它推出。
-  final Duration _pollInterval;
-
-  /// `stdin` 固定传 `null`：提权命令不读标准输入，立即 EOF 比挂到超时好。
+  /// `stdin` 固定传 `null`：这里的命令都不读标准输入，立即 EOF 比挂到超时好。
   Future<pigeon.ShellExecResult> _exec(String command, int timeoutMs) =>
       _native.exec(command, timeoutMs, null);
 
@@ -46,33 +42,27 @@ class EscalationActionDatasource {
     storage: _storage,
   );
 
-  /// 执行载荷：启动 → 轮询 → 终止 → 收日志 → 复核 root。
+  /// 本次运行的 boot token。载荷在终端里跑，输出陆续到达，要跨这段时间挂住
+  /// 这个凭据，才能把偏移写进属于同一次开机的缓存。
+  String? _bootToken;
+
+  /// 拼出「在常驻 pty 里跑这份载荷」的那一行。
   ///
-  /// 拿到的 root 是**一次性**的，cred 属于那个已退出的载荷子进程。要留下来
-  /// 必须走 [handoffRoot]。失败返回结果，不抛异常。
-  Future<EscalationRunResult> runPayload(Payload payload) async {
+  /// 返回的永远是可以原样敲进终端的一行：跑不起来的原因（目录不可用、参数
+  /// 补不齐）也编成一句 `echo`，屏幕上看得见。
+  Future<String> runPayload(Payload payload) async {
     final String directory = await _native.nativeLibraryDir();
     if (directory.isEmpty) {
-      return EscalationRunResult.failure('原生库目录不可用：so 没有解压到 nativeLibraryDir');
+      return _echo('原生库目录不可用：so 没有解压到 nativeLibraryDir');
     }
-
-    final DateTime startedAt = DateTime.now();
-
-    // 读取 boot token 和 KASLR P0 偏移缓存。独立载荷没有注入 slide 的位置，
-    // 这份缓存对它没意义，跳过读盘也就少一条设备命令。
-    final String? bootToken = payload.standalone
-        ? null
-        : await _slideCache.bootToken();
-    final String? cachedSlide = bootToken != null
-        ? await _slideCache.read(bootToken)
-        : null;
 
     final String payloadPath = '$directory/${payload.library}';
 
-    final String launchCommand;
     if (payload.standalone) {
+      // 独立载荷没有注入 slide 的位置，这份缓存对它没意义。
+      _bootToken = null;
       // catalog 里 `command` 的尾部是该载荷的参数，含占位符的要按设备实际内核
-      // 补齐；补不齐就拒绝执行，猜参数只会跑一次什么都没做的尝试。
+      // 补齐；补不齐就只说一句，猜参数只会跑一次什么都没做的尝试。
       String kernelVersion = payload.kernelVersion;
       if (payload.command.contains(PayloadShell.kernelTailPlaceholder)) {
         final pigeon.ShellExecResult kernel = await _exec(
@@ -86,132 +76,42 @@ class EscalationActionDatasource {
         kernelVersion,
       );
       if (arguments == null) {
-        return EscalationRunResult.failure(
+        return _echo(
           '${payload.library} 的参数无法在设备上补齐：${payload.command}',
         );
       }
-      launchCommand = PayloadShell.buildStandaloneLaunchCommand(
+      return PayloadShell.buildStandaloneLaunchCommand(
         payloadPath: payloadPath,
         arguments: arguments,
       );
-    } else {
-      launchCommand = PayloadShell.buildLaunchCommand(
-        helperPath: '$directory/${PayloadShell.helperLibrary}',
-        payloadPath: payloadPath,
-        slideOffset: cachedSlide,
-      );
     }
 
-    final pigeon.ShellExecResult launch = await _exec(
-      launchCommand,
-      PayloadShell.shortTimeoutMs,
-    );
+    // 同一次开机内 slide 固定，读得到就塞进环境变量，省掉最贵的 P0 阶段。
+    final String? bootToken = await _slideCache.bootToken();
+    final String? cachedSlide = bootToken == null
+        ? null
+        : await _slideCache.read(bootToken);
+    _bootToken = bootToken;
 
-    // 启动脚本自带闸门：载荷缺失退 3（助手链另有 helper 不可执行退 2）。其余
-    // 非 0 说明命令没在设备上跑起来，轮询下去没意义。
-    if (launch.exitCode != 0) {
-      return EscalationRunResult(
-        success: false,
-        exitCode: launch.exitCode,
-        stdout: launch.stdout,
-        stderr: launch.exitCode == PayloadShell.payloadMissingExitCode
-            ? '${payload.library} 没有打进安装包：原生库目录下找不到这份 so。'
-                  '属于打包缺失，不是设备问题'
-            : launch.stderr.isEmpty
-            ? '启动载荷失败，退出码 ${launch.exitCode}'
-            : launch.stderr,
-        durationMs: launch.durationMs,
-        timedOut: launch.timedOut,
-      );
-    }
-
-    // 日志每长一段就抓一次 slide，同一次开机内后续尝试可跳过 P0。
-    Future<void> Function(String window)? onLogWindow;
-    if (bootToken != null) {
-      final String token = bootToken;
-      onLogWindow = (String window) => _slideCache.cacheFromLog(window, token);
-    }
-
-    final PollOutcome outcome = await PayloadPoller(
-      exec: _exec,
-      delay: _delay,
-      pollInterval: _pollInterval,
-      onLogWindow: onLogWindow,
-    ).poll();
-
-    // 只有被掐断时才需要 kill，自然退出的进程号已经不在了。
-    if (outcome != PollOutcome.finished) {
-      await _exec(
-        PayloadShell.buildTerminateCommand(),
-        PayloadShell.shortTimeoutMs,
-      );
-    }
-    final String log = (await _exec(
-      PayloadShell.buildCollectCommand(),
-      PayloadShell.shortTimeoutMs,
-    )).stdout;
-
-    // 轮询里没抓到的（比如只出现在最后一行）靠这次兜住。
-    if (bootToken != null) {
-      await _slideCache.cacheFromLog(log, bootToken);
-    }
-
-    final int exitCode = PayloadShell.exitCodeFrom(log);
-
-    // 两条日志标记加退出码，三者都满足才算成功。独立载荷的日志格式不由本项目
-    // 约定，标记对它不成立，只要求它自己正常退出。
-    final bool payloadReportedSuccess =
-        log.contains(PayloadShell.markerCompleted) &&
-        log.contains(PayloadShell.markerRoot);
-    final bool chainSucceeded =
-        (payload.standalone || payloadReportedSuccess) &&
-        exitCode == 0 &&
-        outcome == PollOutcome.finished;
-    if (!chainSucceeded) {
-      final String reason = switch (outcome) {
-        PollOutcome.finished when exitCode > 0 => '载荷退出码 $exitCode',
-        PollOutcome.finished when exitCode == 0 && !payloadReportedSuccess =>
-          '载荷正常退出，但日志里没有成功标记'
-              '（${PayloadShell.markerCompleted} / ${PayloadShell.markerRoot}）',
-        PollOutcome.finished when exitCode <= 0 =>
-          '载荷已退出，但没有读到退出码（${PayloadShell.rcPath} 缺失）',
-        PollOutcome.finished => '',
-        PollOutcome.stalled => '载荷 180 秒没有任何输出，已终止',
-        PollOutcome.timedOut => '提权超过 15 分钟，已终止',
-        PollOutcome.lost => '探测通道中断，无法确认载荷状态',
-      };
-      return EscalationRunResult(
-        success: false,
-        exitCode: exitCode,
-        stdout: log,
-        stderr: reason,
-        durationMs: DateTime.now().difference(startedAt).inMilliseconds,
-        timedOut:
-            outcome == PollOutcome.stalled || outcome == PollOutcome.timedOut,
-      );
-    }
-
-    // 载荷退出与 `su` 可用之间有间隙，刚打完的这一次多探几轮再下结论。
-    final pigeon.ShellExecResult rootCheck = await _su.checkRoot(
-      attempts: SuShell.rootCheckAttempts,
-    );
-    final bool rootVerified = _su.indicatesRoot(rootCheck);
-
-    return EscalationRunResult(
-      success: rootVerified,
-      exitCode: rootVerified ? 0 : -1,
-      stdout:
-          '$log\n--- root verification ---\n${rootCheck.stdout}${rootCheck.stderr}',
-      stderr: rootVerified
-          ? ''
-          : rootCheck.stderr.isNotEmpty
-          ? rootCheck.stderr
-          : rootCheck.stdout,
-      durationMs: DateTime.now().difference(startedAt).inMilliseconds,
-      timedOut:
-          outcome == PollOutcome.stalled || outcome == PollOutcome.timedOut,
+    return PayloadShell.buildLaunchCommand(
+      helperPath: '$directory/${PayloadShell.helperLibrary}',
+      payloadPath: payloadPath,
+      slideOffset: cachedSlide,
     );
   }
+
+  /// 终端上来一段输出就喂一次，把 KASLR slide 从字节流里捞出来存盘。
+  ///
+  /// 只有读得到 boot token 的运行才需要：没有凭据就不知道这份偏移属于哪次
+  /// 开机，存了也不敢复用。
+  void observeOutput(String text) {
+    final String? token = _bootToken;
+    if (token == null || text.isEmpty) return;
+    unawaited(_slideCache.observe(text, token));
+  }
+
+  /// 把一句说明编成终端里的一行。单引号包住，中文与空格都不会被 shell 拆开。
+  static String _echo(String message) => 'echo ${PayloadShell.quote(message)}';
 
   /// 把临时 root 交给设备上的 KernelSU 系管理器。
   ///
