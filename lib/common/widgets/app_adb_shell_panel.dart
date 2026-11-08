@@ -164,6 +164,13 @@ class AppAdbShellPanel extends HookConsumerWidget {
   Future<void> _startPairing(WidgetRef ref) async {
     await Permission.notification.request();
     await ref.read(shellPairingProvider.notifier).start();
+    // 配对码只能由系统的「无线调试」页面生成，发起后直接把用户送到那一页，
+    // 省掉自己翻设置。跳转失败也不影响已经发起的配对，提示文案仍写着手动前往。
+    try {
+      await ref.read(adbShellNativeProvider).openWirelessDebuggingSettings();
+    } catch (_) {
+      // 原生未注册或 ROM 拒绝跳转：配对流程照常，用户可自行打开设置页。
+    }
   }
 
   /// 复制原始失败原因：这行常带原生 stderr，用户要能直接贴出来。

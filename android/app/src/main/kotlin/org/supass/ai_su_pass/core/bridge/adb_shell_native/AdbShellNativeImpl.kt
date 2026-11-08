@@ -1,9 +1,11 @@
 package org.supass.ai_su_pass.core.bridge.adb_shell_native
 
 import android.content.Context
+import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
+import android.provider.Settings
 import android.util.Log
 import org.supass.ai_su_pass.core.adb.AdbConnectionManager
 import org.supass.ai_su_pass.core.adb.AdbShellChannel
@@ -181,6 +183,17 @@ class AdbShellNativeImpl(private val context: Context) : AdbShellNative {
                 ),
             )
         }
+    }
+
+    /**
+     * 打开系统的「开发者选项 → 无线调试」页面。
+     *
+     * 只负责跳转，不改任何系统开关：配对码必须由用户在系统页面里生成，本 App
+     * 代劳不了。返回值只说明「Intent 是否发出去了」，页面里到底显示了什么由用户看。
+     */
+    override fun openWirelessDebuggingSettings(callback: (Result<Boolean>) -> Unit) {
+        val opened = launchWirelessDebuggingSettings()
+        mainHandler.post { callback(Result.success(opened)) }
     }
 
     override fun pollPairing(sessionId: String, callback: (Result<PairingSnapshot>) -> Unit) {
@@ -611,6 +624,54 @@ class AdbShellNativeImpl(private val context: Context) : AdbShellNative {
             PairingReasons.HOST_DISCONNECTED
         }
 
+    /**
+     * 把用户送到「开发者选项 → 无线调试」页面。
+     *
+     * 按「越精确越靠前」试一串候选入口：各家 ROM 都改过设置页，同一个入口在
+     * 这台机器能用、在那台被裁掉，逐个 fallback 比赌一个稳。被裁掉的入口会抛
+     * `ActivityNotFoundException` / `SecurityException`，这里一律吞掉换下一个。
+     * 全都不行就回 `false`，让上层继续提示用户手动前往，不能假装已经跳过去了。
+     *
+     * 为什么不直接点开系统的「使用配对码配对设备」弹窗：那个弹窗没有对外 action，
+     * 能落到的只有无线调试页面，由用户自己点一下。
+     */
+    private fun launchWirelessDebuggingSettings(): Boolean {
+        val candidates = listOf(
+            // 1. 系统内置 action：Pixel / AOSP 上直接落到无线调试页面。
+            Intent(ACTION_WIRELESS_DEBUGGING_SETTINGS),
+            // 2. AOSP 与多数 OEM 都保留的页面类名。
+            Intent().setClassName(SETTINGS_PACKAGE, WIRELESS_DEBUGGING_ACTIVITY),
+            // 3. 类名被改名时，退回通用 SubSettings + 目标 Fragment。
+            Intent()
+                .setClassName(SETTINGS_PACKAGE, SUBSETTINGS_ACTIVITY)
+                .putExtra(SETTINGS_SHOW_FRAGMENT, WIRELESS_DEBUGGING_FRAGMENT),
+            // 4. 再退一步：Fragment 类名也变了的老版本。
+            Intent()
+                .setClassName(SETTINGS_PACKAGE, SUBSETTINGS_ACTIVITY)
+                .putExtra(SETTINGS_SHOW_FRAGMENT, ADB_WIRELESS_DEBUGGING_FRAGMENT),
+            // 5. 最差情况：开发者选项首页，用户自己再点一下「无线调试」。
+            Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS),
+        )
+
+        for (base in candidates) {
+            // 从应用上下文启动必须带 NEW_TASK，否则直接抛 AndroidRuntimeException。
+            val intent = Intent(base).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            try {
+                context.startActivity(intent)
+                Log.i(TAG, "openWirelessDebuggingSettings ok: ${base.toShortString()}")
+                return true
+            } catch (e: Exception) {
+                Log.w(
+                    TAG,
+                    "openWirelessDebuggingSettings failed: ${base.toShortString()} " +
+                        "reason=${e.javaClass.simpleName}",
+                )
+            }
+        }
+        Log.w(TAG, "openWirelessDebuggingSettings: no candidate accepted by this ROM")
+        return false
+    }
+
     /** 断开连接、撤通知并停掉后台线程，由 [org.supass.ai_su_pass.NativeProvider] 调用。 */
     fun dispose() {
         Log.i(TAG, "dispose")
@@ -735,5 +796,32 @@ class AdbShellNativeImpl(private val context: Context) : AdbShellNative {
 
         /** libadb 在设备未授权时抛的异常类名，用来把失败归到 `hostAuthFailed`。 */
         const val AUTH_FAILED_EXCEPTION = "AdbAuthenticationFailedException"
+
+        /**
+         * 「无线调试」页面的隐藏 action。
+         *
+         * 不在 `android.provider.Settings` 里公开，但 AOSP Settings 的
+         * `WirelessDebuggingActivity` 挂了同名 intent-filter，Pixel 与多数 OEM 一直保留。
+         */
+        const val ACTION_WIRELESS_DEBUGGING_SETTINGS = "android.settings.WIRELESS_DEBUGGING_SETTINGS"
+
+        /** 设置应用的包名；各家 OEM 的自定义设置一般也沿用这个包名。 */
+        const val SETTINGS_PACKAGE = "com.android.settings"
+
+        /** 无线调试页面的类名（AOSP / Pixel / MIUI 等）。 */
+        const val WIRELESS_DEBUGGING_ACTIVITY = "com.android.settings.Settings\$WirelessDebuggingActivity"
+
+        /** 通用二级设置容器，配合 `:settings:show_fragment` 直接塞 Fragment。 */
+        const val SUBSETTINGS_ACTIVITY = "com.android.settings.SubSettings"
+
+        /** Settings 内部用来指定目标 Fragment 的 extra。 */
+        const val SETTINGS_SHOW_FRAGMENT = ":settings:show_fragment"
+
+        /** 新版本无线调试页面 Fragment。 */
+        const val WIRELESS_DEBUGGING_FRAGMENT = "com.android.settings.development.WirelessDebuggingFragment"
+
+        /** 早期版本无线调试页面 Fragment（类名没改过来的 ROM 还停在这里）。 */
+        const val ADB_WIRELESS_DEBUGGING_FRAGMENT =
+            "com.android.settings.development.AdbWirelessDebuggingFragment"
     }
 }
