@@ -596,10 +596,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get escalationHandoffNoRoot =>
-      'No root right now: the payload did not succeed, or the temporary root is already gone. Run root from the menu first, then hand off.';
-
-  @override
   String escalationHandoffFailed(int code) {
     return 'Handoff failed (exit code $code). Common causes: manager version does not match the kernel module, permission was denied, or the manager is upgrading.';
   }
@@ -676,6 +672,183 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get escalationMenuClear => 'Clear screen';
+
+  @override
+  String get escalationDirtyFragTitle => 'DirtyFrag root';
+
+  @override
+  String get escalationDirtyFragFieldManager => 'Manager';
+
+  @override
+  String get escalationDirtyFragFieldKernel => 'Kernel';
+
+  @override
+  String get escalationDirtyFragFieldVrDisarm => 'VR disarm';
+
+  @override
+  String get escalationDirtyFragFieldVrAuto => 'Auto resolve';
+
+  @override
+  String get escalationDirtyFragFieldSoftReboot => 'Soft reboot';
+
+  @override
+  String get escalationDirtyFragToggleOn => 'on';
+
+  @override
+  String get escalationDirtyFragToggleOff => 'off';
+
+  @override
+  String get escalationDirtyFragConfirmAction => 'Start';
+
+  @override
+  String get escalationDirtyFragConfirmBody =>
+      'SELinux is put permissive during the run and the system may be unstable for a short while. A reboot restores it.';
+
+  @override
+  String get escalationDirtyFragVrDisarmTitle => 'VR disarm';
+
+  @override
+  String get escalationDirtyFragVrDisarmDesc =>
+      'vivo devices need the kernel-side VR protection removed first; leave it off elsewhere';
+
+  @override
+  String get escalationDirtyFragVrAutoTitle => 'Resolve offset automatically';
+
+  @override
+  String get escalationDirtyFragVrAutoDesc =>
+      'Derives the function offset from kernel BTF; non-vivo devices can ignore it';
+
+  @override
+  String get escalationDirtyFragSoftRebootTitle => 'Soft reboot on success';
+
+  @override
+  String get escalationDirtyFragSoftRebootDesc =>
+      'Reboots once after root is taken over so Zygisk / LSPosed modules take effect. A failed run never reboots; combined with boot autorun, a reboot the manager cannot complete may leave the device without root';
+
+  @override
+  String get escalationDirtyFragVrOffsetLabel => 'Manual offset';
+
+  @override
+  String get escalationDirtyFragVrOffsetHint =>
+      'Range 1-256; an invalid value aborts before handoff';
+
+  @override
+  String get escalationDirtyFragAlreadyArmed =>
+      'Already injected in this boot; reboot before running again';
+
+  @override
+  String escalationDirtyFragKernelUnsupported(String kernel) {
+    return 'Kernel $kernel is not supported';
+  }
+
+  @override
+  String get escalationDirtyFragKernelUnsupportedShort => '(unsupported)';
+
+  @override
+  String get escalationDirtyFragKernelUnknown => 'unknown';
+
+  @override
+  String get escalationDirtyFragNoManager =>
+      'Pick a manager with libksud.so from the capsule at the top right first';
+
+  @override
+  String escalationDirtyFragRunning(String manager) {
+    return 'Running DirtyFrag against $manager…';
+  }
+
+  @override
+  String escalationDirtyFragSucceeded(String manager) {
+    return 'Kernel module loaded; root handed off to $manager';
+  }
+
+  @override
+  String get escalationDirtyFragNotVulnerable =>
+      'This kernel does not have the flaw';
+
+  @override
+  String get escalationDirtyFragPatchFailed =>
+      'Patching failed; see the output above';
+
+  @override
+  String get escalationDirtyFragVrFailed =>
+      'VR disarm failed; aborted before handoff';
+
+  @override
+  String get escalationDirtyFragBootstrapFailed =>
+      'Kernel module loaded, but the bootstrap or ksud stage failed';
+
+  @override
+  String get escalationDirtyFragTimedOut =>
+      'Timed out waiting for the final marker; see the output above';
+
+  @override
+  String escalationDirtyFragNotStarted(String reason) {
+    return 'Rejected by the native side; reason code: $reason';
+  }
+
+  @override
+  String escalationDirtyFragVrOffsetResolved(String offset) {
+    return 'VR offset resolved: $offset';
+  }
+
+  @override
+  String escalationDirtyFragHandoffFollowUp(String manager) {
+    return 'Injected; handing root off to $manager';
+  }
+
+  @override
+  String get escalationDirtyFragVrExtractAction => 'Extract from image/OTA';
+
+  @override
+  String escalationDirtyFragVrExtractProgress(String phase, int percent) {
+    return '$phase $percent%';
+  }
+
+  @override
+  String get escalationDirtyFragVrExtractPhaseDownload => 'Download';
+
+  @override
+  String get escalationDirtyFragVrExtractPhaseUnpack => 'Unpack';
+
+  @override
+  String get escalationDirtyFragVrExtractEmpty =>
+      'Fill in a local image path or an OTA link above first';
+
+  @override
+  String escalationDirtyFragVrExtractFailed(String error) {
+    return 'Extract failed: $error';
+  }
+
+  @override
+  String get settingsBootAutostartSection => 'Root';
+
+  @override
+  String get settingsExpertModeTitle => 'Expert mode';
+
+  @override
+  String get settingsExpertModeDesc =>
+      'Required before boot-time autorun can be configured';
+
+  @override
+  String get settingsBootAutostartTitle => 'Run DirtyFrag on boot';
+
+  @override
+  String get settingsBootAutostartTitleLocked =>
+      'Run DirtyFrag on boot (enable expert mode first)';
+
+  @override
+  String get settingsBootAutostartDesc =>
+      'Tries to inject automatically after a reboot. A failed run turns this switch off';
+
+  @override
+  String get settingsBootAutostartConfirmTitle => 'Enable boot autorun?';
+
+  @override
+  String get settingsBootAutostartConfirmBody =>
+      'A failed run at boot can put the device in a reboot loop, leaving recovery or a reflash as the only way out. Confirm only if you understand this.';
+
+  @override
+  String get settingsBootAutostartConfirmAction => 'I understand, enable';
 
   @override
   String get escalationCopy => 'Copy selection';

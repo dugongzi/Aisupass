@@ -9,6 +9,10 @@
     <!-- root 管理器列表：getInstalledApplications 在 Android 11+ 受包可见性限制，
          没有这个权限扫出来的列表是空的，用户就选不到已装的管理器 -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"/>
+    <!-- 开机自启：接收 LOCKED_BOOT_COMPLETED / BOOT_COMPLETED -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <!-- 开机执行期间按住 CPU，避免跑到一半被系统休眠打断 -->
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <application
         android:label="Aisupass"
         android:name="${applicationName}"
@@ -40,6 +44,17 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- 开机自启。默认禁用，唯一开关是组件启用态；
+             directBootAware 才能在用户解锁前读到 DE 存储。 -->
+        <receiver
+            android:name=".boot.DirtyFragBootReceiver"
+            android:directBootAware="true"
+            android:enabled="false"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

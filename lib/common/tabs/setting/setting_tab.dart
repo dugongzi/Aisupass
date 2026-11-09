@@ -4,6 +4,7 @@ import 'package:Aisupass/common/widgets/app_theme_color_picker.dart';
 import 'package:Aisupass/common/widgets/app_theme_mode_switch.dart';
 import 'package:Aisupass/core/extensions/context_extensions.dart';
 import 'package:Aisupass/features/ai/presentation/widgets/ai_config_entry.dart';
+import 'package:Aisupass/features/escalation/presentation/widgets/dirty_frag_boot_switch.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -28,6 +29,11 @@ class SettingTab extends HookWidget {
         AppSettingsSection(
           title: context.l10n.settingsGeneralSection,
           children: const <Widget>[AppLanguageSwitch()],
+        ),
+        SizedBox(height: 20.h),
+        AppSettingsSection(
+          title: context.l10n.settingsBootAutostartSection,
+          children: const <Widget>[DirtyFragBootSwitch()],
         ),
         SizedBox(height: 20.h),
         AppSettingsSection(

@@ -1160,12 +1160,6 @@ abstract class AppLocalizations {
   /// **'设备上没装 {manager}：找不到它的 libksud.so（包名 {package}）。请先安装 {manager}，再回来重试。'**
   String escalationHandoffManagerMissing(String manager, String package);
 
-  /// 手动提权页-移交时没有 root
-  ///
-  /// In zh, this message translates to:
-  /// **'当前没有 root：载荷没跑成功，或者临时 root 已经失效。先在菜单里执行一次提权，再来移交。'**
-  String get escalationHandoffNoRoot;
-
   /// 手动提权页-移交失败：带上退出码
   ///
   /// In zh, this message translates to:
@@ -1297,6 +1291,294 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'清屏'**
   String get escalationMenuClear;
+
+  /// 终端的菜单项与确认弹窗标题
+  ///
+  /// In zh, this message translates to:
+  /// **'DirtyFrag 提权'**
+  String get escalationDirtyFragTitle;
+
+  /// 确认弹窗里的管理器字段标签
+  ///
+  /// In zh, this message translates to:
+  /// **'管理器'**
+  String get escalationDirtyFragFieldManager;
+
+  /// 确认弹窗里的内核版本字段标签
+  ///
+  /// In zh, this message translates to:
+  /// **'内核'**
+  String get escalationDirtyFragFieldKernel;
+
+  /// 确认弹窗里 VR 反制的只读标签，值用开/关
+  ///
+  /// In zh, this message translates to:
+  /// **'VR 反制'**
+  String get escalationDirtyFragFieldVrDisarm;
+
+  /// 确认弹窗里自动解析的只读标签，值用开/关
+  ///
+  /// In zh, this message translates to:
+  /// **'自动解析'**
+  String get escalationDirtyFragFieldVrAuto;
+
+  /// 确认弹窗里软重启的只读标签，值用开/关
+  ///
+  /// In zh, this message translates to:
+  /// **'软重启'**
+  String get escalationDirtyFragFieldSoftReboot;
+
+  /// 确认弹窗里开关项的「开」
+  ///
+  /// In zh, this message translates to:
+  /// **'开'**
+  String get escalationDirtyFragToggleOn;
+
+  /// 确认弹窗里开关项的「关」
+  ///
+  /// In zh, this message translates to:
+  /// **'关'**
+  String get escalationDirtyFragToggleOff;
+
+  /// 确认弹窗的主按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'开始'**
+  String get escalationDirtyFragConfirmAction;
+
+  /// 确认弹窗底部的风险说明
+  ///
+  /// In zh, this message translates to:
+  /// **'执行期间会把 SELinux 置为宽容模式，并可能让系统短暂不稳定。重启即可恢复。'**
+  String get escalationDirtyFragConfirmBody;
+
+  /// 设置页 VR 反制开关的标题
+  ///
+  /// In zh, this message translates to:
+  /// **'VR 反制'**
+  String get escalationDirtyFragVrDisarmTitle;
+
+  /// 设置页 VR 反制开关的说明
+  ///
+  /// In zh, this message translates to:
+  /// **'vivo 机型需要先拆掉内核侧的 VR 保护；其它机型不要开'**
+  String get escalationDirtyFragVrDisarmDesc;
+
+  /// 设置页自动解析开关的标题
+  ///
+  /// In zh, this message translates to:
+  /// **'自动解析偏移'**
+  String get escalationDirtyFragVrAutoTitle;
+
+  /// 设置页自动解析开关的说明
+  ///
+  /// In zh, this message translates to:
+  /// **'由内核 BTF 推导函数偏移；非 vivo 机型不需要管'**
+  String get escalationDirtyFragVrAutoDesc;
+
+  /// 设置页软重启开关的标题
+  ///
+  /// In zh, this message translates to:
+  /// **'成功后自动软重启'**
+  String get escalationDirtyFragSoftRebootTitle;
+
+  /// 设置页软重启开关的说明
+  ///
+  /// In zh, this message translates to:
+  /// **'root 接管成功后软重启一次，Zygisk / LSPosed 模块随之生效。失败不会重启；与开机自启同开时若管理器无法完成重启，开机后可能反而没有 root'**
+  String get escalationDirtyFragSoftRebootDesc;
+
+  /// 手动偏移输入框的标签
+  ///
+  /// In zh, this message translates to:
+  /// **'手动偏移'**
+  String get escalationDirtyFragVrOffsetLabel;
+
+  /// 手动偏移输入框下方的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'取值范围 1-256，填错会直接中止在移交之前'**
+  String get escalationDirtyFragVrOffsetHint;
+
+  /// 前置检查发现本次开机已注入时的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'本次开机已经注入过，重启后才能再次执行'**
+  String get escalationDirtyFragAlreadyArmed;
+
+  /// 内核版本不在支持列表时的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'内核 {kernel} 不在支持列表内'**
+  String escalationDirtyFragKernelUnsupported(String kernel);
+
+  /// 确认弹窗里内核版本后面的短标记
+  ///
+  /// In zh, this message translates to:
+  /// **'（不支持）'**
+  String get escalationDirtyFragKernelUnsupportedShort;
+
+  /// 读不到内核版本时的替代文字
+  ///
+  /// In zh, this message translates to:
+  /// **'未知'**
+  String get escalationDirtyFragKernelUnknown;
+
+  /// 没有选中管理器时的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'先在右上角胶囊里选中一个带 libksud.so 的管理器'**
+  String get escalationDirtyFragNoManager;
+
+  /// 开始执行时写进终端的那一行
+  ///
+  /// In zh, this message translates to:
+  /// **'正在执行 DirtyFrag，目标管理器 {manager}…'**
+  String escalationDirtyFragRunning(String manager);
+
+  /// 全链路成功时的结论
+  ///
+  /// In zh, this message translates to:
+  /// **'内核模块已加载，root 已移交给 {manager}'**
+  String escalationDirtyFragSucceeded(String manager);
+
+  /// 内核不可利用时的结论
+  ///
+  /// In zh, this message translates to:
+  /// **'这台设备的内核没有该漏洞'**
+  String get escalationDirtyFragNotVulnerable;
+
+  /// 打补丁阶段失败时的结论
+  ///
+  /// In zh, this message translates to:
+  /// **'打补丁阶段失败，见上方输出'**
+  String get escalationDirtyFragPatchFailed;
+
+  /// VR 反制阶段失败时的结论
+  ///
+  /// In zh, this message translates to:
+  /// **'VR 反制失败，已在移交前中止'**
+  String get escalationDirtyFragVrFailed;
+
+  /// 内核侧就位但后续阶段失败时的结论
+  ///
+  /// In zh, this message translates to:
+  /// **'内核模块已加载，但 bootstrap 或 ksud 阶段失败'**
+  String get escalationDirtyFragBootstrapFailed;
+
+  /// 超时时的结论
+  ///
+  /// In zh, this message translates to:
+  /// **'等待终局标记超时，见上方输出'**
+  String get escalationDirtyFragTimedOut;
+
+  /// 原生拒绝受理时的结论；reason 是契约里的技术标识，不做翻译
+  ///
+  /// In zh, this message translates to:
+  /// **'原生侧未受理，原因码：{reason}'**
+  String escalationDirtyFragNotStarted(String reason);
+
+  /// 自动解析出偏移时的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'VR 偏移已解析：{offset}'**
+  String escalationDirtyFragVrOffsetResolved(String offset);
+
+  /// D8 自动补跑移交前写的那一行
+  ///
+  /// In zh, this message translates to:
+  /// **'接管成功，接着把 root 移交给 {manager}'**
+  String escalationDirtyFragHandoffFollowUp(String manager);
+
+  /// 确认弹窗里手动偏移下方的提取按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'从镜像/OTA 提取'**
+  String get escalationDirtyFragVrExtractAction;
+
+  /// 提取进度行；phase 由两条阶段文案传入，percent 是整数
+  ///
+  /// In zh, this message translates to:
+  /// **'{phase} {percent}%'**
+  String escalationDirtyFragVrExtractProgress(String phase, int percent);
+
+  /// 进度阶段：下载 boot 分区
+  ///
+  /// In zh, this message translates to:
+  /// **'下载'**
+  String get escalationDirtyFragVrExtractPhaseDownload;
+
+  /// 进度阶段：解包镜像
+  ///
+  /// In zh, this message translates to:
+  /// **'解包'**
+  String get escalationDirtyFragVrExtractPhaseUnpack;
+
+  /// 输入框为空就点提取时的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'先把本地镜像路径或 OTA 直链填到上面的输入框'**
+  String get escalationDirtyFragVrExtractEmpty;
+
+  /// 提取失败提示；error 是原生侧原文，不做翻译
+  ///
+  /// In zh, this message translates to:
+  /// **'提取失败：{error}'**
+  String escalationDirtyFragVrExtractFailed(String error);
+
+  /// 设置页这一组的小标题
+  ///
+  /// In zh, this message translates to:
+  /// **'提权'**
+  String get settingsBootAutostartSection;
+
+  /// 专家模式开关的标题
+  ///
+  /// In zh, this message translates to:
+  /// **'专家模式'**
+  String get settingsExpertModeTitle;
+
+  /// 专家模式开关的说明
+  ///
+  /// In zh, this message translates to:
+  /// **'开启后才能配置开机自动执行'**
+  String get settingsExpertModeDesc;
+
+  /// 开机自启开关的标题（专家模式已开）
+  ///
+  /// In zh, this message translates to:
+  /// **'开机自动执行 DirtyFrag'**
+  String get settingsBootAutostartTitle;
+
+  /// 开机自启开关的标题（专家模式未开）
+  ///
+  /// In zh, this message translates to:
+  /// **'开机自动执行 DirtyFrag（需先开专家模式）'**
+  String get settingsBootAutostartTitleLocked;
+
+  /// 开机自启开关的说明
+  ///
+  /// In zh, this message translates to:
+  /// **'重启后自动尝试注入，不用手点。失败会自动关闭这个开关'**
+  String get settingsBootAutostartDesc;
+
+  /// 开启开机自启前的确认弹窗标题
+  ///
+  /// In zh, this message translates to:
+  /// **'确认开启开机自启？'**
+  String get settingsBootAutostartConfirmTitle;
+
+  /// 开启开机自启前的确认弹窗正文
+  ///
+  /// In zh, this message translates to:
+  /// **'开机阶段执行失败可能导致反复重启，届时只能进 recovery 或重刷系统恢复。确认了解后再开启。'**
+  String get settingsBootAutostartConfirmBody;
+
+  /// 开启开机自启确认弹窗的主按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'我了解，开启'**
+  String get settingsBootAutostartConfirmAction;
 
   /// 手动提权页-底栏复制键：按钮名与读屏文案
   ///

@@ -16,6 +16,7 @@ class EscalationMenuButton extends HookWidget {
   const EscalationMenuButton({
     super.key,
     required this.onExploit,
+    required this.onDirtyFrag,
     required this.onHandoff,
     required this.onPayloadCatalog,
     required this.onClear,
@@ -23,6 +24,9 @@ class EscalationMenuButton extends HookWidget {
 
   /// 用户选择「提权」。
   final VoidCallback onExploit;
+
+  /// 用户选择「DirtyFrag 提权」。
+  final VoidCallback onDirtyFrag;
 
   /// 用户选择「移交给当前管理器」。
   final VoidCallback onHandoff;
@@ -68,6 +72,8 @@ class EscalationMenuButton extends HookWidget {
       switch (action) {
         case _MenuAction.exploit:
           onExploit();
+        case _MenuAction.dirtyFrag:
+          onDirtyFrag();
         case _MenuAction.handoff:
           onHandoff();
         case _MenuAction.payloadCatalog:
@@ -107,6 +113,11 @@ class EscalationMenuButton extends HookWidget {
       _MenuAction.exploit,
       Icons.security_rounded,
       l10n.escalationExploitButton,
+    ),
+    _item(
+      _MenuAction.dirtyFrag,
+      Icons.memory_rounded,
+      l10n.escalationDirtyFragTitle,
     ),
     const PopupMenuDivider(),
     // 分组头不可点，菜单长了才好找。
@@ -158,4 +169,4 @@ class EscalationMenuButton extends HookWidget {
 }
 
 /// 菜单项。只在本文件内流转，不对外暴露。
-enum _MenuAction { exploit, handoff, payloadCatalog, clear }
+enum _MenuAction { exploit, dirtyFrag, handoff, payloadCatalog, clear }

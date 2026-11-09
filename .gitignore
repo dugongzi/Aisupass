@@ -62,6 +62,9 @@ secrets.json
 /android/app/.cxx/
 **/GeneratedPluginRegistrant.java
 
+# Rust build cache
+/android/app/src/main/jni/vrext/target/
+
 # Symbolication related
 app.*.symbols
 

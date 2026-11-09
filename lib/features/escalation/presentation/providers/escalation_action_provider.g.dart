@@ -434,3 +434,750 @@ final class SelectRootManagerFamily extends $Family
   @override
   String toString() => r'selectRootManagerProvider';
 }
+
+/// DirtyFrag 运行数据源。
+
+@ProviderFor(dirtyFragActionDatasource)
+const dirtyFragActionDatasourceProvider = DirtyFragActionDatasourceProvider._();
+
+/// DirtyFrag 运行数据源。
+
+final class DirtyFragActionDatasourceProvider
+    extends
+        $FunctionalProvider<
+          DirtyFragActionDatasource,
+          DirtyFragActionDatasource,
+          DirtyFragActionDatasource
+        >
+    with $Provider<DirtyFragActionDatasource> {
+  /// DirtyFrag 运行数据源。
+  const DirtyFragActionDatasourceProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'dirtyFragActionDatasourceProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$dirtyFragActionDatasourceHash();
+
+  @$internal
+  @override
+  $ProviderElement<DirtyFragActionDatasource> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  DirtyFragActionDatasource create(Ref ref) {
+    return dirtyFragActionDatasource(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(DirtyFragActionDatasource value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<DirtyFragActionDatasource>(value),
+    );
+  }
+}
+
+String _$dirtyFragActionDatasourceHash() =>
+    r'6ac04d1f0b45f5b96f300b8e3802bd20d8ab79ea';
+
+/// DirtyFrag 运行仓储。
+
+@ProviderFor(dirtyFragActionRepository)
+const dirtyFragActionRepositoryProvider = DirtyFragActionRepositoryProvider._();
+
+/// DirtyFrag 运行仓储。
+
+final class DirtyFragActionRepositoryProvider
+    extends
+        $FunctionalProvider<
+          DirtyFragActionRepository,
+          DirtyFragActionRepository,
+          DirtyFragActionRepository
+        >
+    with $Provider<DirtyFragActionRepository> {
+  /// DirtyFrag 运行仓储。
+  const DirtyFragActionRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'dirtyFragActionRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$dirtyFragActionRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<DirtyFragActionRepository> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  DirtyFragActionRepository create(Ref ref) {
+    return dirtyFragActionRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(DirtyFragActionRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<DirtyFragActionRepository>(value),
+    );
+  }
+}
+
+String _$dirtyFragActionRepositoryHash() =>
+    r'ef5f252646f4858bb0b09d81cc228bdc53588636';
+
+/// 本次开机是否已经注入过。
+
+@ProviderFor(dirtyFragArmed)
+const dirtyFragArmedProvider = DirtyFragArmedProvider._();
+
+/// 本次开机是否已经注入过。
+
+final class DirtyFragArmedProvider
+    extends $FunctionalProvider<AsyncValue<bool>, bool, FutureOr<bool>>
+    with $FutureModifier<bool>, $FutureProvider<bool> {
+  /// 本次开机是否已经注入过。
+  const DirtyFragArmedProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'dirtyFragArmedProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$dirtyFragArmedHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<bool> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<bool> create(Ref ref) {
+    return dirtyFragArmed(ref);
+  }
+}
+
+String _$dirtyFragArmedHash() => r'74006fbd33ad6ec1e4648fe31ac9be398ce7c5fb';
+
+/// 运行默认值（设置页四个开关的当前值）。
+
+@ProviderFor(dirtyFragRunDefaults)
+const dirtyFragRunDefaultsProvider = DirtyFragRunDefaultsProvider._();
+
+/// 运行默认值（设置页四个开关的当前值）。
+
+final class DirtyFragRunDefaultsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<DirtyFragRunDefaults>,
+          DirtyFragRunDefaults,
+          FutureOr<DirtyFragRunDefaults>
+        >
+    with
+        $FutureModifier<DirtyFragRunDefaults>,
+        $FutureProvider<DirtyFragRunDefaults> {
+  /// 运行默认值（设置页四个开关的当前值）。
+  const DirtyFragRunDefaultsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'dirtyFragRunDefaultsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$dirtyFragRunDefaultsHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<DirtyFragRunDefaults> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<DirtyFragRunDefaults> create(Ref ref) {
+    return dirtyFragRunDefaults(ref);
+  }
+}
+
+String _$dirtyFragRunDefaultsHash() =>
+    r'c147e91ade7a9f1c0aa3b9e122cdc55b8cc695e0';
+
+/// 写运行默认值。设置页改开关时调用。
+
+@ProviderFor(saveDirtyFragRunDefaults)
+const saveDirtyFragRunDefaultsProvider = SaveDirtyFragRunDefaultsFamily._();
+
+/// 写运行默认值。设置页改开关时调用。
+
+final class SaveDirtyFragRunDefaultsProvider
+    extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
+    with $FutureModifier<void>, $FutureProvider<void> {
+  /// 写运行默认值。设置页改开关时调用。
+  const SaveDirtyFragRunDefaultsProvider._({
+    required SaveDirtyFragRunDefaultsFamily super.from,
+    required DirtyFragRunDefaults super.argument,
+  }) : super(
+         retry: null,
+         name: r'saveDirtyFragRunDefaultsProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$saveDirtyFragRunDefaultsHash();
+
+  @override
+  String toString() {
+    return r'saveDirtyFragRunDefaultsProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<void> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<void> create(Ref ref) {
+    final argument = this.argument as DirtyFragRunDefaults;
+    return saveDirtyFragRunDefaults(ref, defaults: argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is SaveDirtyFragRunDefaultsProvider &&
+        other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$saveDirtyFragRunDefaultsHash() =>
+    r'02004449b98f9973ee87d0ffefba58e5da45455b';
+
+/// 写运行默认值。设置页改开关时调用。
+
+final class SaveDirtyFragRunDefaultsFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<void>, DirtyFragRunDefaults> {
+  const SaveDirtyFragRunDefaultsFamily._()
+    : super(
+        retry: null,
+        name: r'saveDirtyFragRunDefaultsProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// 写运行默认值。设置页改开关时调用。
+
+  SaveDirtyFragRunDefaultsProvider call({
+    required DirtyFragRunDefaults defaults,
+  }) => SaveDirtyFragRunDefaultsProvider._(argument: defaults, from: this);
+
+  @override
+  String toString() => r'saveDirtyFragRunDefaultsProvider';
+}
+
+/// 跑一次 DirtyFrag，按块吐出证据。
+
+@ProviderFor(runDirtyFrag)
+const runDirtyFragProvider = RunDirtyFragFamily._();
+
+/// 跑一次 DirtyFrag，按块吐出证据。
+
+final class RunDirtyFragProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<DirtyFragOutcome>,
+          DirtyFragOutcome,
+          Stream<DirtyFragOutcome>
+        >
+    with $FutureModifier<DirtyFragOutcome>, $StreamProvider<DirtyFragOutcome> {
+  /// 跑一次 DirtyFrag，按块吐出证据。
+  const RunDirtyFragProvider._({
+    required RunDirtyFragFamily super.from,
+    required ({RootManager manager, int? vrOffsetOverride}) super.argument,
+  }) : super(
+         retry: null,
+         name: r'runDirtyFragProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$runDirtyFragHash();
+
+  @override
+  String toString() {
+    return r'runDirtyFragProvider'
+        ''
+        '$argument';
+  }
+
+  @$internal
+  @override
+  $StreamProviderElement<DirtyFragOutcome> $createElement(
+    $ProviderPointer pointer,
+  ) => $StreamProviderElement(pointer);
+
+  @override
+  Stream<DirtyFragOutcome> create(Ref ref) {
+    final argument =
+        this.argument as ({RootManager manager, int? vrOffsetOverride});
+    return runDirtyFrag(
+      ref,
+      manager: argument.manager,
+      vrOffsetOverride: argument.vrOffsetOverride,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is RunDirtyFragProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$runDirtyFragHash() => r'4df47a1a78a0ab5fe45690f8c346b89c6e5a6fdb';
+
+/// 跑一次 DirtyFrag，按块吐出证据。
+
+final class RunDirtyFragFamily extends $Family
+    with
+        $FunctionalFamilyOverride<
+          Stream<DirtyFragOutcome>,
+          ({RootManager manager, int? vrOffsetOverride})
+        > {
+  const RunDirtyFragFamily._()
+    : super(
+        retry: null,
+        name: r'runDirtyFragProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// 跑一次 DirtyFrag，按块吐出证据。
+
+  RunDirtyFragProvider call({
+    required RootManager manager,
+    int? vrOffsetOverride,
+  }) => RunDirtyFragProvider._(
+    argument: (manager: manager, vrOffsetOverride: vrOffsetOverride),
+    from: this,
+  );
+
+  @override
+  String toString() => r'runDirtyFragProvider';
+}
+
+/// 专家模式开关当前状态。
+
+@ProviderFor(dirtyFragExpertMode)
+const dirtyFragExpertModeProvider = DirtyFragExpertModeProvider._();
+
+/// 专家模式开关当前状态。
+
+final class DirtyFragExpertModeProvider
+    extends $FunctionalProvider<AsyncValue<bool>, bool, FutureOr<bool>>
+    with $FutureModifier<bool>, $FutureProvider<bool> {
+  /// 专家模式开关当前状态。
+  const DirtyFragExpertModeProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'dirtyFragExpertModeProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$dirtyFragExpertModeHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<bool> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<bool> create(Ref ref) {
+    return dirtyFragExpertMode(ref);
+  }
+}
+
+String _$dirtyFragExpertModeHash() =>
+    r'1609c1b937d215039251d22dcdd9933982d6aec5';
+
+/// 开机自启开关当前状态。真相是组件启用态。
+
+@ProviderFor(dirtyFragBootAutostart)
+const dirtyFragBootAutostartProvider = DirtyFragBootAutostartProvider._();
+
+/// 开机自启开关当前状态。真相是组件启用态。
+
+final class DirtyFragBootAutostartProvider
+    extends $FunctionalProvider<AsyncValue<bool>, bool, FutureOr<bool>>
+    with $FutureModifier<bool>, $FutureProvider<bool> {
+  /// 开机自启开关当前状态。真相是组件启用态。
+  const DirtyFragBootAutostartProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'dirtyFragBootAutostartProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$dirtyFragBootAutostartHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<bool> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<bool> create(Ref ref) {
+    return dirtyFragBootAutostart(ref);
+  }
+}
+
+String _$dirtyFragBootAutostartHash() =>
+    r'50200e7bc0cf5292f007f4d2541f423eb393f6e7';
+
+/// 切换专家模式。
+
+@ProviderFor(setDirtyFragExpertMode)
+const setDirtyFragExpertModeProvider = SetDirtyFragExpertModeFamily._();
+
+/// 切换专家模式。
+
+final class SetDirtyFragExpertModeProvider
+    extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
+    with $FutureModifier<void>, $FutureProvider<void> {
+  /// 切换专家模式。
+  const SetDirtyFragExpertModeProvider._({
+    required SetDirtyFragExpertModeFamily super.from,
+    required bool super.argument,
+  }) : super(
+         retry: null,
+         name: r'setDirtyFragExpertModeProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$setDirtyFragExpertModeHash();
+
+  @override
+  String toString() {
+    return r'setDirtyFragExpertModeProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<void> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<void> create(Ref ref) {
+    final argument = this.argument as bool;
+    return setDirtyFragExpertMode(ref, enabled: argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is SetDirtyFragExpertModeProvider &&
+        other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$setDirtyFragExpertModeHash() =>
+    r'a64348a4122f62ef74b3009abe9c93fe7df00fbe';
+
+/// 切换专家模式。
+
+final class SetDirtyFragExpertModeFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<void>, bool> {
+  const SetDirtyFragExpertModeFamily._()
+    : super(
+        retry: null,
+        name: r'setDirtyFragExpertModeProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// 切换专家模式。
+
+  SetDirtyFragExpertModeProvider call({required bool enabled}) =>
+      SetDirtyFragExpertModeProvider._(argument: enabled, from: this);
+
+  @override
+  String toString() => r'setDirtyFragExpertModeProvider';
+}
+
+/// 切换开机自启。
+
+@ProviderFor(setDirtyFragBootAutostart)
+const setDirtyFragBootAutostartProvider = SetDirtyFragBootAutostartFamily._();
+
+/// 切换开机自启。
+
+final class SetDirtyFragBootAutostartProvider
+    extends $FunctionalProvider<AsyncValue<void>, void, FutureOr<void>>
+    with $FutureModifier<void>, $FutureProvider<void> {
+  /// 切换开机自启。
+  const SetDirtyFragBootAutostartProvider._({
+    required SetDirtyFragBootAutostartFamily super.from,
+    required bool super.argument,
+  }) : super(
+         retry: null,
+         name: r'setDirtyFragBootAutostartProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$setDirtyFragBootAutostartHash();
+
+  @override
+  String toString() {
+    return r'setDirtyFragBootAutostartProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<void> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<void> create(Ref ref) {
+    final argument = this.argument as bool;
+    return setDirtyFragBootAutostart(ref, enabled: argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is SetDirtyFragBootAutostartProvider &&
+        other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$setDirtyFragBootAutostartHash() =>
+    r'900e56823aefa4b6e0c4b072715930f5b125ce3e';
+
+/// 切换开机自启。
+
+final class SetDirtyFragBootAutostartFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<void>, bool> {
+  const SetDirtyFragBootAutostartFamily._()
+    : super(
+        retry: null,
+        name: r'setDirtyFragBootAutostartProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// 切换开机自启。
+
+  SetDirtyFragBootAutostartProvider call({required bool enabled}) =>
+      SetDirtyFragBootAutostartProvider._(argument: enabled, from: this);
+
+  @override
+  String toString() => r'setDirtyFragBootAutostartProvider';
+}
+
+/// 从镜像或 OTA 直链算一次 vr 偏移。
+
+@ProviderFor(deriveVrOffset)
+const deriveVrOffsetProvider = DeriveVrOffsetFamily._();
+
+/// 从镜像或 OTA 直链算一次 vr 偏移。
+
+final class DeriveVrOffsetProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<VrOffsetResult>,
+          VrOffsetResult,
+          FutureOr<VrOffsetResult>
+        >
+    with $FutureModifier<VrOffsetResult>, $FutureProvider<VrOffsetResult> {
+  /// 从镜像或 OTA 直链算一次 vr 偏移。
+  const DeriveVrOffsetProvider._({
+    required DeriveVrOffsetFamily super.from,
+    required ({String input, bool insecure}) super.argument,
+  }) : super(
+         retry: null,
+         name: r'deriveVrOffsetProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$deriveVrOffsetHash();
+
+  @override
+  String toString() {
+    return r'deriveVrOffsetProvider'
+        ''
+        '$argument';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<VrOffsetResult> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<VrOffsetResult> create(Ref ref) {
+    final argument = this.argument as ({String input, bool insecure});
+    return deriveVrOffset(
+      ref,
+      input: argument.input,
+      insecure: argument.insecure,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is DeriveVrOffsetProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$deriveVrOffsetHash() => r'fa51b920a1a22e1da6e8b196218d9ea37f4d5bad';
+
+/// 从镜像或 OTA 直链算一次 vr 偏移。
+
+final class DeriveVrOffsetFamily extends $Family
+    with
+        $FunctionalFamilyOverride<
+          FutureOr<VrOffsetResult>,
+          ({String input, bool insecure})
+        > {
+  const DeriveVrOffsetFamily._()
+    : super(
+        retry: null,
+        name: r'deriveVrOffsetProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// 从镜像或 OTA 直链算一次 vr 偏移。
+
+  DeriveVrOffsetProvider call({required String input, bool insecure = false}) =>
+      DeriveVrOffsetProvider._(
+        argument: (input: input, insecure: insecure),
+        from: this,
+      );
+
+  @override
+  String toString() => r'deriveVrOffsetProvider';
+}
+
+/// 提取进度。只在被监听期间轮询，弹窗关掉就停。
+
+@ProviderFor(vrDeriveProgress)
+const vrDeriveProgressProvider = VrDeriveProgressProvider._();
+
+/// 提取进度。只在被监听期间轮询，弹窗关掉就停。
+
+final class VrDeriveProgressProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<VrDeriveProgress>,
+          VrDeriveProgress,
+          Stream<VrDeriveProgress>
+        >
+    with $FutureModifier<VrDeriveProgress>, $StreamProvider<VrDeriveProgress> {
+  /// 提取进度。只在被监听期间轮询，弹窗关掉就停。
+  const VrDeriveProgressProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'vrDeriveProgressProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$vrDeriveProgressHash();
+
+  @$internal
+  @override
+  $StreamProviderElement<VrDeriveProgress> $createElement(
+    $ProviderPointer pointer,
+  ) => $StreamProviderElement(pointer);
+
+  @override
+  Stream<VrDeriveProgress> create(Ref ref) {
+    return vrDeriveProgress(ref);
+  }
+}
+
+String _$vrDeriveProgressHash() => r'6328101a05e6d604b5067d9539040d603605a839';

@@ -29,9 +29,11 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
 
-        // 只打 64 位产物。
+        // 只打 64 位产物。Flutter 插件已在 apply 阶段写入默认 ABI 列表，
+        // 必须先 clear 再设置，否则 armv7/x86_64 会残留并触发仅支持 ARM64 的汇编。
         ndk {
-            abiFilters += listOf("arm64-v8a")
+            abiFilters.clear()
+            abiFilters.add("arm64-v8a")
         }
     }
 
@@ -40,6 +42,12 @@ android {
             // 保留目录内 .so 原始字节，不压缩、不 strip。
             useLegacyPackaging = true
             keepDebugSymbols += "**/*.so"
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path("src/main/jni/dfroot/CMakeLists.txt")
         }
     }
 

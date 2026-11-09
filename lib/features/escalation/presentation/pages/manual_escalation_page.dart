@@ -6,11 +6,16 @@ import 'package:Aisupass/core/extensions/context_extensions.dart';
 import 'package:Aisupass/core/providers/adb_shell_provider.dart';
 import 'package:Aisupass/core/utils/escalation_reason.dart';
 import 'package:Aisupass/core/utils/terminal_text_writer.dart';
+import 'package:Aisupass/features/escalation/domain/enums/dirty_frag_kind.dart';
+import 'package:Aisupass/features/escalation/domain/models/device_identity.dart';
+import 'package:Aisupass/features/escalation/domain/models/dirty_frag_outcome.dart';
+import 'package:Aisupass/features/escalation/domain/models/dirty_frag_run_defaults.dart';
 import 'package:Aisupass/features/escalation/domain/models/handoff_outcome.dart';
 import 'package:Aisupass/features/escalation/domain/models/payload.dart';
 import 'package:Aisupass/features/escalation/domain/models/root_manager.dart';
 import 'package:Aisupass/features/escalation/presentation/providers/escalation_action_provider.dart';
 import 'package:Aisupass/features/escalation/presentation/providers/escalation_query_provider.dart';
+import 'package:Aisupass/features/escalation/presentation/widgets/dirty_frag_confirm_dialog.dart';
 import 'package:Aisupass/features/escalation/presentation/widgets/escalation_menu_button.dart';
 import 'package:Aisupass/features/escalation/presentation/widgets/payload_catalog_dialog.dart';
 import 'package:Aisupass/features/escalation/presentation/widgets/payload_confirm_dialog.dart';
@@ -97,7 +102,27 @@ class ManualEscalationPage extends HookConsumerWidget {
         ? null
         : ref.watch(handoffRootProvider(manager: handoffManager));
 
-    final bool running = busy.value || (handoff?.isLoading ?? false);
+    // 记这一轮的偏移覆盖而不是「点没点过」：null 表示还没开跑。
+    // 其余参数（VR 反制 / 自动解析 / 软重启）来自设置页，不进这个状态。
+    final ValueNotifier<int?> dirtyFragOffset = useState<int?>(null);
+    final ObjectRef<bool> dirtyFragStarted = useRef<bool>(false);
+    final RootManager? dirtyFragManager = ref
+        .watch(selectedRootManagerProvider)
+        .value;
+    final AsyncValue<DirtyFragOutcome>? dirtyFrag =
+        !dirtyFragStarted.value || dirtyFragManager == null
+        ? null
+        : ref.watch(
+            runDirtyFragProvider(
+              manager: dirtyFragManager,
+              vrOffsetOverride: dirtyFragOffset.value,
+            ),
+          );
+
+    final bool running =
+        busy.value ||
+        (handoff?.isLoading ?? false) ||
+        (dirtyFrag?.isLoading ?? false);
 
     // 招牌要按真实列数挑排版；画好之前到达的输出先攒着，顺序才不会颠倒。
     final ObjectRef<bool> bannerDrawn = useRef<bool>(false);
@@ -271,6 +296,96 @@ class ManualEscalationPage extends HookConsumerWidget {
       }
     }
 
+    /// 跑一次 DirtyFrag。
+    ///
+    /// 前置三项都在这里拦：本次开机已注入、内核不在支持列表、没有选中管理器。
+    Future<void> startDirtyFrag() async {
+      if (busy.value) return;
+
+      final bool armed;
+      try {
+        armed = await ref.read(dirtyFragArmedProvider.future);
+      } catch (error) {
+        writer.writeLine(
+          '${l10n.escalationInvokeFailed}：$error',
+          color: TerminalTextWriter.red,
+        );
+        return;
+      }
+      if (armed) {
+        writer.writeLine(
+          l10n.escalationDirtyFragAlreadyArmed,
+          color: TerminalTextWriter.yellow,
+        );
+        return;
+      }
+
+      final RootManager? manager;
+      final DeviceIdentity identity;
+      final DirtyFragRunDefaults defaults;
+      try {
+        manager = await ref.read(selectedRootManagerProvider.future);
+        identity = await ref.read(currentDeviceIdentityProvider.future);
+        defaults = await ref.read(dirtyFragRunDefaultsProvider.future);
+      } catch (error) {
+        writer.writeLine(
+          '${l10n.escalationInvokeFailed}：$error',
+          color: TerminalTextWriter.red,
+        );
+        return;
+      }
+      if (manager == null) {
+        writer.writeLine(
+          l10n.escalationDirtyFragNoManager,
+          color: TerminalTextWriter.yellow,
+        );
+        return;
+      }
+
+      final bool kernelSupported = isDirtyFragKernelSupported(
+        identity.kernelSeries,
+      );
+      if (!kernelSupported) {
+        writer.writeLine(
+          l10n.escalationDirtyFragKernelUnsupported(
+            identity.kernelVersion.isEmpty
+                ? l10n.escalationDirtyFragKernelUnknown
+                : identity.kernelVersion,
+          ),
+          color: TerminalTextWriter.red,
+        );
+        return;
+      }
+
+      if (!context.mounted) return;
+      final int? override = await showDirtyFragConfirmDialog(
+        context,
+        manager: manager,
+        kernelVersion: identity.kernelVersion,
+        kernelSupported: kernelSupported,
+        defaults: defaults,
+      );
+      if (!context.mounted) return;
+      // 弹窗返回 null 有两种含义：取消，或本次不需要手动偏移。
+      // 用 defaults.needsManualOffset 区分，不能一律当成取消。
+      if (override == null && defaults.needsManualOffset) return;
+
+      writer.writeLine('');
+      writer.writeLine(
+        l10n.escalationDirtyFragRunning(manager.displayName),
+        color: TerminalTextWriter.yellow,
+      );
+      ref.invalidate(shellConnectionProvider);
+      dirtyFragOffset.value = override;
+      dirtyFragStarted.value = true;
+      ref.invalidate(
+        runDirtyFragProvider(
+          manager: manager,
+          vrOffsetOverride: override,
+        ),
+      );
+    }
+
     /// 把终端里选中的文本复制到剪贴板。
     ///
     /// 安卓上没有 `Ctrl+Shift+C`，xterm3 的复制只挂在桌面快捷键上，触摸端唯一
@@ -357,7 +472,6 @@ class ManualEscalationPage extends HookConsumerWidget {
                   manager.displayName,
                   manager.packageName,
                 ),
-              HandoffKind.noRoot => l10n.escalationHandoffNoRoot,
               HandoffKind.failed =>
                 outcome.exitCode < 0
                     ? l10n.escalationHandoffFailedNoCode
@@ -386,6 +500,85 @@ class ManualEscalationPage extends HookConsumerWidget {
       );
       return null;
     }, <Object?>[handoff]);
+
+    // DirtyFrag 每块都写屏：中间块只追加输出，终局块再补结论行。
+    useEffect(() {
+      final AsyncValue<DirtyFragOutcome>? state = dirtyFrag;
+      if (state == null) return null;
+      state.when(
+        loading: () {},
+        error: (Object error, StackTrace stackTrace) {
+          writer.writeLine(
+            '${l10n.escalationInvokeFailed}：$error',
+            color: TerminalTextWriter.red,
+          );
+        },
+        data: (DirtyFragOutcome outcome) {
+          writer.writeStream(outcome.output);
+          if (!outcome.isFinal) return;
+          if (outcome.resolvedVrOffset.isNotEmpty) {
+            writer.writeLine(
+              l10n.escalationDirtyFragVrOffsetResolved(outcome.resolvedVrOffset),
+              color: TerminalTextWriter.dim,
+            );
+          }
+          final RootManager? manager = dirtyFragManager;
+          final String verdict = switch (outcome.kind) {
+            DirtyFragKind.succeeded => l10n.escalationDirtyFragSucceeded(
+              manager?.displayName ?? '',
+            ),
+            DirtyFragKind.notVulnerable => l10n.escalationDirtyFragNotVulnerable,
+            DirtyFragKind.patchFailed => l10n.escalationDirtyFragPatchFailed,
+            DirtyFragKind.vrFailed => l10n.escalationDirtyFragVrFailed,
+            DirtyFragKind.bootstrapFailed =>
+              l10n.escalationDirtyFragBootstrapFailed,
+            DirtyFragKind.timedOut => l10n.escalationDirtyFragTimedOut,
+            DirtyFragKind.notStarted => l10n.escalationDirtyFragNotStarted(
+              outcome.reason,
+            ),
+            DirtyFragKind.running || DirtyFragKind.failed =>
+              l10n.escalationDirtyFragPatchFailed,
+          };
+          writer.writeLine(
+            verdict,
+            color: outcome.success
+                ? TerminalTextWriter.green
+                : TerminalTextWriter.red,
+          );
+          writer.writeLine(
+            '[${escalationExitTag(outcome.exitCode)} · '
+            '${outcome.durationMs} ms'
+            '${outcome.timedOut ? l10n.escalationTimedOutTag : ''}]',
+            color: TerminalTextWriter.dim,
+          );
+          // 跑完就复位，否则重进页面会复用上一轮的 Provider 缓存。
+          dirtyFragStarted.value = false;
+          dirtyFragOffset.value = null;
+          ref.invalidate(dirtyFragArmedProvider);
+
+          // D8：成功后自动补跑移交。
+          //
+          // 必须补跑的理由：bootstrap.c 的 ksud 调用不带 --allow-shell，
+          // 内核能力只进了管理器，本进程（shell uid 2000）仍然没有 root。
+          // 既有移交脚本带 --allow-shell，是 shell 侧拿到 root 的唯一路径。
+          // 复用既有流程：给 handoffTarget 赋上管理器，既有的 handoff
+          // useEffect 会接手写屏，这里不重复输出。
+          if (outcome.success && manager != null) {
+            writer.writeLine('');
+            writer.writeLine(
+              l10n.escalationDirtyFragHandoffFollowUp(manager.displayName),
+              color: TerminalTextWriter.dim,
+            );
+            if (handoffTarget.value == manager) {
+              ref.invalidate(handoffRootProvider(manager: manager));
+            } else {
+              handoffTarget.value = manager;
+            }
+          }
+        },
+      );
+      return null;
+    }, <Object?>[dirtyFrag]);
 
     return Scaffold(
       appBar: AppBar(
@@ -458,6 +651,7 @@ class ManualEscalationPage extends HookConsumerWidget {
             ),
             leading: EscalationMenuButton(
               onExploit: () => unawaited(startExploit()),
+              onDirtyFrag: () => unawaited(startDirtyFrag()),
               onHandoff: () => unawaited(startHandoff()),
               // 弹窗盖在终端上，键盘收起后用户先看完再关。
               onPayloadCatalog: () => unawaited(openPayloadCatalog()),

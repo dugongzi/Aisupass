@@ -67,7 +67,6 @@ bool _isLaunch(String command) => command.contains('EXPLOIT_ATTEMPTS=24');
 bool _isStandaloneLaunch(String command) =>
     command.contains('</dev/null') && !command.contains('--run-payload');
 bool _isKernelRelease(String command) => command.contains('uname -r');
-bool _isRootCheck(String command) => command.contains('-c "id"');
 bool _isBootId(String command) =>
     command.contains('/proc/sys/kernel/random/boot_id');
 
@@ -159,7 +158,6 @@ EscalationActionRepositoryImpl _repository(
   datasource: EscalationActionDatasource(
     native: native,
     storage: storage ?? _FakeStore(),
-    delay: (Duration _) async {},
   ),
 );
 
@@ -378,12 +376,8 @@ void main() {
     bool isHandoff(String command) =>
         command.contains('find /data/app') && command.contains('late-load');
 
-    /// 只在「没有 root」之后才跑的 su 候选诊断命令。
-    bool isDiagnose(String command) => command.contains('probe=');
-
-    test('先探 root，再用同一条 su 完成定位与 late-load', () async {
+    test('用同一条 su 完成定位与 late-load，不做 root 预检', () async {
       final _FakeNative fake = _FakeNative((String command) {
-        if (_isRootCheck(command)) return _ok('uid=0(root) gid=0(root)');
         if (isHandoff(command)) return _ok('KSUD=$ksudPath\nlate load ok\n');
         fail('不该走到这里: $command');
       });
@@ -394,11 +388,11 @@ void main() {
       expect(result.kind, HandoffKind.success);
       expect(result.exitCode, 0);
       expect(result.ksudPath, ksudPath);
-      // 两次 su：定位与 late-load 必须活在同一次 shell 会话里，`$KSUD` 才传得
+      // 只发一条：定位与 late-load 必须活在同一次 shell 会话里，`$KSUD` 才传得
       // 下去。拆成两条不只是多弹一次授权框，中间还有 TOCTOU 窗口。
-      expect(fake.commands, hasLength(2));
+      expect(fake.commands, hasLength(1));
 
-      final String handoff = fake.commands[1];
+      final String handoff = fake.commands[0];
       expect(handoff, contains(r'KSUD=\$(find /data/app -name libksud.so'));
       expect(handoff, contains('| grep -F me.weishu.kernelsu | head -n 1'));
       expect(handoff, contains(r'if [ -z \"\$KSUD\" ]'));
@@ -408,44 +402,15 @@ void main() {
       expect(handoff, contains('--package-name me.weishu.kernelsu'));
     });
 
-    test('没有 root 时只提示并附候选诊断，不发移交命令', () async {
-      final _FakeNative fake = _FakeNative((String command) {
-        if (_isRootCheck(command)) {
-          return _ok('uid=2000(shell) gid=2000(shell)');
-        }
-        if (isDiagnose(command)) {
-          return _ok(
-            'probe=/apex/com.android.virt/bin/su exit=1 out=permission denied',
-          );
-        }
-        fail('没 root 不该继续: $command');
-      });
-
-      final HandoffOutcome result = await _repository(fake)
-          .handoffRoot(manager: _kernelsu);
-
-      expect(result.kind, HandoffKind.noRoot);
-      expect(result.success, isFalse);
-      // 进不去 /data/app 的 find 只会返回空，别把「没 root」说成「没装管理器」。
-      expect(fake.commands, hasLength(2));
-      expect(isHandoff(fake.commands[1]), isFalse);
-      // 诊断只在已经失败之后才跑，把每条候选的实际情况摊进输出：
-      // 路径不存在 / 被管理器拒绝 / 授权框超时，三种原因的处置完全不同。
-      expect(result.output, contains('--- su 候选诊断 ---'));
-      expect(result.output, contains('probe=/apex/com.android.virt/bin/su'));
-    });
-
     test('su 走候选路径解析，不赌 PATH', () async {
       final _FakeNative fake = _FakeNative((String command) {
-        if (_isRootCheck(command)) return _ok('uid=0(root) gid=0(root)');
         if (isHandoff(command)) return _ok('KSUD=$ksudPath\nok\n');
         fail('不该走到这里: $command');
       });
 
       await _repository(fake).handoffRoot(manager: _kernelsu);
 
-      // 探身份与移交都借 root shell；诊断命令不在这里跑（它要逐条试候选本身）。
-      expect(fake.commands, hasLength(2));
+      expect(fake.commands, hasLength(1));
       for (final String command in fake.commands) {
         // 载荷把 su 落在 /data/local/tmp，该目录不在默认 PATH。
         expect(
@@ -460,7 +425,6 @@ void main() {
 
     test('找不到 libksud.so 时归为「管理器没装」而不是笼统失败', () async {
       final _FakeNative fake = _FakeNative((String command) {
-        if (_isRootCheck(command)) return _ok('uid=0(root) gid=0(root)');
         if (isHandoff(command)) return _fail(3, stderr: 'NO_KSUD\n');
         fail('不该走到这里: $command');
       });
@@ -472,13 +436,12 @@ void main() {
       expect(result.kind, HandoffKind.managerMissing);
       expect(result.exitCode, 3);
       expect(result.manager.packageName, 'com.sukisu.ultra');
-      expect(fake.commands, hasLength(2));
-      expect(fake.commands[1], contains('grep -F com.sukisu.ultra'));
+      expect(fake.commands, hasLength(1));
+      expect(fake.commands[0], contains('grep -F com.sukisu.ultra'));
     });
 
     test('只有退出码 3、没有 NO_KSUD 字样时仍按未安装处理', () async {
       final _FakeNative fake = _FakeNative((String command) {
-        if (_isRootCheck(command)) return _ok('uid=0(root) gid=0(root)');
         if (isHandoff(command)) return _fail(3);
         fail('不该走到这里: $command');
       });
@@ -492,7 +455,6 @@ void main() {
 
     test('ksud 路径含无法转义的字符时拒绝转述', () async {
       final _FakeNative fake = _FakeNative((String command) {
-        if (_isRootCheck(command)) return _ok('uid=0(root) gid=0(root)');
         if (isHandoff(command)) return _ok('KSUD=/data/app/x/libksud.so"\n');
         fail('不该走到这里: $command');
       });
@@ -502,12 +464,11 @@ void main() {
 
       expect(result.kind, HandoffKind.failed);
       expect(result.output, contains('无法安全转义'));
-      expect(fake.commands, hasLength(2));
+      expect(fake.commands, hasLength(1));
     });
 
     test('late-load 退出码非 0 即失败，退出码原样透传', () async {
       final _FakeNative fake = _FakeNative((String command) {
-        if (_isRootCheck(command)) return _ok('uid=0(root) gid=0(root)');
         if (isHandoff(command)) return _fail(7, stderr: 'no kernel module');
         fail('不该走到这里: $command');
       });
@@ -522,7 +483,6 @@ void main() {
 
     test('退 0 但输出含失败关键字时不给假成功', () async {
       final _FakeNative fake = _FakeNative((String command) {
-        if (_isRootCheck(command)) return _ok('uid=0(root) gid=0(root)');
         if (isHandoff(command)) {
           return _ok('KSUD=$ksudPath\nlate-load: permission denied\n');
         }
@@ -541,7 +501,6 @@ void main() {
 
     test('退 0 但输出含 failure 也判失败', () async {
       final _FakeNative fake = _FakeNative((String command) {
-        if (_isRootCheck(command)) return _ok('uid=0(root) gid=0(root)');
         if (isHandoff(command)) {
           return _ok('KSUD=$ksudPath\nlate-load: module failure\n');
         }
@@ -557,7 +516,6 @@ void main() {
 
     test('非 0 且没有任何输出时仍按失败处理，退出码不丢', () async {
       final _FakeNative fake = _FakeNative((String command) {
-        if (_isRootCheck(command)) return _ok('uid=0(root) gid=0(root)');
         if (isHandoff(command)) return _fail(1);
         fail('不该走到这里: $command');
       });
@@ -573,7 +531,6 @@ void main() {
 
     test('退 0 且无输出仍按退出码判成功', () async {
       final _FakeNative fake = _FakeNative((String command) {
-        if (_isRootCheck(command)) return _ok('uid=0(root) gid=0(root)');
         if (isHandoff(command)) return _ok('');
         fail('不该走到这里: $command');
       });
@@ -584,18 +541,6 @@ void main() {
       expect(result.kind, HandoffKind.success);
       expect(result.ksudPath, isEmpty);
       expect(result.output, isEmpty);
-    });
-
-    test('移交只发探 root 与移交两条命令', () async {
-      final _FakeNative fake = _FakeNative((String command) {
-        if (_isRootCheck(command)) return _ok('uid=0(root) gid=0(root)');
-        if (isHandoff(command)) return _ok('KSUD=$ksudPath\nok\n');
-        fail('不该走到这里: $command');
-      });
-
-      await _repository(fake).handoffRoot(manager: _kernelsu);
-
-      expect(fake.commands, hasLength(2));
     });
   });
 }

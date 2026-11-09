@@ -11,33 +11,19 @@ import 'package:Aisupass/features/escalation/domain/models/payload.dart';
 import 'package:Aisupass/features/escalation/domain/models/root_manager.dart';
 import 'package:Aisupass/generated/adb_shell.g.dart' as pigeon;
 
-/// 两次 `su` 之间的等待。抽成回调是为了让测试不必真的睡。
-typedef EscalationDelay = Future<void> Function(Duration duration);
-
-Future<void> _sleep(Duration duration) => Future<void>.delayed(duration);
-
 /// 提权链路执行数据源。
-///
-/// 对外只有 [runPayload] / [observeOutput] / [handoffRoot] /
-/// [writeSelectedRootManagerPackage]。
 class EscalationActionDatasource {
-  EscalationActionDatasource({
-    required this._native,
-    required this._storage,
-    this._delay = _sleep,
-  });
+  EscalationActionDatasource({required this._native, required this._storage});
 
   final pigeon.AdbShellNative _native;
 
   final KeyValueStore _storage;
 
-  final EscalationDelay _delay;
-
   /// `stdin` 固定传 `null`：这里的命令都不读标准输入，立即 EOF 比挂到超时好。
   Future<pigeon.ShellExecResult> _exec(String command, int timeoutMs) =>
       _native.exec(command, timeoutMs, null);
 
-  late final SuShell _su = SuShell(exec: _exec, wait: _delay);
+  late final SuShell _su = SuShell(exec: _exec);
 
   late final SlideOffsetCache _slideCache = SlideOffsetCache(
     exec: _exec,
@@ -124,12 +110,9 @@ class EscalationActionDatasource {
 
   /// 把临时 root 交给设备上的 KernelSU 系管理器。
   ///
-  /// 两次 `su`：先探身份，再把「定位 `libksud.so` + `late-load`」合成一条跑。
-  /// 没有 root 时 `find` 只会因为进不去 `/data/app` 返回空，`late-load` 也
-  /// 必被拒，跑下去只是把「没 root」伪装成「管理器没装」。
-  ///
-  /// 判据只有退出码与已知失败关键字，接管后是否持久生效这里不猜。
-  /// 没装、没 root 都返回失败结果而不是抛异常。
+  /// 一条命令：「定位 `libksud.so` + `late-load`」合成执行。这里不做 root
+  /// 预检：载荷刚移交完时 `su` 未必就绪，预检会把已成功的接管误判成没有
+  /// root。没 root 时这条命令自己会失败，退出码与输出就是真实原因。
   Future<HandoffOutcome> handoffRoot({required RootManager manager}) async {
     final String managerPackage = manager.packageName;
     if (!HandoffScript.packagePattern.hasMatch(managerPackage)) {
@@ -141,24 +124,6 @@ class EscalationActionDatasource {
     }
 
     final DateTime startedAt = DateTime.now();
-
-    final pigeon.ShellExecResult rootCheck = await _su.checkRoot();
-    if (!_su.indicatesRoot(rootCheck)) {
-      // 正常路径一次 IPC 就够，失败才逐条摊开 su 候选说明原因。
-      final String diagnostic = await _su.diagnoseCandidates();
-      final String output = <String>[
-        rootCheck.stderr.isNotEmpty ? rootCheck.stderr : rootCheck.stdout,
-        diagnostic,
-      ].where((String part) => part.trim().isNotEmpty).join('\n');
-      return HandoffOutcome(
-        kind: HandoffKind.noRoot,
-        manager: manager,
-        exitCode: rootCheck.exitCode,
-        output: output,
-        durationMs: DateTime.now().difference(startedAt).inMilliseconds,
-        timedOut: rootCheck.timedOut,
-      );
-    }
 
     final pigeon.ShellExecResult handoff = await _su.run(
       HandoffScript.build(managerPackage),

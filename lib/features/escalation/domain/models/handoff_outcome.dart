@@ -1,10 +1,10 @@
 import 'package:Aisupass/features/escalation/domain/models/root_manager.dart';
 
-/// 移交结果的四种形态，与上游 `RootHandoff.kt:78-99` 的 `HandoffResult`
+/// 移交结果的三种形态，与上游 `RootHandoff.kt:78-99` 的 `HandoffResult`
 /// 一一对应。
 ///
 /// 之所以要分型而不是继续用一句 `stderr`：最常见的一种失败是「管理器没装」，
-/// 这种情况下用户唯一能自救的动作是去下载页把管理器装上，把四种形态压成
+/// 这种情况下用户唯一能自救的动作是去下载页把管理器装上，把几种形态压成
 /// 一个字符串就丢掉了这个出路。
 enum HandoffKind {
   /// 成功：命令退 0，且输出里没有已知失败关键字。
@@ -12,9 +12,6 @@ enum HandoffKind {
 
   /// 管理器没装：`/data/app` 下没有该包名的 `libksud.so`。
   managerMissing,
-
-  /// 没有 root 权限：只提示，不尝试移交。
-  noRoot,
 
   /// 命令跑了但失败。
   failed,

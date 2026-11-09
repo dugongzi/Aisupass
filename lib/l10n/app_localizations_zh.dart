@@ -585,10 +585,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get escalationHandoffNoRoot =>
-      '当前没有 root：载荷没跑成功，或者临时 root 已经失效。先在菜单里执行一次提权，再来移交。';
-
-  @override
   String escalationHandoffFailed(int code) {
     return '移交失败（退出码 $code）。常见原因：管理器版本与内核模块不匹配、授权被拒绝，或管理器正在升级。';
   }
@@ -662,6 +658,171 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get escalationMenuClear => '清屏';
+
+  @override
+  String get escalationDirtyFragTitle => 'DirtyFrag 提权';
+
+  @override
+  String get escalationDirtyFragFieldManager => '管理器';
+
+  @override
+  String get escalationDirtyFragFieldKernel => '内核';
+
+  @override
+  String get escalationDirtyFragFieldVrDisarm => 'VR 反制';
+
+  @override
+  String get escalationDirtyFragFieldVrAuto => '自动解析';
+
+  @override
+  String get escalationDirtyFragFieldSoftReboot => '软重启';
+
+  @override
+  String get escalationDirtyFragToggleOn => '开';
+
+  @override
+  String get escalationDirtyFragToggleOff => '关';
+
+  @override
+  String get escalationDirtyFragConfirmAction => '开始';
+
+  @override
+  String get escalationDirtyFragConfirmBody =>
+      '执行期间会把 SELinux 置为宽容模式，并可能让系统短暂不稳定。重启即可恢复。';
+
+  @override
+  String get escalationDirtyFragVrDisarmTitle => 'VR 反制';
+
+  @override
+  String get escalationDirtyFragVrDisarmDesc =>
+      'vivo 机型需要先拆掉内核侧的 VR 保护；其它机型不要开';
+
+  @override
+  String get escalationDirtyFragVrAutoTitle => '自动解析偏移';
+
+  @override
+  String get escalationDirtyFragVrAutoDesc => '由内核 BTF 推导函数偏移；非 vivo 机型不需要管';
+
+  @override
+  String get escalationDirtyFragSoftRebootTitle => '成功后自动软重启';
+
+  @override
+  String get escalationDirtyFragSoftRebootDesc =>
+      'root 接管成功后软重启一次，Zygisk / LSPosed 模块随之生效。失败不会重启；与开机自启同开时若管理器无法完成重启，开机后可能反而没有 root';
+
+  @override
+  String get escalationDirtyFragVrOffsetLabel => '手动偏移';
+
+  @override
+  String get escalationDirtyFragVrOffsetHint => '取值范围 1-256，填错会直接中止在移交之前';
+
+  @override
+  String get escalationDirtyFragAlreadyArmed => '本次开机已经注入过，重启后才能再次执行';
+
+  @override
+  String escalationDirtyFragKernelUnsupported(String kernel) {
+    return '内核 $kernel 不在支持列表内';
+  }
+
+  @override
+  String get escalationDirtyFragKernelUnsupportedShort => '（不支持）';
+
+  @override
+  String get escalationDirtyFragKernelUnknown => '未知';
+
+  @override
+  String get escalationDirtyFragNoManager => '先在右上角胶囊里选中一个带 libksud.so 的管理器';
+
+  @override
+  String escalationDirtyFragRunning(String manager) {
+    return '正在执行 DirtyFrag，目标管理器 $manager…';
+  }
+
+  @override
+  String escalationDirtyFragSucceeded(String manager) {
+    return '内核模块已加载，root 已移交给 $manager';
+  }
+
+  @override
+  String get escalationDirtyFragNotVulnerable => '这台设备的内核没有该漏洞';
+
+  @override
+  String get escalationDirtyFragPatchFailed => '打补丁阶段失败，见上方输出';
+
+  @override
+  String get escalationDirtyFragVrFailed => 'VR 反制失败，已在移交前中止';
+
+  @override
+  String get escalationDirtyFragBootstrapFailed =>
+      '内核模块已加载，但 bootstrap 或 ksud 阶段失败';
+
+  @override
+  String get escalationDirtyFragTimedOut => '等待终局标记超时，见上方输出';
+
+  @override
+  String escalationDirtyFragNotStarted(String reason) {
+    return '原生侧未受理，原因码：$reason';
+  }
+
+  @override
+  String escalationDirtyFragVrOffsetResolved(String offset) {
+    return 'VR 偏移已解析：$offset';
+  }
+
+  @override
+  String escalationDirtyFragHandoffFollowUp(String manager) {
+    return '接管成功，接着把 root 移交给 $manager';
+  }
+
+  @override
+  String get escalationDirtyFragVrExtractAction => '从镜像/OTA 提取';
+
+  @override
+  String escalationDirtyFragVrExtractProgress(String phase, int percent) {
+    return '$phase $percent%';
+  }
+
+  @override
+  String get escalationDirtyFragVrExtractPhaseDownload => '下载';
+
+  @override
+  String get escalationDirtyFragVrExtractPhaseUnpack => '解包';
+
+  @override
+  String get escalationDirtyFragVrExtractEmpty => '先把本地镜像路径或 OTA 直链填到上面的输入框';
+
+  @override
+  String escalationDirtyFragVrExtractFailed(String error) {
+    return '提取失败：$error';
+  }
+
+  @override
+  String get settingsBootAutostartSection => '提权';
+
+  @override
+  String get settingsExpertModeTitle => '专家模式';
+
+  @override
+  String get settingsExpertModeDesc => '开启后才能配置开机自动执行';
+
+  @override
+  String get settingsBootAutostartTitle => '开机自动执行 DirtyFrag';
+
+  @override
+  String get settingsBootAutostartTitleLocked => '开机自动执行 DirtyFrag（需先开专家模式）';
+
+  @override
+  String get settingsBootAutostartDesc => '重启后自动尝试注入，不用手点。失败会自动关闭这个开关';
+
+  @override
+  String get settingsBootAutostartConfirmTitle => '确认开启开机自启？';
+
+  @override
+  String get settingsBootAutostartConfirmBody =>
+      '开机阶段执行失败可能导致反复重启，届时只能进 recovery 或重刷系统恢复。确认了解后再开启。';
+
+  @override
+  String get settingsBootAutostartConfirmAction => '我了解，开启';
 
   @override
   String get escalationCopy => '复制选区';
