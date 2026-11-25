@@ -2150,17 +2150,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsCommandChannelTitle => '命令通道';
 
   @override
-  String get settingsCommandChannelDesc =>
-      'AI 工具执行命令走的链路；Stellar 由应用内特权服务提供，不需要安装其它应用';
+  String get settingsCommandChannelDesc => 'AI 工具执行命令时使用的链路，可在此切换';
 
   @override
   String get commandChannelAdb => '无线 ADB';
 
   @override
   String get commandChannelStellar => 'Stellar';
-
-  @override
-  String get commandChannelSwitchToAdb => '切回无线 ADB';
 
   @override
   String get stellarCardTitle => 'Stellar';
@@ -2205,7 +2201,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get stellarStopFailed => '服务没有响应断开请求，可能仍在运行。';
 
   @override
-  String get escalationTerminalAdbOnly => '终端需要无线 ADB 通道；当前通道不支持终端，这里不会出现提示符。';
+  String get escalationTerminalNeedsAdb => '没连上无线调试。';
 
   @override
   String get rootManagerPillTooltip => '选择 root 管理器';

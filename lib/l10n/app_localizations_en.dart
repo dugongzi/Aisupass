@@ -2320,16 +2320,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsCommandChannelDesc =>
-      'Which link AI tools use to run commands. Stellar is served by the in-app privileged service; no extra app is required.';
+      'The link AI tools use to run commands. Switch it here.';
 
   @override
   String get commandChannelAdb => 'Wireless ADB';
 
   @override
   String get commandChannelStellar => 'Stellar';
-
-  @override
-  String get commandChannelSwitchToAdb => 'Back to wireless ADB';
 
   @override
   String get stellarCardTitle => 'Stellar';
@@ -2379,8 +2376,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'The service did not respond to the disconnect request and may still be running.';
 
   @override
-  String get escalationTerminalAdbOnly =>
-      'The terminal needs the wireless ADB channel; the current channel does not support it, so no prompt will appear here.';
+  String get escalationTerminalNeedsAdb =>
+      'Not connected to wireless debugging.';
 
   @override
   String get rootManagerPillTooltip => 'Choose root manager';

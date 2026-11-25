@@ -4061,7 +4061,7 @@ abstract class AppLocalizations {
   /// 设置页-命令通道切换项的说明
   ///
   /// In zh, this message translates to:
-  /// **'AI 工具执行命令走的链路；Stellar 由应用内特权服务提供，不需要安装其它应用'**
+  /// **'AI 工具执行命令时使用的链路，可在此切换'**
   String get settingsCommandChannelDesc;
 
   /// 命令通道名称-无线 ADB
@@ -4075,12 +4075,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'Stellar'**
   String get commandChannelStellar;
-
-  /// 终端页-当前通道不支持终端时，一键切回无线 ADB 通道的按钮
-  ///
-  /// In zh, this message translates to:
-  /// **'切回无线 ADB'**
-  String get commandChannelSwitchToAdb;
 
   /// 首页 Stellar 通道卡片的标题
   ///
@@ -4160,11 +4154,11 @@ abstract class AppLocalizations {
   /// **'服务没有响应断开请求，可能仍在运行。'**
   String get stellarStopFailed;
 
-  /// 手动提权页-当前通道不支持终端时终端上方的提示
+  /// 手动提权页-无线 ADB 未连接时终端上方的一行提示
   ///
   /// In zh, this message translates to:
-  /// **'终端需要无线 ADB 通道；当前通道不支持终端，这里不会出现提示符。'**
-  String get escalationTerminalAdbOnly;
+  /// **'没连上无线调试。'**
+  String get escalationTerminalNeedsAdb;
 
   /// 首页标题栏右侧胶囊：点击弹出管理器选择
   ///

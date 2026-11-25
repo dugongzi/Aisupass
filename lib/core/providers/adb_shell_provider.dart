@@ -80,18 +80,45 @@ enum AdbAutoConnectResult {
 const Duration _autoLinkBudget = Duration(minutes: 3);
 const Duration _autoLinkPollInterval = Duration(milliseconds: 500);
 
+/// 静默重连的默认预算。
+///
+/// 覆盖「本地 mDNS 解析 + TLS 握手」绰绰有余；再长就变成用户对着屏幕干等。
+const int _silentReconnectTimeoutMs = 5000;
+
+/// 静默重连：不配对、不弹通知、不跳设置页，连不上也不打扰用户。
+///
+/// 只对**已经配对过**的设备有效：设备侧已信任本机公钥，发现连接端点后直接建链。
+/// 配对是一次性的，密钥落盘复用，所以「昨天连过、今天掉线」这类情况都能停在这一步。
+final Provider<Future<bool> Function()> adbSilentReconnectProvider =
+    Provider<Future<bool> Function()>((ref) {
+      return () async {
+        if (!Platform.isAndroid) return false;
+        final AdbShellNative native = ref.read(adbShellNativeProvider);
+        bool linked;
+        try {
+          linked = await native.reconnect(_silentReconnectTimeoutMs);
+        } catch (_) {
+          linked = false;
+        }
+        if (linked) ref.invalidate(shellConnectionProvider);
+        return linked;
+      };
+    });
+
 /// 自动连接：保证现在有一条可用的无线 ADB shell 连接。
 ///
-/// 给那些「不该要求用户先手动连一下 ADB」的调用方用：没连上就自己发起一次配对
-/// 然后等连接态变成已连接。
+/// 分两步，先轻后重：
+/// 1. **静默重连**：已配对过的设备只需要 mDNS 发现 + TLS，全程不打扰用户；
+///    断线重连都走这里，不需要再输一次配对码。
+/// 2. 静默重连也失败，才走配对流程——配对码只能由系统弹窗生成，必须用户参与。
 ///
-/// 走哪条路取决于「配对码输入位置」这个设置，与手动配对完全一致：
+/// 配对这条路走哪条取决于「配对码输入位置」这个设置，与手动配对完全一致：
 /// 通知栏模式下自己发起会话、申请通知权限、把用户送到无线调试页；
 /// 小窗输入模式下不在后台发起任何会话，交回 [AdbAutoConnectResult.needsCode]
 /// 让调用方把输入框摆出来——那条路径的码只能由用户填。
 ///
-/// 不是「免配对」：配对码只能由系统的「使用配对码配对设备」弹窗生成。这里省掉的
-/// 是「先去点一次连接、再回来点要用的按钮」这一步，不是省掉配对本身。
+/// 不是「免配对」：首次使用仍然要配对一次。这里省掉的是「先去点一次连接、
+/// 再回来点要用的按钮」这一步，以及掉线后重复配对。
 final Provider<Future<AdbAutoConnectResult> Function()> adbAutoConnectProvider =
     Provider<Future<AdbAutoConnectResult> Function()>((ref) {
       return () async {
@@ -102,7 +129,12 @@ final Provider<Future<AdbAutoConnectResult> Function()> adbAutoConnectProvider =
 
         // 已经有一轮配对在跑就只等结果，不再叠一条新会话。
         if (ref.read(shellPairingProvider).active) {
-          return _awaitShellLink(ref, native);
+          return _autoLinked(ref, await _awaitShellLink(ref, native));
+        }
+
+        // 先悄悄试一次：配对过就不该再要码。
+        if (await ref.read(adbSilentReconnectProvider)()) {
+          return AdbAutoConnectResult.ready;
         }
 
         // 小窗输入：码在用户手里。通知权限与跳设置页都跳过——这条路不经过通知栏。
@@ -119,9 +151,20 @@ final Provider<Future<AdbAutoConnectResult> Function()> adbAutoConnectProvider =
         } catch (_) {
           // 跳转失败不影响已发起的配对：通知栏提示里仍写着怎么去。
         }
-        return _awaitShellLink(ref, native);
+        return _autoLinked(ref, await _awaitShellLink(ref, native));
       };
     });
+
+/// 连上之后刷新连接态，让界面立刻按「已连接」重绘。
+///
+/// 这里的过程是轮询原生，`shellConnectionProvider` 自己不会知道，不刷新的话
+/// 调用方等到了 ready，界面却还停在「未连接」。
+AdbAutoConnectResult _autoLinked(Ref ref, AdbAutoConnectResult result) {
+  if (result == AdbAutoConnectResult.ready) {
+    ref.invalidate(shellConnectionProvider);
+  }
+  return result;
+}
 
 /// 问一次原生：现在有没有一条活着的 shell 连接。
 Future<bool> _shellLinked(AdbShellNative native) async {

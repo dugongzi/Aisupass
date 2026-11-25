@@ -1,11 +1,17 @@
 import 'package:Aisupass/l10n/app_localizations.dart';
 
+/// 通道未连接：这不是终端里的「故障」，而是还没有链路。
+///
+/// 顶部提示条已经负责说明并给出重连入口，写进终端只会在连上之后变成一句错的
+/// 旧话（「shell 通道未连接」挂在提示符上面，其实早就通了）。
+const String kEscalationChannelNotReady = 'channelNotReady';
+
 /// 原生侧会回的原因码。
 ///
 /// 只翻译这几个；其余串是原生抛上来的原始错误，按原样贴出来更有用。
 const Set<String> kEscalationReasonCodes = <String>{
   'emptyCommand',
-  'channelNotReady',
+  kEscalationChannelNotReady,
   'streamOpenFailed',
 };
 

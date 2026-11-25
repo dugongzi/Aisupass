@@ -91,6 +91,14 @@ class AdbShellNativeImpl(private val context: Context) : AdbShellNative {
      */
     private val pollExecutor = Executors.newSingleThreadExecutor()
 
+    /**
+     * 静默重连专用线程。
+     *
+     * 发现连接端点加 TLS 握手可能要好几秒，不能占住 [executor]（配对轮询靠它读
+     * 快照）或 [execExecutor]（会被一条长命令整个占住）。
+     */
+    private val linkExecutor = Executors.newSingleThreadExecutor()
+
     override fun connection(callback: (Result<ShellConnection>) -> Unit) {
         executor.execute {
             val connected = adb.status() == ShellStatus.READY
@@ -99,6 +107,29 @@ class AdbShellNativeImpl(private val context: Context) : AdbShellNative {
                 uid = if (connected) adb.uid else UNKNOWN_UID,
             )
             mainHandler.post { callback(Result.success(result)) }
+        }
+    }
+
+    /**
+     * 静默重连：不配对、不弹通知、不跳设置页。
+     *
+     * 只对已经配对过的设备有意义——设备侧已信任本机公钥，发现连接端点后直接
+     * 建链即可。给「进终端页时把上次的连接接回来」用：成败都不打扰用户。
+     *
+     * 不复用 [execExecutor]：那条线程会被长命令占住，重连不该排在它后面；
+     * 也不复用 [executor]：配对轮询正靠它读快照。
+     */
+    override fun reconnect(timeoutMs: Long, callback: (Result<Boolean>) -> Unit) {
+        val budget = if (timeoutMs <= 0L) PAIRING_DISCOVERY_TIMEOUT_MS else timeoutMs
+        linkExecutor.execute {
+            val linked = runCatching {
+                if (adb.status() == ShellStatus.READY) {
+                    true
+                } else {
+                    adb.connectDiscovered(budget)
+                }
+            }.getOrDefault(false)
+            mainHandler.post { callback(Result.success(linked)) }
         }
     }
 

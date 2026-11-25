@@ -29,8 +29,8 @@ import 'package:Aisupass/features/escalation/presentation/widgets/ghost_key_prog
 import 'package:Aisupass/features/escalation/presentation/widgets/ghost_lock_confirm_dialog.dart';
 import 'package:Aisupass/features/escalation/presentation/widgets/payload_catalog_dialog.dart';
 import 'package:Aisupass/features/escalation/presentation/widgets/payload_confirm_dialog.dart';
-import 'package:Aisupass/features/escalation/presentation/widgets/terminal_channel_notice.dart';
 import 'package:Aisupass/features/escalation/presentation/widgets/terminal_key_bar.dart';
+import 'package:Aisupass/features/escalation/presentation/widgets/terminal_link_notice.dart';
 import 'package:Aisupass/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -115,6 +115,20 @@ class ManualEscalationPage extends HookConsumerWidget {
 
     final bool connected = link?.connected ?? false;
     final int uid = link?.uid ?? -1;
+
+    // 连接恢复后补建一次 pty 会话。
+    //
+    // 进页面时那次 open() 可能因为还没连上而失败，之后用户可能在顶部提示条里
+    // 连上了 ADB（或 Stellar 拉起时顺手连上），此时不重建的话屏幕会一直空着，
+    // 看起来像终端坏了。
+    final ObjectRef<bool> linkedNow = useRef<bool>(connected);
+    useEffect(() {
+      if (connected && !linkedNow.value) {
+        unawaited(ref.read(shellExecProvider.notifier).open());
+      }
+      linkedNow.value = connected;
+      return null;
+    }, <Object?>[connected]);
 
     // 记「哪个管理器被点过」而不是「点没点过」：换目标时不能自动开跑。
     final ValueNotifier<RootManager?> handoffTarget = useState<RootManager?>(
@@ -260,9 +274,8 @@ class ManualEscalationPage extends HookConsumerWidget {
     }
 
     /// 停止本侧读取；设备侧进程继续跑。
-    Future<void> stopGhostKey() => flow.stopGhostKey(
-      onError: (Object error) => ToastMessage.error(error),
-    );
+    Future<void> stopGhostKey() =>
+        flow.stopGhostKey(onError: (Object error) => ToastMessage.error(error));
 
     /// 停止本侧读取；设备侧进程继续跑。
     Future<void> stopGhostLock() => flow.stopGhostLock(
@@ -391,7 +404,13 @@ class ManualEscalationPage extends HookConsumerWidget {
       }
 
       final String failure = shellState.failure;
-      if (failure.isNotEmpty && failure != shownFailure.value) {
+      // 会话恢复后清掉水位：下次真断了要能重新记一行。
+      if (shellState.ready) shownFailure.value = '';
+      // 通道未连接不写进终端：顶部提示条负责说明并给出重连入口，写进屏幕只会
+      // 在连上之后留下一句错的旧话，看着像还断着。
+      if (failure.isNotEmpty &&
+          failure != kEscalationChannelNotReady &&
+          failure != shownFailure.value) {
         shownFailure.value = failure;
         writer.writeLine(
           kEscalationReasonCodes.contains(failure)
@@ -616,8 +635,8 @@ class ManualEscalationPage extends HookConsumerWidget {
       // 终端自己画背景，外层再垫一层同色，避免布局过程中露出 Scaffold 底色。
       body: Column(
         children: <Widget>[
-          // 通道不是无线 ADB 时先说清楚：终端只在这条通道上工作。
-          const TerminalChannelNotice(),
+          // 终端只跑在无线 ADB 上；没连上时在这里说明，并提供连接入口。
+          const TerminalLinkNotice(),
           Expanded(
             child: Container(
               color: TerminalThemes.defaultTheme.background,

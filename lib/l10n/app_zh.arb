@@ -2683,7 +2683,7 @@
   "@settingsCommandChannelTitle": {
     "description": "设置页-命令通道切换项的标题"
   },
-  "settingsCommandChannelDesc": "AI 工具执行命令走的链路；Stellar 由应用内特权服务提供，不需要安装其它应用",
+  "settingsCommandChannelDesc": "AI 工具执行命令时使用的链路，可在此切换",
   "@settingsCommandChannelDesc": {
     "description": "设置页-命令通道切换项的说明"
   },
@@ -2694,10 +2694,6 @@
   "commandChannelStellar": "Stellar",
   "@commandChannelStellar": {
     "description": "命令通道名称-Stellar"
-  },
-  "commandChannelSwitchToAdb": "切回无线 ADB",
-  "@commandChannelSwitchToAdb": {
-    "description": "终端页-当前通道不支持终端时，一键切回无线 ADB 通道的按钮"
   },
   "stellarCardTitle": "Stellar",
   "@stellarCardTitle": {
@@ -2756,9 +2752,9 @@
   "@stellarStopFailed": {
     "description": "断开失败-服务未确认退出或端口仍在应答"
   },
-  "escalationTerminalAdbOnly": "终端需要无线 ADB 通道；当前通道不支持终端，这里不会出现提示符。",
-  "@escalationTerminalAdbOnly": {
-    "description": "手动提权页-当前通道不支持终端时终端上方的提示"
+  "escalationTerminalNeedsAdb": "没连上无线调试。",
+  "@escalationTerminalNeedsAdb": {
+    "description": "手动提权页-无线 ADB 未连接时终端上方的一行提示"
   },
   "rootManagerPillTooltip": "选择 root 管理器",
   "@rootManagerPillTooltip": {

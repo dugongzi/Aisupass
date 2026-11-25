@@ -669,9 +669,22 @@ interface AdbShellNative {
   /** 读当前 shell 连接状态，零副作用。 */
   fun connection(callback: (Result<ShellConnection>) -> Unit)
   /**
+   * 静默重连：不配对、不弹通知、不跳设置页。
+   *
+   * 只对**已经配对过**的设备有意义：设备侧已信任本机公钥，发现连接端点后直接
+   * 建链即可。给「进终端页时把上次的连接接回来」这类场景用——这条路径不该打扰
+   * 用户，失败也不该弹任何东西。
+   *
+   * [timeoutMs] 是发现加握手的整体预算；传 0 表示用原生默认值。
+   * 已经连着时直接返回 `true`，不重连。
+   */
+  fun reconnect(timeoutMs: Long, callback: (Result<Boolean>) -> Unit)
+  /**
    * 发起配对。
    *
    * 三个参数全为空 = 通知栏模式：配对码在通知里输入，地址与端口由 mDNS 发现。
+   * 只给 [code]（[host] 为空、[port] 为 0）= 卡片模式：配对码来自应用内输入框，
+   * 地址与端口仍由 mDNS 发现。用于通知栏弹不出输入框的 ROM（如 MIUI/HyperOS）。
    */
   fun startPairing(host: String, port: Long, code: String, callback: (Result<PairingStartResult>) -> Unit)
   /**
@@ -781,6 +794,26 @@ interface AdbShellNative {
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             api.connection{ result: Result<ShellConnection> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(AdbShellNativePigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(AdbShellNativePigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.Aisupass.AdbShellNative.reconnect$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val timeoutMsArg = args[0] as Long
+            api.reconnect(timeoutMsArg) { result: Result<Boolean> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(AdbShellNativePigeonUtils.wrapError(error))

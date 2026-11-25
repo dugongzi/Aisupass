@@ -604,9 +604,38 @@ class AdbShellNative {
     return pigeonVar_replyValue! as ShellConnection;
   }
 
+  /// 静默重连：不配对、不弹通知、不跳设置页。
+  ///
+  /// 只对**已经配对过**的设备有意义：设备侧已信任本机公钥，发现连接端点后直接
+  /// 建链即可。给「进终端页时把上次的连接接回来」这类场景用——这条路径不该打扰
+  /// 用户，失败也不该弹任何东西。
+  ///
+  /// [timeoutMs] 是发现加握手的整体预算；传 0 表示用原生默认值。
+  /// 已经连着时直接返回 `true`，不重连。
+  Future<bool> reconnect(int timeoutMs) async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.Aisupass.AdbShellNative.reconnect$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[timeoutMs]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
+    return pigeonVar_replyValue! as bool;
+  }
+
   /// 发起配对。
   ///
   /// 三个参数全为空 = 通知栏模式：配对码在通知里输入，地址与端口由 mDNS 发现。
+  /// 只给 [code]（[host] 为空、[port] 为 0）= 卡片模式：配对码来自应用内输入框，
+  /// 地址与端口仍由 mDNS 发现。用于通知栏弹不出输入框的 ROM（如 MIUI/HyperOS）。
   Future<PairingStartResult> startPairing(String host, int port, String code) async {
     final pigeonVar_channelName = 'dev.flutter.pigeon.Aisupass.AdbShellNative.startPairing$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(

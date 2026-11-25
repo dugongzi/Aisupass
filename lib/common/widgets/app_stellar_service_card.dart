@@ -32,10 +32,13 @@ class AppStellarServiceCard extends ConsumerWidget {
 
     // 执行通道没连上时的配对交互，与 ADB 卡片遵守同一个「配对码输入位置」设置。
     final ShellPairingState pairing = ref.watch(shellPairingProvider);
-    final bool cardInput = ref.watch(shellPairingModeProvider).isCard;
-    // 小窗输入模式下直接把码输入框摆出来：本端拿不到码，也就没有「替用户连上」。
+    // 只有**静默重连也失败**之后才摆输入框：已配对过的设备断开后点启动，
+    // 应该悄悄连上就把服务拉起来，不该先要一次码。
     final bool showCodeInput =
-        cardInput && !available && !launch.busy && !pairing.active;
+        launch.reason == StellarLaunchState.reasonAwaitingCode &&
+        !available &&
+        !launch.busy &&
+        !pairing.active;
 
     late final String subtitle;
     if (pairing.active) {
