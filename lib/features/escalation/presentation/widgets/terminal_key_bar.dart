@@ -6,18 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:xterm3/xterm.dart';
 
-/// 菜单按钮用的三点图标（纵向排列）。
-const String kMoreVertIconAsset = 'assets/images/icons/more_vert.svg';
-
 /// 按键栏上的一个功能键。
 @immutable
 class TerminalKey {
-  const TerminalKey({
-    required this.label,
-    required this.bytes,
-    this.ctrlBytes,
-    this.altBytes,
-  });
+  const TerminalKey({required this.label, required this.bytes, this.ctrlBytes});
 
   /// 键帽上显示的文字。
   final String label;
@@ -28,77 +20,25 @@ class TerminalKey {
   /// 扣住 Ctrl 时改发的序列；为空表示该键不吃 Ctrl。
   final String? ctrlBytes;
 
-  /// 扣住 Alt 时改发的序列；为空表示该键不吃 Alt。
-  final String? altBytes;
-
   /// 按当前扣住的修饰键，算出真正要写给 pty 的序列。
-  ///
-  /// Ctrl 与 Alt 同时扣住时取 Ctrl：CSI 序列的修饰位只能取一个值，而
-  /// `Ctrl+方向键` 比 `Alt+方向键` 常用得多。
   String payload(Set<TerminalModifier> armed) {
     final String? ctrl = ctrlBytes;
     if (ctrl != null && armed.contains(TerminalModifier.ctrl)) return ctrl;
-    final String? alt = altBytes;
-    if (alt != null && armed.contains(TerminalModifier.alt)) return alt;
     return bytes;
   }
 }
 
 /// 不扣修饰键时直接发送的功能键。
 ///
-/// 排布照终端 App 的习惯：TAB 接在 ESC / CTRL / ALT 之后，方向键居中，
-/// 行首行尾与翻页押后。方向键与导航键带 xterm 的 `CSI 1;5x` / `CSI 1;3x`
-/// 变体，扣住 Ctrl / Alt 时才能和原生终端一样发组合键。
+/// 方向键带 xterm 的 `CSI 1;5x` 变体，扣住 Ctrl 时才能和原生终端一样发组合键。
+/// 只留提权脚本真正用得上的键：HOME / END / PGUP / PGDN 在这里没有场景
+/// （输出是逐块追加的日志，滚动靠触摸）。
 const List<TerminalKey> _functionKeys = <TerminalKey>[
   TerminalKey(label: 'TAB', bytes: '\t'),
-  TerminalKey(
-    label: '←',
-    bytes: '\x1b[D',
-    ctrlBytes: '\x1b[1;5D',
-    altBytes: '\x1b[1;3D',
-  ),
-  TerminalKey(
-    label: '↑',
-    bytes: '\x1b[A',
-    ctrlBytes: '\x1b[1;5A',
-    altBytes: '\x1b[1;3A',
-  ),
-  TerminalKey(
-    label: '↓',
-    bytes: '\x1b[B',
-    ctrlBytes: '\x1b[1;5B',
-    altBytes: '\x1b[1;3B',
-  ),
-  TerminalKey(
-    label: '→',
-    bytes: '\x1b[C',
-    ctrlBytes: '\x1b[1;5C',
-    altBytes: '\x1b[1;3C',
-  ),
-  TerminalKey(
-    label: 'HOME',
-    bytes: '\x1b[H',
-    ctrlBytes: '\x1b[1;5H',
-    altBytes: '\x1b[1;3H',
-  ),
-  TerminalKey(
-    label: 'END',
-    bytes: '\x1b[F',
-    ctrlBytes: '\x1b[1;5F',
-    altBytes: '\x1b[1;3F',
-  ),
-  TerminalKey(
-    label: 'PGUP',
-    bytes: '\x1b[5~',
-    ctrlBytes: '\x1b[5;5~',
-    altBytes: '\x1b[5;3~',
-  ),
-  TerminalKey(
-    label: 'PGDN',
-    bytes: '\x1b[6~',
-    ctrlBytes: '\x1b[6;5~',
-    altBytes: '\x1b[6;3~',
-  ),
+  TerminalKey(label: '←', bytes: '\x1b[D', ctrlBytes: '\x1b[1;5D'),
+  TerminalKey(label: '↑', bytes: '\x1b[A', ctrlBytes: '\x1b[1;5A'),
+  TerminalKey(label: '↓', bytes: '\x1b[B', ctrlBytes: '\x1b[1;5B'),
+  TerminalKey(label: '→', bytes: '\x1b[C', ctrlBytes: '\x1b[1;5C'),
 ];
 
 /// 按扣住的修饰键改写一次软键盘输入。
@@ -115,10 +55,7 @@ List<int> encodeTerminalInput(String data, Set<TerminalModifier> armed) {
       (code >= 0x40 && code <= 0x5f) || (code >= 0x61 && code <= 0x7a);
   final bool ctrl = armed.contains(TerminalModifier.ctrl) && ctrlApplicable;
 
-  final List<int> body = ctrl ? <int>[code & 0x1f] : utf8.encode(data);
-  if (!armed.contains(TerminalModifier.alt)) return body;
-  // Alt 在终端里的表示就是前缀一个 ESC。
-  return <int>[0x1b, ...body];
+  return ctrl ? <int>[code & 0x1f] : utf8.encode(data);
 }
 
 /// 终端按键栏：贴在终端下方的一排功能键。
@@ -240,7 +177,6 @@ class TerminalKeyBar extends StatelessWidget {
     final List<Widget> keys = <Widget>[
       _buildKey(label: 'ESC', bytes: '\x1b', modifiers: modifiers),
       _buildModifier(TerminalModifier.ctrl, 'CTRL', modifiers),
-      _buildModifier(TerminalModifier.alt, 'ALT', modifiers),
       for (final TerminalKey key in _functionKeys)
         _buildKey(label: key.label, key: key, modifiers: modifiers),
     ];

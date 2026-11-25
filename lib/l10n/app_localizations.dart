@@ -2336,6 +2336,24 @@ abstract class AppLocalizations {
   /// **'手动提权'**
   String get escalationTitle;
 
+  /// 手动提权页拆出的终端独立页标题
+  ///
+  /// In zh, this message translates to:
+  /// **'终端'**
+  String get escalationTerminalTitle;
+
+  /// 手动提权页右上角进入终端页的按钮提示
+  ///
+  /// In zh, this message translates to:
+  /// **'打开终端'**
+  String get escalationTerminalEntry;
+
+  /// 手动提权页-提权操作分组标题
+  ///
+  /// In zh, this message translates to:
+  /// **'提权方式'**
+  String get escalationToolSection;
+
   /// 手动提权页-终端：常驻 shell 正常退出后的说明行
   ///
   /// In zh, this message translates to:

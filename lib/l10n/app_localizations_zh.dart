@@ -1195,6 +1195,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get escalationTitle => '手动提权';
 
   @override
+  String get escalationTerminalTitle => '终端';
+
+  @override
+  String get escalationTerminalEntry => '打开终端';
+
+  @override
+  String get escalationToolSection => '提权方式';
+
+  @override
   String get escalationTerminalClosed => 'shell 会话已结束，再次输入会自动重连';
 
   @override

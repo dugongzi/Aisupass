@@ -1302,6 +1302,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get escalationTitle => 'Manual root';
 
   @override
+  String get escalationTerminalTitle => 'Terminal';
+
+  @override
+  String get escalationTerminalEntry => 'Open terminal';
+
+  @override
+  String get escalationToolSection => 'Root methods';
+
+  @override
   String get escalationTerminalClosed =>
       'The shell session has ended — typing again reconnects automatically';
 

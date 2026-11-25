@@ -1,5 +1,5 @@
 /// 可粘滞的终端修饰键。
 ///
 /// 点一下先把修饰键「扣住」，下一次按键才生效，生效后自动弹起；
-/// 再点一下取消。
-enum TerminalModifier { ctrl, alt }
+/// 再点一下取消。当前只保留 Ctrl：提权脚本里 `^C` 是唯一真正用得上的组合键。
+enum TerminalModifier { ctrl }

@@ -12,10 +12,7 @@ import 'package:Aisupass/features/escalation/presentation/providers/run_log_acti
 /// 负责「开轮 → 追加 → 收尾」的顺序，以及本轮的累积缓冲；切片与游标在
 /// 仓储层。写屏由调用方以 [writeLine] 注入，本类不依赖终端实现。
 class RunLogSession {
-  RunLogSession({
-    required this.ref,
-    required this.writeLine,
-  });
+  RunLogSession({required this.ref, required this.writeLine});
 
   final WidgetRef ref;
   final EscalationLineWriter writeLine;
@@ -29,19 +26,28 @@ class RunLogSession {
   /// 是否正在写盘。
   bool get active => _file != null;
 
+  /// 开一轮日志的等待上限。
+  ///
+  /// 开轮要读设备身份再落一份元数据，正常情况下是毫秒级。但调用方在起跑前会
+  /// 等这一句：读设备身份走的是 `autoDispose` 的 Future，一旦那一侧被丢弃，
+  /// `.future` 可能永远不完成，提权就卡在「开始…」这一行后面不动了。
+  /// 宁可不开日志，也不能把提权挂住。
+  static const Duration _beginBudget = Duration(seconds: 5);
+
   /// 开一轮日志。失败不阻断提权。
   Future<void> begin({required String profile}) async {
     try {
-      final DeviceIdentity device = await ref.read(
-        currentDeviceIdentityProvider.future,
-      );
+      final DeviceIdentity device = await ref
+          .read(currentDeviceIdentityProvider.future)
+          .timeout(_beginBudget);
       final RunLogMeta meta = await ref
           .read(runLogActionsProvider)
           .begin(
             device: device.model,
             kernel: device.kernelRelease,
             profile: profile,
-          );
+          )
+          .timeout(_beginBudget);
       _file = meta.fileName;
       _acc = '';
     } catch (_) {

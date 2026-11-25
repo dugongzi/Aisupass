@@ -1353,6 +1353,18 @@
   "@escalationTitle": {
     "description": "手动提权页标题"
   },
+  "escalationTerminalTitle": "终端",
+  "@escalationTerminalTitle": {
+    "description": "手动提权页拆出的终端独立页标题"
+  },
+  "escalationTerminalEntry": "打开终端",
+  "@escalationTerminalEntry": {
+    "description": "手动提权页右上角进入终端页的按钮提示"
+  },
+  "escalationToolSection": "提权方式",
+  "@escalationToolSection": {
+    "description": "手动提权页-提权操作分组标题"
+  },
   "escalationTerminalClosed": "shell 会话已结束，再次输入会自动重连",
   "@escalationTerminalClosed": {
     "description": "手动提权页-终端：常驻 shell 正常退出后的说明行"

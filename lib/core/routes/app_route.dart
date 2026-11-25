@@ -10,6 +10,7 @@ import 'package:Aisupass/features/escalation/presentation/pages/kernel_profile_e
 import 'package:Aisupass/features/escalation/presentation/pages/kernel_profile_page.dart';
 import 'package:Aisupass/features/escalation/presentation/pages/manual_escalation_page.dart';
 import 'package:Aisupass/features/escalation/presentation/pages/run_log_page.dart';
+import 'package:Aisupass/features/escalation/presentation/pages/terminal_page.dart';
 import 'package:go_router/go_router.dart';
 
 /// 全局路由路径常量。
@@ -41,6 +42,15 @@ class AppRoute {
 
   // 提权
   static const manualEscalation = '/escalation/manual';
+
+  /// 手动提权页里的终端独立页（右上角进入），与提权页共用同一条 pty。
+  static const manualEscalationTerminal = '/escalation/manual/terminal';
+
+  /// 终端页路径；[action] 表示进页面后立刻执行的动作（见 `TerminalPage.initialAction`）。
+  static String manualEscalationTerminalPath({String action = ''}) =>
+      action.isEmpty
+      ? manualEscalationTerminal
+      : '$manualEscalationTerminal?action=$action';
 
   // 内核表（boot.img 导入，GhostKey / GhostLock 两个 Tab）
   static const kernelProfile = '/kernelProfile';
@@ -88,14 +98,8 @@ class AppRoute {
 ///
 /// 这里只放能正常打开的页面；兜底路由与错误页在 [appRouterProvider] 中追加。
 final List<GoRoute> appRoutes = [
-  GoRoute(
-    path: AppRoute.home,
-    builder: (context, state) => const MainPage(),
-  ),
-  GoRoute(
-    path: AppRoute.chat,
-    builder: (context, state) => const ChatPage(),
-  ),
+  GoRoute(path: AppRoute.home, builder: (context, state) => const MainPage()),
+  GoRoute(path: AppRoute.chat, builder: (context, state) => const ChatPage()),
   GoRoute(
     path: AppRoute.aiConfig,
     builder: (context, state) => const AiConfigPage(),
@@ -113,10 +117,14 @@ final List<GoRoute> appRoutes = [
     builder: (context, state) => const ManualEscalationPage(),
   ),
   GoRoute(
+    path: AppRoute.manualEscalationTerminal,
+    builder: (context, state) =>
+        TerminalPage(initialAction: state.uri.queryParameters['action']),
+  ),
+  GoRoute(
     path: AppRoute.browser,
-    builder: (context, state) => InAppBrowserPage(
-      initialUrl: state.uri.queryParameters['url'] ?? '',
-    ),
+    builder: (context, state) =>
+        InAppBrowserPage(initialUrl: state.uri.queryParameters['url'] ?? ''),
   ),
   GoRoute(
     path: AppRoute.kernelProfile,
@@ -126,21 +134,18 @@ final List<GoRoute> appRoutes = [
   ),
   GoRoute(
     path: AppRoute.kernelProfileEdit,
-    builder: (context, state) => KernelProfileEditPage(
-      name: state.uri.queryParameters['name'] ?? '',
-    ),
+    builder: (context, state) =>
+        KernelProfileEditPage(name: state.uri.queryParameters['name'] ?? ''),
   ),
   GoRoute(
     path: AppRoute.ghostLockProfile,
-    builder: (context, state) => GhostLockProfilePage(
-      name: state.uri.queryParameters['name'] ?? '',
-    ),
+    builder: (context, state) =>
+        GhostLockProfilePage(name: state.uri.queryParameters['name'] ?? ''),
   ),
   GoRoute(
     path: AppRoute.runLog,
-    builder: (context, state) => RunLogPage(
-      openedFile: state.uri.queryParameters['file'],
-    ),
+    builder: (context, state) =>
+        RunLogPage(openedFile: state.uri.queryParameters['file']),
   ),
   GoRoute(
     path: AppRoute.openSourceLicense,
