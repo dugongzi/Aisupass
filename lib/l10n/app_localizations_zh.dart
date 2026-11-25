@@ -2178,6 +2178,21 @@ class AppLocalizationsZh extends AppLocalizations {
       'Stellar 特权服务尚未就绪，这一通道暂时无法执行命令；可在「设置 → 通用 → 命令通道」切换。';
 
   @override
+  String get stellarStartService => '启动服务';
+
+  @override
+  String get stellarLaunching => '正在启动服务…';
+
+  @override
+  String get stellarLaunchNoRunner => '当前没有可用的执行通道，无法启动服务；请先连上无线 ADB。';
+
+  @override
+  String get stellarLaunchLauncherMissing => '安装包内缺少启动文件，无法启动服务。';
+
+  @override
+  String get stellarLaunchNotAnswering => '服务已发出启动请求，但没有在预期时间内响应。';
+
+  @override
   String get escalationTerminalAdbOnly => '终端需要无线 ADB 通道；当前通道不支持终端，这里不会出现提示符。';
 
   @override

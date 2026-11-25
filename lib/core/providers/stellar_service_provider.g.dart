@@ -10,17 +10,16 @@ part of 'stellar_service_provider.dart';
 // ignore_for_file: type=lint, type=warning
 /// Stellar 特权服务的当前状态。
 ///
-/// 服务端尚未接入，这里如实返回「服务未运行」；接入后改为查询原生状态，
-/// 本 Provider 的签名与调用方都不需要变。
+/// 判定依据是回环端口能否完成一次 PING/PONG——只回答「在不在、以谁的身份在」，
+/// 不代表已经具备执行能力。
 
 @ProviderFor(stellarServiceStatus)
 const stellarServiceStatusProvider = StellarServiceStatusProvider._();
 
 /// Stellar 特权服务的当前状态。
 ///
-/// 服务端尚未接入，这里如实返回「服务未运行」；接入后改为查询原生状态，
-/// 本 Provider 的签名与调用方都不需要变。
-
+/// 判定依据是回环端口能否完成一次 PING/PONG——只回答「在不在、以谁的身份在」，
+/// 不代表已经具备执行能力。
 final class StellarServiceStatusProvider
     extends
         $FunctionalProvider<
@@ -33,8 +32,8 @@ final class StellarServiceStatusProvider
         $FutureProvider<StellarServiceStatus> {
   /// Stellar 特权服务的当前状态。
   ///
-  /// 服务端尚未接入，这里如实返回「服务未运行」；接入后改为查询原生状态，
-  /// 本 Provider 的签名与调用方都不需要变。
+  /// 判定依据是回环端口能否完成一次 PING/PONG——只回答「在不在、以谁的身份在」，
+  /// 不代表已经具备执行能力。
   const StellarServiceStatusProvider._()
     : super(
         from: null,
@@ -62,4 +61,76 @@ final class StellarServiceStatusProvider
 }
 
 String _$stellarServiceStatusHash() =>
-    r'e3ee70e6c8f954195a12825382ddc4a5a8573b19';
+    r'2f7c9e14a6d83b05e1c7a9d4f2b63e805c4d1a79';
+
+/// 把服务拉起来。
+///
+/// 拉起动作与「当前有没有可用的执行通道」无关：没有通道时命令根本跑不起来，
+/// 这里只按结果分型，不做通道层面的判断。
+
+@ProviderFor(StellarLaunch)
+const stellarLaunchProvider = StellarLaunchProvider._();
+
+/// 把服务拉起来。
+///
+/// 拉起动作与「当前有没有可用的执行通道」无关：没有通道时命令根本跑不起来，
+/// 这里只按结果分型，不做通道层面的判断。
+final class StellarLaunchProvider
+    extends $NotifierProvider<StellarLaunch, StellarLaunchState> {
+  /// 把服务拉起来。
+  ///
+  /// 拉起动作与「当前有没有可用的执行通道」无关：没有通道时命令根本跑不起来，
+  /// 这里只按结果分型，不做通道层面的判断。
+  const StellarLaunchProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'stellarLaunchProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$stellarLaunchHash();
+
+  @$internal
+  @override
+  StellarLaunch create() => StellarLaunch();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(StellarLaunchState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<StellarLaunchState>(value),
+    );
+  }
+}
+
+String _$stellarLaunchHash() =>
+    r'8b3d5a71c0e94f26d8b1a4c7e93f5028a6d7c41b';
+
+/// 把服务拉起来。
+///
+/// 拉起动作与「当前有没有可用的执行通道」无关：没有通道时命令根本跑不起来，
+/// 这里只按结果分型，不做通道层面的判断。
+
+abstract class _$StellarLaunch extends $Notifier<StellarLaunchState> {
+  StellarLaunchState build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<StellarLaunchState, StellarLaunchState>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<StellarLaunchState, StellarLaunchState>,
+              StellarLaunchState,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}

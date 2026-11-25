@@ -2720,6 +2720,26 @@
   "@stellarNotReadyHint": {
     "description": "首页 Stellar 卡片-服务不可用时的说明与下一步"
   },
+  "stellarStartService": "启动服务",
+  "@stellarStartService": {
+    "description": "首页 Stellar 卡片-拉起特权服务的按钮"
+  },
+  "stellarLaunching": "正在启动服务…",
+  "@stellarLaunching": {
+    "description": "首页 Stellar 卡片-拉起进行中的状态"
+  },
+  "stellarLaunchNoRunner": "当前没有可用的执行通道，无法启动服务；请先连上无线 ADB。",
+  "@stellarLaunchNoRunner": {
+    "description": "拉起失败-没有可用的执行通道"
+  },
+  "stellarLaunchLauncherMissing": "安装包内缺少启动文件，无法启动服务。",
+  "@stellarLaunchLauncherMissing": {
+    "description": "拉起失败-APK 里没有引导文件"
+  },
+  "stellarLaunchNotAnswering": "服务已发出启动请求，但没有在预期时间内响应。",
+  "@stellarLaunchNotAnswering": {
+    "description": "拉起失败-服务未在等待时间内应答"
+  },
   "escalationTerminalAdbOnly": "终端需要无线 ADB 通道；当前通道不支持终端，这里不会出现提示符。",
   "@escalationTerminalAdbOnly": {
     "description": "手动提权页-当前通道不支持终端时终端上方的提示"

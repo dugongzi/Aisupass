@@ -14,3 +14,6 @@ add_subdirectory(cve98260)
 
 # GhostLock（CVE-2026-43499）：libghostlock.so（PIE 可执行文件）
 add_subdirectory(cve43499)
+
+# Stellar 特权服务引导器：libstellar_svc.so（PIE 可执行文件，随 APK 分发）
+add_subdirectory(stellar)

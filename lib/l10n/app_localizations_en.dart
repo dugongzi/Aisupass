@@ -2347,6 +2347,24 @@ class AppLocalizationsEn extends AppLocalizations {
       'The Stellar privileged service is not ready, so this channel cannot run commands right now. Switch channels in Settings → General → Command channel.';
 
   @override
+  String get stellarStartService => 'Start service';
+
+  @override
+  String get stellarLaunching => 'Starting service…';
+
+  @override
+  String get stellarLaunchNoRunner =>
+      'No execution channel is available, so the service cannot start. Connect wireless ADB first.';
+
+  @override
+  String get stellarLaunchLauncherMissing =>
+      'The launcher file is missing from the installed package, so the service cannot start.';
+
+  @override
+  String get stellarLaunchNotAnswering =>
+      'The start request was sent, but the service did not answer in time.';
+
+  @override
   String get escalationTerminalAdbOnly =>
       'The terminal needs the wireless ADB channel; the current channel does not support it, so no prompt will appear here.';
 

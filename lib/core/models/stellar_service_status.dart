@@ -17,6 +17,9 @@ class StellarServiceStatus {
   /// 服务已运行但本应用未获授权。
   static const String reasonNotAuthorized = 'notAuthorized';
 
+  /// 引导器没能把服务拉起来（ADB 通道不可用、身份不符、包路径取不到等）。
+  static const String reasonLaunchFailed = 'launchFailed';
+
   /// 服务是否可以直接执行命令。
   final bool available;
 

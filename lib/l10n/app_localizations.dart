@@ -4106,6 +4106,36 @@ abstract class AppLocalizations {
   /// **'Stellar 特权服务尚未就绪，这一通道暂时无法执行命令；可在「设置 → 通用 → 命令通道」切换。'**
   String get stellarNotReadyHint;
 
+  /// 首页 Stellar 卡片-拉起特权服务的按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'启动服务'**
+  String get stellarStartService;
+
+  /// 首页 Stellar 卡片-拉起进行中的状态
+  ///
+  /// In zh, this message translates to:
+  /// **'正在启动服务…'**
+  String get stellarLaunching;
+
+  /// 拉起失败-没有可用的执行通道
+  ///
+  /// In zh, this message translates to:
+  /// **'当前没有可用的执行通道，无法启动服务；请先连上无线 ADB。'**
+  String get stellarLaunchNoRunner;
+
+  /// 拉起失败-APK 里没有引导文件
+  ///
+  /// In zh, this message translates to:
+  /// **'安装包内缺少启动文件，无法启动服务。'**
+  String get stellarLaunchLauncherMissing;
+
+  /// 拉起失败-服务未在等待时间内应答
+  ///
+  /// In zh, this message translates to:
+  /// **'服务已发出启动请求，但没有在预期时间内响应。'**
+  String get stellarLaunchNotAnswering;
+
   /// 手动提权页-当前通道不支持终端时终端上方的提示
   ///
   /// In zh, this message translates to:
