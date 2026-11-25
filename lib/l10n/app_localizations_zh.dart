@@ -2184,13 +2184,25 @@ class AppLocalizationsZh extends AppLocalizations {
   String get stellarLaunching => '正在启动服务…';
 
   @override
-  String get stellarLaunchNoRunner => '当前没有可用的执行通道，无法启动服务；请先连上无线 ADB。';
+  String get stellarLaunchNoRunner => '自动连接无线调试没有成功，服务没能启动。请确认「无线调试」已开启后重试。';
 
   @override
   String get stellarLaunchLauncherMissing => '安装包内缺少启动文件，无法启动服务。';
 
   @override
   String get stellarLaunchNotAnswering => '服务已发出启动请求，但没有在预期时间内响应。';
+
+  @override
+  String get stellarLaunchAwaitingCode => '填入无线调试的六位配对码后会自动连接并启动服务。';
+
+  @override
+  String get stellarStopService => '断开服务';
+
+  @override
+  String get stellarStopping => '正在停止服务…';
+
+  @override
+  String get stellarStopFailed => '服务没有响应断开请求，可能仍在运行。';
 
   @override
   String get escalationTerminalAdbOnly => '终端需要无线 ADB 通道；当前通道不支持终端，这里不会出现提示符。';

@@ -7,6 +7,7 @@ import 'package:Aisupass/core/utils/su_shell.dart';
 import 'package:Aisupass/generated/adb_shell.g.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 /// 原生接口实例，与 Pigeon 通道一一对应。
 final Provider<AdbShellNative> adbShellNativeProvider =
@@ -18,7 +19,8 @@ final Provider<AdbShellNative> adbShellNativeProvider =
 /// 命令立即拿到 EOF，不会因为等待输入挂到超时。
 final Provider<ShellExec> adbShellExecProvider = Provider<ShellExec>((ref) {
   final AdbShellNative native = ref.watch(adbShellNativeProvider);
-  return (String command, int timeoutMs) => native.exec(command, timeoutMs, null);
+  return (String command, int timeoutMs) =>
+      native.exec(command, timeoutMs, null);
 });
 
 /// 当前是否已经有一条 adb shell 连接，以及它是以谁的 uid 跑起来的。
@@ -58,6 +60,95 @@ final Provider<ShellLink?> shellLinkProvider = Provider<ShellLink?>((ref) {
       ? null
       : ShellLink(connected: link.connected, uid: link.uid);
 });
+
+/// 自动连接的结果：只说通道现在能不能用，不解释原因。
+enum AdbAutoConnectResult {
+  /// 已经有一条可用的 shell 连接。
+  ready,
+
+  /// 当前是「小窗输入」模式：配对码要用户在界面里填，本端拿不到码。
+  needsCode,
+
+  /// 这一轮没能在预算内连上。
+  failed,
+}
+
+/// 自动连接的等待上限与轮询间隔。
+///
+/// 上限只约束「本端愿意等多久」：配对会话本身还有更宽的原生超时，
+/// 这里到点先放手，不让调用方（例如拉起服务）无限期挂着。
+const Duration _autoLinkBudget = Duration(minutes: 3);
+const Duration _autoLinkPollInterval = Duration(milliseconds: 500);
+
+/// 自动连接：保证现在有一条可用的无线 ADB shell 连接。
+///
+/// 给那些「不该要求用户先手动连一下 ADB」的调用方用：没连上就自己发起一次配对
+/// 然后等连接态变成已连接。
+///
+/// 走哪条路取决于「配对码输入位置」这个设置，与手动配对完全一致：
+/// 通知栏模式下自己发起会话、申请通知权限、把用户送到无线调试页；
+/// 小窗输入模式下不在后台发起任何会话，交回 [AdbAutoConnectResult.needsCode]
+/// 让调用方把输入框摆出来——那条路径的码只能由用户填。
+///
+/// 不是「免配对」：配对码只能由系统的「使用配对码配对设备」弹窗生成。这里省掉的
+/// 是「先去点一次连接、再回来点要用的按钮」这一步，不是省掉配对本身。
+final Provider<Future<AdbAutoConnectResult> Function()> adbAutoConnectProvider =
+    Provider<Future<AdbAutoConnectResult> Function()>((ref) {
+      return () async {
+        if (!Platform.isAndroid) return AdbAutoConnectResult.failed;
+
+        final AdbShellNative native = ref.read(adbShellNativeProvider);
+        if (await _shellLinked(native)) return AdbAutoConnectResult.ready;
+
+        // 已经有一轮配对在跑就只等结果，不再叠一条新会话。
+        if (ref.read(shellPairingProvider).active) {
+          return _awaitShellLink(ref, native);
+        }
+
+        // 小窗输入：码在用户手里。通知权限与跳设置页都跳过——这条路不经过通知栏。
+        if (ref.read(shellPairingModeProvider).isCard) {
+          return AdbAutoConnectResult.needsCode;
+        }
+
+        // 通知栏是唯一能承载配对码输入的地方：没有通知权限的话输入框弹不出来。
+        await Permission.notification.request();
+        await ref.read(shellPairingProvider.notifier).start();
+        try {
+          // 配对码的生成入口在系统设置里，直接把用户送过去。
+          await native.openWirelessDebuggingSettings();
+        } catch (_) {
+          // 跳转失败不影响已发起的配对：通知栏提示里仍写着怎么去。
+        }
+        return _awaitShellLink(ref, native);
+      };
+    });
+
+/// 问一次原生：现在有没有一条活着的 shell 连接。
+Future<bool> _shellLinked(AdbShellNative native) async {
+  try {
+    return (await native.connection()).connected;
+  } catch (_) {
+    return false;
+  }
+}
+
+/// 等到连接态变成已连接，或者这一轮配对已经收场。
+Future<AdbAutoConnectResult> _awaitShellLink(
+  Ref ref,
+  AdbShellNative native,
+) async {
+  final DateTime deadline = DateTime.now().add(_autoLinkBudget);
+  while (DateTime.now().isBefore(deadline)) {
+    if (await _shellLinked(native)) return AdbAutoConnectResult.ready;
+
+    // 会话既不活跃也没失败 = 已收场：再等也不会有新连接冒出来。
+    if (!ref.read(shellPairingProvider).active) {
+      return AdbAutoConnectResult.failed;
+    }
+    await Future<void>.delayed(_autoLinkPollInterval);
+  }
+  return AdbAutoConnectResult.failed;
+}
 
 /// 配对会话的当前快照，面板据此决定显示哪一行字、给哪个按钮。
 @immutable

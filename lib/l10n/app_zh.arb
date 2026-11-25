@@ -2728,9 +2728,9 @@
   "@stellarLaunching": {
     "description": "首页 Stellar 卡片-拉起进行中的状态"
   },
-  "stellarLaunchNoRunner": "当前没有可用的执行通道，无法启动服务；请先连上无线 ADB。",
+  "stellarLaunchNoRunner": "自动连接无线调试没有成功，服务没能启动。请确认「无线调试」已开启后重试。",
   "@stellarLaunchNoRunner": {
-    "description": "拉起失败-没有可用的执行通道"
+    "description": "拉起失败-自动连接执行通道失败"
   },
   "stellarLaunchLauncherMissing": "安装包内缺少启动文件，无法启动服务。",
   "@stellarLaunchLauncherMissing": {
@@ -2739,6 +2739,22 @@
   "stellarLaunchNotAnswering": "服务已发出启动请求，但没有在预期时间内响应。",
   "@stellarLaunchNotAnswering": {
     "description": "拉起失败-服务未在等待时间内应答"
+  },
+  "stellarLaunchAwaitingCode": "填入无线调试的六位配对码后会自动连接并启动服务。",
+  "@stellarLaunchAwaitingCode": {
+    "description": "拉起前-小窗输入模式下等待用户填配对码"
+  },
+  "stellarStopService": "断开服务",
+  "@stellarStopService": {
+    "description": "首页 Stellar 卡片-服务已就绪时断开服务的按钮"
+  },
+  "stellarStopping": "正在停止服务…",
+  "@stellarStopping": {
+    "description": "首页 Stellar 卡片-断开进行中的状态"
+  },
+  "stellarStopFailed": "服务没有响应断开请求，可能仍在运行。",
+  "@stellarStopFailed": {
+    "description": "断开失败-服务未确认退出或端口仍在应答"
   },
   "escalationTerminalAdbOnly": "终端需要无线 ADB 通道；当前通道不支持终端，这里不会出现提示符。",
   "@escalationTerminalAdbOnly": {

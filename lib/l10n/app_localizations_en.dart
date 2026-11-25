@@ -2354,7 +2354,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get stellarLaunchNoRunner =>
-      'No execution channel is available, so the service cannot start. Connect wireless ADB first.';
+      'Connecting to wireless debugging automatically did not work, so the service could not start. Make sure wireless debugging is on, then try again.';
 
   @override
   String get stellarLaunchLauncherMissing =>
@@ -2363,6 +2363,20 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get stellarLaunchNotAnswering =>
       'The start request was sent, but the service did not answer in time.';
+
+  @override
+  String get stellarLaunchAwaitingCode =>
+      'Enter the six-digit wireless debugging pairing code below; the app connects and starts the service automatically.';
+
+  @override
+  String get stellarStopService => 'Disconnect service';
+
+  @override
+  String get stellarStopping => 'Stopping service…';
+
+  @override
+  String get stellarStopFailed =>
+      'The service did not respond to the disconnect request and may still be running.';
 
   @override
   String get escalationTerminalAdbOnly =>

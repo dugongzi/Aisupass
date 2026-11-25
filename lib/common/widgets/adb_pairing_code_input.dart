@@ -14,7 +14,13 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 /// 上点不开，这条路让用户把系统配对弹窗里的码直接填进卡片。端点仍由原生 mDNS
 /// 发现，用户不需要抄 IP 与端口。
 class AdbPairingCodeInput extends HookConsumerWidget {
-  const AdbPairingCodeInput({super.key});
+  const AdbPairingCodeInput({super.key, this.onSubmitted});
+
+  /// 配对会话已发起后的回调。
+  ///
+  /// 给「配对只是前置步骤」的调用方用：码交出去之后紧接着该做的那件事（例如
+  /// 拉起服务）可以挂在这里，用户不必再回去点一次按钮。
+  final VoidCallback? onSubmitted;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -32,6 +38,7 @@ class AdbPairingCodeInput extends HookConsumerWidget {
       if (!canSubmit) return;
       controller.clear();
       await ref.read(shellPairingProvider.notifier).start(code: code);
+      onSubmitted?.call();
     }
 
     Future<void> openSettings() async {

@@ -4118,10 +4118,10 @@ abstract class AppLocalizations {
   /// **'正在启动服务…'**
   String get stellarLaunching;
 
-  /// 拉起失败-没有可用的执行通道
+  /// 拉起失败-自动连接执行通道失败
   ///
   /// In zh, this message translates to:
-  /// **'当前没有可用的执行通道，无法启动服务；请先连上无线 ADB。'**
+  /// **'自动连接无线调试没有成功，服务没能启动。请确认「无线调试」已开启后重试。'**
   String get stellarLaunchNoRunner;
 
   /// 拉起失败-APK 里没有引导文件
@@ -4135,6 +4135,30 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'服务已发出启动请求，但没有在预期时间内响应。'**
   String get stellarLaunchNotAnswering;
+
+  /// 拉起前-小窗输入模式下等待用户填配对码
+  ///
+  /// In zh, this message translates to:
+  /// **'填入无线调试的六位配对码后会自动连接并启动服务。'**
+  String get stellarLaunchAwaitingCode;
+
+  /// 首页 Stellar 卡片-服务已就绪时断开服务的按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'断开服务'**
+  String get stellarStopService;
+
+  /// 首页 Stellar 卡片-断开进行中的状态
+  ///
+  /// In zh, this message translates to:
+  /// **'正在停止服务…'**
+  String get stellarStopping;
+
+  /// 断开失败-服务未确认退出或端口仍在应答
+  ///
+  /// In zh, this message translates to:
+  /// **'服务没有响应断开请求，可能仍在运行。'**
+  String get stellarStopFailed;
 
   /// 手动提权页-当前通道不支持终端时终端上方的提示
   ///
