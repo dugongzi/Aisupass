@@ -1,14 +1,17 @@
 import 'package:Aisupass/common/widgets/app_adb_shell_panel.dart';
 import 'package:Aisupass/common/widgets/app_status_card.dart';
+import 'package:Aisupass/common/widgets/app_stellar_service_card.dart';
 import 'package:Aisupass/core/extensions/context_extensions.dart';
+import 'package:Aisupass/core/models/command_channel.dart';
 import 'package:Aisupass/core/providers/adb_shell_provider.dart';
+import 'package:Aisupass/core/providers/command_channel_provider.dart';
 import 'package:Aisupass/core/providers/system_status_provider.dart';
 import 'package:Aisupass/generated/system_status.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-/// ROOT 与 ADB 两张状态卡片，各自独立检测、独立刷新。
+/// ROOT 卡与通道卡：ROOT 恒在，第二张随命令通道在 ADB / Stellar 之间二选一。
 class AppSystemStatusCards extends HookConsumerWidget {
   const AppSystemStatusCards({super.key, this.spacing = 12});
 
@@ -32,6 +35,7 @@ class AppSystemStatusCards extends HookConsumerWidget {
 
     final AsyncValue<bool> rootAsync = ref.watch(rootStatusProvider);
     final AsyncValue<AdbStatus> adbAsync = ref.watch(adbStatusProvider);
+    final CommandChannel channel = ref.watch(commandChannelControllerProvider);
 
     return Column(
       children: <Widget>[
@@ -46,22 +50,26 @@ class AppSystemStatusCards extends HookConsumerWidget {
           onRefresh: () => ref.invalidate(rootStatusProvider),
         ),
         SizedBox(height: spacing),
-        AppStatusCard(
-          title: context.l10n.adbTitle,
-          subtitle: _adbSubtitle(context, adbAsync),
-          icon: Icons.developer_mode_rounded,
-          isActivated: _isAdbEnabled(adbAsync.value),
-          isLoading: !adbAsync.hasValue,
-          isRefreshing: adbAsync.isLoading,
-          // 两个查询各自独立发起、各自渲染：开关先回来就先更新卡片，
-          // shell 连接那条还在跑就继续跑，不互相拖。
-          onRefresh: () {
-            ref.invalidate(adbStatusProvider);
-            ref.invalidate(shellConnectionProvider);
-          },
-          // 无线 ADB 配对与 uid=2000 的 shell 连接都属于 ADB 本身。
-          footer: const AppAdbShellPanel(),
-        ),
+        // 通道卡片互斥：只显示当前通道对应的那一张。
+        if (channel == CommandChannel.stellar)
+          const AppStellarServiceCard()
+        else
+          AppStatusCard(
+            title: context.l10n.adbTitle,
+            subtitle: _adbSubtitle(context, adbAsync),
+            icon: Icons.developer_mode_rounded,
+            isActivated: _isAdbEnabled(adbAsync.value),
+            isLoading: !adbAsync.hasValue,
+            isRefreshing: adbAsync.isLoading,
+            // 两个查询各自独立发起、各自渲染：开关先回来就先更新卡片，
+            // shell 连接那条还在跑就继续跑，不互相拖。
+            onRefresh: () {
+              ref.invalidate(adbStatusProvider);
+              ref.invalidate(shellConnectionProvider);
+            },
+            // 无线 ADB 配对与 uid=2000 的 shell 连接都属于 ADB 本身。
+            footer: const AppAdbShellPanel(),
+          ),
       ],
     );
   }

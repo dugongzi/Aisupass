@@ -623,6 +623,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatToolRequestAdbPairing => 'Request wireless debugging pairing';
 
   @override
+  String get chatToolReadStellarStatus => 'Read Stellar service status';
+
+  @override
   String get chatToolWebSearch => 'Search the web';
 
   @override
@@ -841,6 +844,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get chatToolDesc_adb_pairing_request =>
       'Open the wireless debugging pairing panel and walk through adb pairing';
+
+  @override
+  String get chatToolDesc_stellar_service_status =>
+      'Read whether the Stellar privileged service is available and which uid it runs as';
 
   @override
   String get chatToolDesc_web_search =>
@@ -1203,6 +1210,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get chatManualGroupAdbDesc =>
       'Run adb shell commands and start wireless debugging pairing';
+
+  @override
+  String get chatManualGroupStellar => 'Stellar service';
+
+  @override
+  String get chatManualGroupStellarDesc =>
+      'Read whether the Stellar privileged service is available and which identity it runs as';
 
   @override
   String get chatManualGroupWeb => 'Network & browsing';
@@ -2300,6 +2314,41 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shellReasonHostPairingFailed => 'Pairing failed, please retry';
+
+  @override
+  String get settingsCommandChannelTitle => 'Command channel';
+
+  @override
+  String get settingsCommandChannelDesc =>
+      'Which link AI tools use to run commands. Stellar is served by the in-app privileged service; no extra app is required.';
+
+  @override
+  String get commandChannelAdb => 'Wireless ADB';
+
+  @override
+  String get commandChannelStellar => 'Stellar';
+
+  @override
+  String get commandChannelSwitchToAdb => 'Back to wireless ADB';
+
+  @override
+  String get stellarCardTitle => 'Stellar';
+
+  @override
+  String stellarStatusReady(int uid) {
+    return 'Service ready (uid $uid)';
+  }
+
+  @override
+  String get stellarStatusNotReady => 'Service not ready';
+
+  @override
+  String get stellarNotReadyHint =>
+      'The Stellar privileged service is not ready, so this channel cannot run commands right now. Switch channels in Settings → General → Command channel.';
+
+  @override
+  String get escalationTerminalAdbOnly =>
+      'The terminal needs the wireless ADB channel; the current channel does not support it, so no prompt will appear here.';
 
   @override
   String get rootManagerPillTooltip => 'Choose root manager';

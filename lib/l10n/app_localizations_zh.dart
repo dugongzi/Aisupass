@@ -612,6 +612,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatToolRequestAdbPairing => '请求无线调试配对';
 
   @override
+  String get chatToolReadStellarStatus => '查询 Stellar 服务状态';
+
+  @override
   String get chatToolWebSearch => '联网搜索';
 
   @override
@@ -821,6 +824,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get chatToolDesc_adb_pairing_request => '打开无线调试配对面板，引导完成 adb 配对';
+
+  @override
+  String get chatToolDesc_stellar_service_status => '读取 Stellar 特权服务的可用状态与运行身份';
 
   @override
   String get chatToolDesc_web_search => '用 Bing 搜索公开网络，返回标题、链接与摘要';
@@ -1108,6 +1114,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get chatManualGroupAdbDesc => '执行 adb shell 命令，发起无线调试配对';
+
+  @override
+  String get chatManualGroupStellar => 'Stellar 特权服务';
+
+  @override
+  String get chatManualGroupStellarDesc => '查询 Stellar 特权服务的可用状态与身份';
 
   @override
   String get chatManualGroupWeb => '网络与浏览';
@@ -2133,6 +2145,40 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get shellReasonHostPairingFailed => '配对失败，请重试';
+
+  @override
+  String get settingsCommandChannelTitle => '命令通道';
+
+  @override
+  String get settingsCommandChannelDesc =>
+      'AI 工具执行命令走的链路；Stellar 由应用内特权服务提供，不需要安装其它应用';
+
+  @override
+  String get commandChannelAdb => '无线 ADB';
+
+  @override
+  String get commandChannelStellar => 'Stellar';
+
+  @override
+  String get commandChannelSwitchToAdb => '切回无线 ADB';
+
+  @override
+  String get stellarCardTitle => 'Stellar';
+
+  @override
+  String stellarStatusReady(int uid) {
+    return '服务已就绪（uid=$uid）';
+  }
+
+  @override
+  String get stellarStatusNotReady => '服务尚未就绪';
+
+  @override
+  String get stellarNotReadyHint =>
+      'Stellar 特权服务尚未就绪，这一通道暂时无法执行命令；可在「设置 → 通用 → 命令通道」切换。';
+
+  @override
+  String get escalationTerminalAdbOnly => '终端需要无线 ADB 通道；当前通道不支持终端，这里不会出现提示符。';
 
   @override
   String get rootManagerPillTooltip => '选择 root 管理器';

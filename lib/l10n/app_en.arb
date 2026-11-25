@@ -410,6 +410,10 @@
   "@chatToolRequestAdbPairing": {
     "description": "工具动作名-adb_pairing_request"
   },
+  "chatToolReadStellarStatus": "Read Stellar service status",
+  "@chatToolReadStellarStatus": {
+    "description": "工具动作名-stellar_service_status"
+  },
   "chatToolWebSearch": "Search the web",
   "@chatToolWebSearch": {
     "description": "工具动作名-web_search"
@@ -604,6 +608,7 @@
   "chatToolDesc_get_adb_status": "Check whether the USB and wireless debugging switches are on",
   "chatToolDesc_adb_shell_exec": "Run one command on the connected adb shell (uid 2000) and return exit code and output",
   "chatToolDesc_adb_pairing_request": "Open the wireless debugging pairing panel and walk through adb pairing",
+  "chatToolDesc_stellar_service_status": "Read whether the Stellar privileged service is available and which uid it runs as",
   "chatToolDesc_web_search": "Search the public web with Bing and return titles, links and snippets",
   "chatToolDesc_fetch_web_page": "Download the raw source of a page together with its status code and content type",
   "chatToolDesc_open_in_browser": "Open a page in the in-app browser and hand back the URL or page source",
@@ -697,6 +702,8 @@
   "chatManualGroupDeviceDesc": "Read the model, OS version, kernel, ROOT state and ADB switches",
   "chatManualGroupAdb": "ADB debugging",
   "chatManualGroupAdbDesc": "Run adb shell commands and start wireless debugging pairing",
+  "chatManualGroupStellar": "Stellar service",
+  "chatManualGroupStellarDesc": "Read whether the Stellar privileged service is available and which identity it runs as",
   "chatManualGroupWeb": "Network & browsing",
   "chatManualGroupWebDesc": "Search the web, fetch page source, open pages in the in-app browser",
   "chatManualGroupEscalation": "Manual escalation",
@@ -1093,6 +1100,16 @@
   "shellReasonDeviceRebooted": "Device rebooted, connection dropped",
   "shellReasonCancelled": "Pairing cancelled",
   "shellReasonHostPairingFailed": "Pairing failed, please retry",
+  "settingsCommandChannelTitle": "Command channel",
+  "settingsCommandChannelDesc": "Which link AI tools use to run commands. Stellar is served by the in-app privileged service; no extra app is required.",
+  "commandChannelAdb": "Wireless ADB",
+  "commandChannelStellar": "Stellar",
+  "commandChannelSwitchToAdb": "Back to wireless ADB",
+  "stellarCardTitle": "Stellar",
+  "stellarStatusReady": "Service ready (uid {uid})",
+  "stellarStatusNotReady": "Service not ready",
+  "stellarNotReadyHint": "The Stellar privileged service is not ready, so this channel cannot run commands right now. Switch channels in Settings → General → Command channel.",
+  "escalationTerminalAdbOnly": "The terminal needs the wireless ADB channel; the current channel does not support it, so no prompt will appear here.",
   "rootManagerPillTooltip": "Choose root manager",
   "rootManagerTitle": "Root manager",
   "rootManagerCurrent": "Current",

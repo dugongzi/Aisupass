@@ -2,6 +2,7 @@ import 'package:Aisupass/common/tabs/setting/about_setting_section.dart';
 import 'package:Aisupass/common/tabs/setting/feature_wish_setting_row.dart';
 import 'package:Aisupass/common/tabs/setting/follow_author_setting_section.dart';
 import 'package:Aisupass/common/widgets/app_adb_pairing_mode_switch.dart';
+import 'package:Aisupass/common/widgets/app_command_channel_switch.dart';
 import 'package:Aisupass/common/widgets/app_language_switch.dart';
 import 'package:Aisupass/common/widgets/app_settings_section.dart';
 import 'package:Aisupass/common/widgets/app_theme_color_picker.dart';
@@ -37,6 +38,8 @@ class SettingTab extends HookWidget {
           title: context.l10n.settingsGeneralSection,
           children: <Widget>[
             AppLanguageSwitch(),
+            Divider(height: 1, indent: 62.w, endIndent: 16.w),
+            const AppCommandChannelSwitch(),
             Divider(height: 1, indent: 62.w, endIndent: 16.w),
             const AppAdbPairingModeSwitch(),
             Divider(height: 1, indent: 62.w, endIndent: 16.w),

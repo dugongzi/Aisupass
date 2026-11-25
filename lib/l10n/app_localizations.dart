@@ -1226,6 +1226,12 @@ abstract class AppLocalizations {
   /// **'请求无线调试配对'**
   String get chatToolRequestAdbPairing;
 
+  /// 工具动作名-stellar_service_status
+  ///
+  /// In zh, this message translates to:
+  /// **'查询 Stellar 服务状态'**
+  String get chatToolReadStellarStatus;
+
   /// 工具动作名-web_search
   ///
   /// In zh, this message translates to:
@@ -1609,6 +1615,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'打开无线调试配对面板，引导完成 adb 配对'**
   String get chatToolDesc_adb_pairing_request;
+
+  /// No description provided for @chatToolDesc_stellar_service_status.
+  ///
+  /// In zh, this message translates to:
+  /// **'读取 Stellar 特权服务的可用状态与运行身份'**
+  String get chatToolDesc_stellar_service_status;
 
   /// No description provided for @chatToolDesc_web_search.
   ///
@@ -2167,6 +2179,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'执行 adb shell 命令，发起无线调试配对'**
   String get chatManualGroupAdbDesc;
+
+  /// 手册能力分组-Stellar 特权服务
+  ///
+  /// In zh, this message translates to:
+  /// **'Stellar 特权服务'**
+  String get chatManualGroupStellar;
+
+  /// 手册能力分组说明-Stellar 特权服务
+  ///
+  /// In zh, this message translates to:
+  /// **'查询 Stellar 特权服务的可用状态与身份'**
+  String get chatManualGroupStellarDesc;
 
   /// 手册能力分组-网络
   ///
@@ -4027,6 +4051,66 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'配对失败，请重试'**
   String get shellReasonHostPairingFailed;
+
+  /// 设置页-命令通道切换项的标题
+  ///
+  /// In zh, this message translates to:
+  /// **'命令通道'**
+  String get settingsCommandChannelTitle;
+
+  /// 设置页-命令通道切换项的说明
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 工具执行命令走的链路；Stellar 由应用内特权服务提供，不需要安装其它应用'**
+  String get settingsCommandChannelDesc;
+
+  /// 命令通道名称-无线 ADB
+  ///
+  /// In zh, this message translates to:
+  /// **'无线 ADB'**
+  String get commandChannelAdb;
+
+  /// 命令通道名称-Stellar
+  ///
+  /// In zh, this message translates to:
+  /// **'Stellar'**
+  String get commandChannelStellar;
+
+  /// 终端页-当前通道不支持终端时，一键切回无线 ADB 通道的按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'切回无线 ADB'**
+  String get commandChannelSwitchToAdb;
+
+  /// 首页 Stellar 通道卡片的标题
+  ///
+  /// In zh, this message translates to:
+  /// **'Stellar'**
+  String get stellarCardTitle;
+
+  /// 首页 Stellar 卡片-服务可用时的状态；uid 是服务身份
+  ///
+  /// In zh, this message translates to:
+  /// **'服务已就绪（uid={uid}）'**
+  String stellarStatusReady(int uid);
+
+  /// 首页 Stellar 卡片-服务不可用时的状态
+  ///
+  /// In zh, this message translates to:
+  /// **'服务尚未就绪'**
+  String get stellarStatusNotReady;
+
+  /// 首页 Stellar 卡片-服务不可用时的说明与下一步
+  ///
+  /// In zh, this message translates to:
+  /// **'Stellar 特权服务尚未就绪，这一通道暂时无法执行命令；可在「设置 → 通用 → 命令通道」切换。'**
+  String get stellarNotReadyHint;
+
+  /// 手动提权页-当前通道不支持终端时终端上方的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'终端需要无线 ADB 通道；当前通道不支持终端，这里不会出现提示符。'**
+  String get escalationTerminalAdbOnly;
 
   /// 首页标题栏右侧胶囊：点击弹出管理器选择
   ///
