@@ -29,6 +29,7 @@ import 'package:Aisupass/features/escalation/presentation/widgets/ghost_key_prog
 import 'package:Aisupass/features/escalation/presentation/widgets/ghost_lock_confirm_dialog.dart';
 import 'package:Aisupass/features/escalation/presentation/widgets/payload_catalog_dialog.dart';
 import 'package:Aisupass/features/escalation/presentation/widgets/payload_confirm_dialog.dart';
+import 'package:Aisupass/features/escalation/presentation/widgets/terminal_channel_notice.dart';
 import 'package:Aisupass/features/escalation/presentation/widgets/terminal_key_bar.dart';
 import 'package:Aisupass/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -615,6 +616,8 @@ class ManualEscalationPage extends HookConsumerWidget {
       // 终端自己画背景，外层再垫一层同色，避免布局过程中露出 Scaffold 底色。
       body: Column(
         children: <Widget>[
+          // 通道不是无线 ADB 时先说清楚：终端只在这条通道上工作。
+          const TerminalChannelNotice(),
           Expanded(
             child: Container(
               color: TerminalThemes.defaultTheme.background,
