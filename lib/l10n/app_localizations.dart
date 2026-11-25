@@ -2354,6 +2354,12 @@ abstract class AppLocalizations {
   /// **'提权方式'**
   String get escalationToolSection;
 
+  /// 手动提权页-内核表入口分组标题
+  ///
+  /// In zh, this message translates to:
+  /// **'内核配置'**
+  String get escalationKernelSection;
+
   /// 手动提权页-终端：常驻 shell 正常退出后的说明行
   ///
   /// In zh, this message translates to:

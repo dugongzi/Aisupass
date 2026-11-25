@@ -731,6 +731,7 @@
   "escalationTerminalTitle": "Terminal",
   "escalationTerminalEntry": "Open terminal",
   "escalationToolSection": "Root methods",
+  "escalationKernelSection": "Kernel config",
   "escalationTerminalClosed": "The shell session has ended — typing again reconnects automatically",
   "escalationShellConnected": "shell connected (uid={uid})",
   "escalationShellDisconnected": "Not connected — pair wireless debugging on the home screen first",

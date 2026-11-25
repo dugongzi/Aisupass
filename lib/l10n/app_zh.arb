@@ -1365,6 +1365,10 @@
   "@escalationToolSection": {
     "description": "手动提权页-提权操作分组标题"
   },
+  "escalationKernelSection": "内核配置",
+  "@escalationKernelSection": {
+    "description": "手动提权页-内核表入口分组标题"
+  },
   "escalationTerminalClosed": "shell 会话已结束，再次输入会自动重连",
   "@escalationTerminalClosed": {
     "description": "手动提权页-终端：常驻 shell 正常退出后的说明行"

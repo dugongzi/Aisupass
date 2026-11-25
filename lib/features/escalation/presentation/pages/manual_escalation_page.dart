@@ -2,6 +2,7 @@ import 'package:Aisupass/common/widgets/app_setting_icon.dart';
 import 'package:Aisupass/common/widgets/app_settings_section.dart';
 import 'package:Aisupass/core/extensions/context_extensions.dart';
 import 'package:Aisupass/core/routes/app_route.dart';
+import 'package:Aisupass/features/escalation/presentation/widgets/kernel_profile_setting_row.dart';
 import 'package:Aisupass/features/escalation/presentation/widgets/terminal_link_notice.dart';
 import 'package:Aisupass/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -71,6 +72,14 @@ class ManualEscalationPage extends HookWidget {
                       title: l10n.escalationGhostLockTitle,
                       onTap: () => openTerminal('ghostLock'),
                     ),
+                  ],
+                ),
+                SizedBox(height: 20.h),
+                AppSettingsSection(
+                  title: l10n.escalationKernelSection,
+                  children: const <Widget>[
+                    // 内核表入口：为 GhostKey / GhostLock 生成内核参数，二级页面。
+                    KernelProfileSettingRow(),
                   ],
                 ),
                 SizedBox(height: 20.h),

@@ -1204,6 +1204,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get escalationToolSection => '提权方式';
 
   @override
+  String get escalationKernelSection => '内核配置';
+
+  @override
   String get escalationTerminalClosed => 'shell 会话已结束，再次输入会自动重连';
 
   @override

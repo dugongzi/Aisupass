@@ -1311,6 +1311,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get escalationToolSection => 'Root methods';
 
   @override
+  String get escalationKernelSection => 'Kernel config';
+
+  @override
   String get escalationTerminalClosed =>
       'The shell session has ended — typing again reconnects automatically';
 
