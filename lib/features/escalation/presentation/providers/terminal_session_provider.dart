@@ -7,8 +7,10 @@ import 'package:Aisupass/features/escalation/domain/enums/terminal_modifier.dart
 import 'package:Aisupass/features/escalation/presentation/providers/escalation_action_provider.dart';
 import 'package:Aisupass/features/escalation/presentation/widgets/terminal_key_bar.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:xterm3/xterm.dart';
+
+part 'terminal_session_provider.g.dart';
 
 /// 终端按哪个平台的按键习惯解释输入；桌面端只用于调试布局，传 `unknown`。
 TerminalTargetPlatform _platform() => Platform.isAndroid
@@ -20,22 +22,22 @@ TerminalTargetPlatform _platform() => Platform.isAndroid
 /// 手动提权页与终端页共用同一份终端缓冲与同一条 pty：切页不丢历史，停在提权页
 /// 时发起的提权命令，其输出也继续累积进来，进终端页能看到完整过程。
 ///
-/// 刻意不是 autoDispose：切页会把实例连同屏幕历史一起丢掉。
-final Provider<TerminalSession> terminalSessionProvider =
-    Provider<TerminalSession>((ref) {
-      final TerminalSession session = TerminalSession(ref);
-      ref.onDispose(session.dispose);
-      // 连接恢复后补建一次 pty：进页面那次 open() 可能因为还没连上而失败。
-      ref.listen<ShellLink?>(shellLinkProvider, (
-        ShellLink? previous,
-        ShellLink? next,
-      ) {
-        if (next?.connected == true && previous?.connected != true) {
-          session.onLinkRestored();
-        }
-      });
-      return session;
-    });
+/// 刻意 `keepAlive`：切页会把实例连同屏幕历史一起丢掉。
+@Riverpod(keepAlive: true)
+TerminalSession terminalSession(Ref ref) {
+  final TerminalSession session = TerminalSession(ref);
+  ref.onDispose(session.dispose);
+  // 连接恢复后补建一次 pty：进页面那次 open() 可能因为还没连上而失败。
+  ref.listen<ShellLink?>(shellLinkProvider, (
+    ShellLink? previous,
+    ShellLink? next,
+  ) {
+    if (next?.connected == true && previous?.connected != true) {
+      session.onLinkRestored();
+    }
+  });
+  return session;
+}
 
 /// 共享终端：终端实例、修饰键、写屏通路、招牌与会话生命周期都在这里。
 ///

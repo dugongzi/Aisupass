@@ -2384,12 +2384,6 @@ abstract class AppLocalizations {
   /// **'（超时）'**
   String get escalationTimedOutTag;
 
-  /// 手动提权页-菜单里的提权项：按机型与内核自动匹配一条预制载荷
-  ///
-  /// In zh, this message translates to:
-  /// **'自动匹配载荷提权'**
-  String get escalationExploitButton;
-
   /// 手动提权页-终端：提权已发起
   ///
   /// In zh, this message translates to:
@@ -2456,17 +2450,149 @@ abstract class AppLocalizations {
   /// **'更多操作'**
   String get escalationMenuTitle;
 
-  /// 手动提权页-菜单里的查看载荷清单项
+  /// 载荷提权：提权页的入口行与选择弹窗共用标题
   ///
   /// In zh, this message translates to:
-  /// **'查看载荷清单'**
-  String get escalationMenuPayloadCatalog;
+  /// **'载荷提权'**
+  String get escalationPayloadRootTitle;
 
-  /// 手动提权页-载荷清单弹窗标题
+  /// 载荷提权弹窗-列表顶部：按机型与内核自动挑选
   ///
   /// In zh, this message translates to:
-  /// **'载荷清单'**
-  String get escalationPayloadCatalogTitle;
+  /// **'自动匹配当前设备'**
+  String get escalationPayloadAutoMatch;
+
+  /// 载荷提权弹窗-自动匹配入口的说明
+  ///
+  /// In zh, this message translates to:
+  /// **'按机型与内核自动挑一条'**
+  String get escalationPayloadAutoMatchDesc;
+
+  /// 载荷提权弹窗-右上角导入按钮的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'导入自定义载荷'**
+  String get escalationPayloadImport;
+
+  /// 导入自定义载荷弹窗标题
+  ///
+  /// In zh, this message translates to:
+  /// **'导入自定义载荷'**
+  String get escalationPayloadImportTitle;
+
+  /// 导入弹窗-选择本机文件的按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'选择载荷文件'**
+  String get escalationPayloadImportPickFile;
+
+  /// 导入弹窗-名称输入框标题
+  ///
+  /// In zh, this message translates to:
+  /// **'显示名称'**
+  String get escalationPayloadImportName;
+
+  /// 导入弹窗-名称输入框提示
+  ///
+  /// In zh, this message translates to:
+  /// **'留空则用文件名'**
+  String get escalationPayloadImportNameHint;
+
+  /// 导入弹窗-运行方式分组标题
+  ///
+  /// In zh, this message translates to:
+  /// **'运行方式'**
+  String get escalationPayloadImportMode;
+
+  /// 导入弹窗-运行方式：交给内置助手加载 .so
+  ///
+  /// In zh, this message translates to:
+  /// **'助手加载'**
+  String get escalationPayloadImportModeHelper;
+
+  /// 导入弹窗-运行方式：把文件当可执行程序
+  ///
+  /// In zh, this message translates to:
+  /// **'直接执行'**
+  String get escalationPayloadImportModeStandalone;
+
+  /// 导入弹窗-助手加载方式的说明
+  ///
+  /// In zh, this message translates to:
+  /// **'适用于 .so 载荷，由内置执行助手加载运行'**
+  String get escalationPayloadImportModeHelperDesc;
+
+  /// 导入弹窗-直接执行方式的说明
+  ///
+  /// In zh, this message translates to:
+  /// **'适用于自带入口的可执行文件，附加参数后直接运行'**
+  String get escalationPayloadImportModeStandaloneDesc;
+
+  /// 导入弹窗-直接执行时的参数输入框标题
+  ///
+  /// In zh, this message translates to:
+  /// **'启动参数'**
+  String get escalationPayloadImportArguments;
+
+  /// 导入弹窗-参数输入框提示
+  ///
+  /// In zh, this message translates to:
+  /// **'可留空'**
+  String get escalationPayloadImportArgumentsHint;
+
+  /// 导入弹窗-确认按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'导入'**
+  String get escalationPayloadImportConfirm;
+
+  /// 导入弹窗-未选文件就确认
+  ///
+  /// In zh, this message translates to:
+  /// **'请先选择载荷文件'**
+  String get escalationPayloadImportNeedFile;
+
+  /// 导入失败原因：文件不存在或已被移走
+  ///
+  /// In zh, this message translates to:
+  /// **'本机文件不存在'**
+  String get escalationPayloadImportFileMissing;
+
+  /// 导入失败原因：选中的文件是空文件
+  ///
+  /// In zh, this message translates to:
+  /// **'文件为空'**
+  String get escalationPayloadImportFileEmpty;
+
+  /// 导入失败原因：推到设备目录时失败
+  ///
+  /// In zh, this message translates to:
+  /// **'推送到设备失败'**
+  String get escalationPayloadImportPushFailed;
+
+  /// 载荷列表-自定义条目的删除按钮与确认按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'删除'**
+  String get escalationPayloadDelete;
+
+  /// 载荷列表-删除自定义载荷的确认弹窗标题
+  ///
+  /// In zh, this message translates to:
+  /// **'删除自定义载荷？'**
+  String get escalationPayloadDeleteConfirmTitle;
+
+  /// 载荷列表-删除确认的正文
+  ///
+  /// In zh, this message translates to:
+  /// **'将从设备上删掉「{name}」的文件，并从列表里移除。'**
+  String escalationPayloadDeleteConfirmBody(String name);
+
+  /// 删除自定义载荷失败原因：设备文件删不掉
+  ///
+  /// In zh, this message translates to:
+  /// **'删除失败'**
+  String get escalationPayloadDeleteFailed;
 
   /// 手动提权页-载荷清单弹窗的条数
   ///

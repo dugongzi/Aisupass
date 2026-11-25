@@ -50,8 +50,8 @@ class ManualEscalationPage extends HookWidget {
                   children: <Widget>[
                     _ActionRow(
                       icon: Icons.security_rounded,
-                      title: l10n.escalationExploitButton,
-                      onTap: () => openTerminal('exploit'),
+                      title: l10n.escalationPayloadRootTitle,
+                      onTap: () => openTerminal('payload'),
                     ),
                     Divider(height: 1, indent: 62.w, endIndent: 16.w),
                     _ActionRow(
@@ -70,12 +70,6 @@ class ManualEscalationPage extends HookWidget {
                       icon: Icons.gpp_maybe_rounded,
                       title: l10n.escalationGhostLockTitle,
                       onTap: () => openTerminal('ghostLock'),
-                    ),
-                    Divider(height: 1, indent: 62.w, endIndent: 16.w),
-                    _ActionRow(
-                      icon: Icons.inventory_2_outlined,
-                      title: l10n.escalationMenuPayloadCatalog,
-                      onTap: () => openTerminal('payloadCatalog'),
                     ),
                   ],
                 ),

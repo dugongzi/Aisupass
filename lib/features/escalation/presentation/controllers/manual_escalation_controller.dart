@@ -79,18 +79,6 @@ class ManualEscalationController {
     );
   }
 
-  /// 打开载荷清单并执行选中项；挑选与二次确认由页面注入。
-  Future<void> openPayloadCatalog({
-    required Future<Payload?> Function() pick,
-    required Future<bool> Function(Payload payload) confirm,
-  }) async {
-    final Payload? picked = await pick();
-    if (picked == null) return;
-    final bool confirmed = await confirm(picked);
-    if (!confirmed) return;
-    await startPayload(picked);
-  }
-
   /// 把临时 root 移交给当前选定的管理器。
   ///
   /// [currentTarget] 是页面记住的上一次目标：同一目标要强制重跑，换目标只切换。

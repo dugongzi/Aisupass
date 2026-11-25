@@ -41,11 +41,16 @@ class EscalationActionDatasource {
   /// [PayloadLaunchException]，由展示层写屏，命令行里不夹 `echo`。
   Future<String> runPayload(Payload payload) async {
     final String directory = await _native.nativeLibraryDir();
-    if (directory.isEmpty) {
+    // 自定义载荷的 library 是绝对路径（导入时推到 /data/local/tmp），
+    // 包内载荷才是 `nativeLibraryDir` 下的文件名。
+    final bool absolutePath = payload.library.startsWith('/');
+    if (!absolutePath && directory.isEmpty) {
       throw const PayloadLaunchException('libraryDirUnavailable');
     }
 
-    final String payloadPath = '$directory/${payload.library}';
+    final String payloadPath = absolutePath
+        ? payload.library
+        : '$directory/${payload.library}';
 
     if (payload.standalone) {
       // 独立载荷没有注入 slide 的位置，这份缓存对它没意义。

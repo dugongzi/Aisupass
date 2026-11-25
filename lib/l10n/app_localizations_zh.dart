@@ -1221,9 +1221,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get escalationTimedOutTag => '（超时）';
 
   @override
-  String get escalationExploitButton => '自动匹配载荷提权';
-
-  @override
   String get escalationExploitStarted => '自动匹配载荷提权…';
 
   @override
@@ -1264,10 +1261,79 @@ class AppLocalizationsZh extends AppLocalizations {
   String get escalationMenuTitle => '更多操作';
 
   @override
-  String get escalationMenuPayloadCatalog => '查看载荷清单';
+  String get escalationPayloadRootTitle => '载荷提权';
 
   @override
-  String get escalationPayloadCatalogTitle => '载荷清单';
+  String get escalationPayloadAutoMatch => '自动匹配当前设备';
+
+  @override
+  String get escalationPayloadAutoMatchDesc => '按机型与内核自动挑一条';
+
+  @override
+  String get escalationPayloadImport => '导入自定义载荷';
+
+  @override
+  String get escalationPayloadImportTitle => '导入自定义载荷';
+
+  @override
+  String get escalationPayloadImportPickFile => '选择载荷文件';
+
+  @override
+  String get escalationPayloadImportName => '显示名称';
+
+  @override
+  String get escalationPayloadImportNameHint => '留空则用文件名';
+
+  @override
+  String get escalationPayloadImportMode => '运行方式';
+
+  @override
+  String get escalationPayloadImportModeHelper => '助手加载';
+
+  @override
+  String get escalationPayloadImportModeStandalone => '直接执行';
+
+  @override
+  String get escalationPayloadImportModeHelperDesc => '适用于 .so 载荷，由内置执行助手加载运行';
+
+  @override
+  String get escalationPayloadImportModeStandaloneDesc =>
+      '适用于自带入口的可执行文件，附加参数后直接运行';
+
+  @override
+  String get escalationPayloadImportArguments => '启动参数';
+
+  @override
+  String get escalationPayloadImportArgumentsHint => '可留空';
+
+  @override
+  String get escalationPayloadImportConfirm => '导入';
+
+  @override
+  String get escalationPayloadImportNeedFile => '请先选择载荷文件';
+
+  @override
+  String get escalationPayloadImportFileMissing => '本机文件不存在';
+
+  @override
+  String get escalationPayloadImportFileEmpty => '文件为空';
+
+  @override
+  String get escalationPayloadImportPushFailed => '推送到设备失败';
+
+  @override
+  String get escalationPayloadDelete => '删除';
+
+  @override
+  String get escalationPayloadDeleteConfirmTitle => '删除自定义载荷？';
+
+  @override
+  String escalationPayloadDeleteConfirmBody(String name) {
+    return '将从设备上删掉「$name」的文件，并从列表里移除。';
+  }
+
+  @override
+  String get escalationPayloadDeleteFailed => '删除失败';
 
   @override
   String escalationPayloadCatalogCount(int count) {

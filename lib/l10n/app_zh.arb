@@ -1390,10 +1390,6 @@
   "@escalationTimedOutTag": {
     "description": "手动提权页-结果行的超时后缀"
   },
-  "escalationExploitButton": "自动匹配载荷提权",
-  "@escalationExploitButton": {
-    "description": "手动提权页-菜单里的提权项：按机型与内核自动匹配一条预制载荷"
-  },
   "escalationExploitStarted": "自动匹配载荷提权…",
   "@escalationExploitStarted": {
     "description": "手动提权页-终端：提权已发起"
@@ -1456,13 +1452,106 @@
   "@escalationMenuTitle": {
     "description": "手动提权页-底部左侧菜单按钮的提示文案"
   },
-  "escalationMenuPayloadCatalog": "查看载荷清单",
-  "@escalationMenuPayloadCatalog": {
-    "description": "手动提权页-菜单里的查看载荷清单项"
+  "escalationPayloadRootTitle": "载荷提权",
+  "@escalationPayloadRootTitle": {
+    "description": "载荷提权：提权页的入口行与选择弹窗共用标题"
   },
-  "escalationPayloadCatalogTitle": "载荷清单",
-  "@escalationPayloadCatalogTitle": {
-    "description": "手动提权页-载荷清单弹窗标题"
+  "escalationPayloadAutoMatch": "自动匹配当前设备",
+  "@escalationPayloadAutoMatch": {
+    "description": "载荷提权弹窗-列表顶部：按机型与内核自动挑选"
+  },
+  "escalationPayloadAutoMatchDesc": "按机型与内核自动挑一条",
+  "@escalationPayloadAutoMatchDesc": {
+    "description": "载荷提权弹窗-自动匹配入口的说明"
+  },
+  "escalationPayloadImport": "导入自定义载荷",
+  "@escalationPayloadImport": {
+    "description": "载荷提权弹窗-右上角导入按钮的提示"
+  },
+  "escalationPayloadImportTitle": "导入自定义载荷",
+  "@escalationPayloadImportTitle": {
+    "description": "导入自定义载荷弹窗标题"
+  },
+  "escalationPayloadImportPickFile": "选择载荷文件",
+  "@escalationPayloadImportPickFile": {
+    "description": "导入弹窗-选择本机文件的按钮"
+  },
+  "escalationPayloadImportName": "显示名称",
+  "@escalationPayloadImportName": {
+    "description": "导入弹窗-名称输入框标题"
+  },
+  "escalationPayloadImportNameHint": "留空则用文件名",
+  "@escalationPayloadImportNameHint": {
+    "description": "导入弹窗-名称输入框提示"
+  },
+  "escalationPayloadImportMode": "运行方式",
+  "@escalationPayloadImportMode": {
+    "description": "导入弹窗-运行方式分组标题"
+  },
+  "escalationPayloadImportModeHelper": "助手加载",
+  "@escalationPayloadImportModeHelper": {
+    "description": "导入弹窗-运行方式：交给内置助手加载 .so"
+  },
+  "escalationPayloadImportModeStandalone": "直接执行",
+  "@escalationPayloadImportModeStandalone": {
+    "description": "导入弹窗-运行方式：把文件当可执行程序"
+  },
+  "escalationPayloadImportModeHelperDesc": "适用于 .so 载荷，由内置执行助手加载运行",
+  "@escalationPayloadImportModeHelperDesc": {
+    "description": "导入弹窗-助手加载方式的说明"
+  },
+  "escalationPayloadImportModeStandaloneDesc": "适用于自带入口的可执行文件，附加参数后直接运行",
+  "@escalationPayloadImportModeStandaloneDesc": {
+    "description": "导入弹窗-直接执行方式的说明"
+  },
+  "escalationPayloadImportArguments": "启动参数",
+  "@escalationPayloadImportArguments": {
+    "description": "导入弹窗-直接执行时的参数输入框标题"
+  },
+  "escalationPayloadImportArgumentsHint": "可留空",
+  "@escalationPayloadImportArgumentsHint": {
+    "description": "导入弹窗-参数输入框提示"
+  },
+  "escalationPayloadImportConfirm": "导入",
+  "@escalationPayloadImportConfirm": {
+    "description": "导入弹窗-确认按钮"
+  },
+  "escalationPayloadImportNeedFile": "请先选择载荷文件",
+  "@escalationPayloadImportNeedFile": {
+    "description": "导入弹窗-未选文件就确认"
+  },
+  "escalationPayloadImportFileMissing": "本机文件不存在",
+  "@escalationPayloadImportFileMissing": {
+    "description": "导入失败原因：文件不存在或已被移走"
+  },
+  "escalationPayloadImportFileEmpty": "文件为空",
+  "@escalationPayloadImportFileEmpty": {
+    "description": "导入失败原因：选中的文件是空文件"
+  },
+  "escalationPayloadImportPushFailed": "推送到设备失败",
+  "@escalationPayloadImportPushFailed": {
+    "description": "导入失败原因：推到设备目录时失败"
+  },
+  "escalationPayloadDelete": "删除",
+  "@escalationPayloadDelete": {
+    "description": "载荷列表-自定义条目的删除按钮与确认按钮"
+  },
+  "escalationPayloadDeleteConfirmTitle": "删除自定义载荷？",
+  "@escalationPayloadDeleteConfirmTitle": {
+    "description": "载荷列表-删除自定义载荷的确认弹窗标题"
+  },
+  "escalationPayloadDeleteConfirmBody": "将从设备上删掉「{name}」的文件，并从列表里移除。",
+  "@escalationPayloadDeleteConfirmBody": {
+    "description": "载荷列表-删除确认的正文",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "escalationPayloadDeleteFailed": "删除失败",
+  "@escalationPayloadDeleteFailed": {
+    "description": "删除自定义载荷失败原因：设备文件删不掉"
   },
   "escalationPayloadCatalogCount": "共 {count} 条",
   "@escalationPayloadCatalogCount": {

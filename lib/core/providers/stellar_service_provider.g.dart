@@ -20,6 +20,7 @@ const stellarServiceStatusProvider = StellarServiceStatusProvider._();
 ///
 /// 判定依据是回环端口能否完成一次 PING/PONG——只回答「在不在、以谁的身份在」，
 /// 不代表已经具备执行能力。
+
 final class StellarServiceStatusProvider
     extends
         $FunctionalProvider<
@@ -61,7 +62,7 @@ final class StellarServiceStatusProvider
 }
 
 String _$stellarServiceStatusHash() =>
-    r'2f7c9e14a6d83b05e1c7a9d4f2b63e805c4d1a79';
+    r'294e6dd07a4559a70db73c3a4d91f64ff55e8117';
 
 /// 把服务拉起来。
 ///
@@ -108,8 +109,7 @@ final class StellarLaunchProvider
   }
 }
 
-String _$stellarLaunchHash() =>
-    r'8b3d5a71c0e94f26d8b1a4c7e93f5028a6d7c41b';
+String _$stellarLaunchHash() => r'798e21ada5df1b2207d235dec5f0d90c8f276e11';
 
 /// 把服务拉起来。
 ///

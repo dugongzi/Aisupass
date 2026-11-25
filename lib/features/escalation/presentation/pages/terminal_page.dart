@@ -46,7 +46,7 @@ class TerminalPage extends HookConsumerWidget {
   const TerminalPage({super.key, this.initialAction});
 
   /// 进页面后立刻执行的动作，来自路由 `?action=`：
-  /// `exploit` / `dirtyFrag` / `ghostKey` / `ghostLock` / `handoff` / `payloadCatalog`。
+  /// `payload` / `dirtyFrag` / `ghostKey` / `ghostLock` / `handoff`。
   final String? initialAction;
 
   @override
@@ -149,15 +149,24 @@ class TerminalPage extends HookConsumerWidget {
 
     Future<void> startExploit() => flow.startExploit();
 
-    /// 打开载荷清单，选中一条后先二次确认，确认了才真的跑。
-    Future<void> openPayloadCatalog() async {
-      await flow.openPayloadCatalog(
-        pick: () => showPayloadCatalogDialog(context),
-        confirm: (Payload payload) async {
-          if (!context.mounted) return false;
-          return showPayloadConfirmDialog(context, payload);
-        },
-      );
+    /// 载荷提权：先选一条（自动匹配或清单里指定），确认后执行。
+    ///
+    /// 自动匹配不需要二次确认：它本来就是按设备身份挑最合适的一条，弹窗里
+    /// 已经点过一次。手工指定的载荷会在设备上真实执行，落键前再问一次。
+    Future<void> startPayloadRoot() async {
+      final PayloadPick? pick = await showPayloadPickDialog(context);
+      if (pick == null || !context.mounted) return;
+      switch (pick) {
+        case PayloadPickAuto():
+          await startExploit();
+        case PayloadPickItem(payload: final Payload payload):
+          final bool confirmed = await showPayloadConfirmDialog(
+            context,
+            payload,
+          );
+          if (!confirmed) return;
+          await flow.startPayload(payload);
+      }
     }
 
     /// 停止本侧读取；设备侧进程继续跑。
@@ -262,8 +271,8 @@ class TerminalPage extends HookConsumerWidget {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!context.mounted) return;
         switch (action) {
-          case 'exploit':
-            unawaited(startExploit());
+          case 'payload':
+            unawaited(startPayloadRoot());
           case 'dirtyFrag':
             unawaited(startDirtyFrag());
           case 'ghostKey':
@@ -272,8 +281,6 @@ class TerminalPage extends HookConsumerWidget {
             unawaited(startGhostLock());
           case 'handoff':
             unawaited(startHandoff());
-          case 'payloadCatalog':
-            unawaited(openPayloadCatalog());
         }
       });
       return null;

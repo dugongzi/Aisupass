@@ -1330,9 +1330,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get escalationTimedOutTag => ' (timed out)';
 
   @override
-  String get escalationExploitButton => 'Start root';
-
-  @override
   String get escalationExploitStarted => 'Starting root…';
 
   @override
@@ -1376,10 +1373,84 @@ class AppLocalizationsEn extends AppLocalizations {
   String get escalationMenuTitle => 'More actions';
 
   @override
-  String get escalationMenuPayloadCatalog => 'View payload catalog';
+  String get escalationPayloadRootTitle => 'Payload root';
 
   @override
-  String get escalationPayloadCatalogTitle => 'Payload catalog';
+  String get escalationPayloadAutoMatch => 'Auto-match this device';
+
+  @override
+  String get escalationPayloadAutoMatchDesc =>
+      'Pick the best entry for model and kernel';
+
+  @override
+  String get escalationPayloadImport => 'Import custom payload';
+
+  @override
+  String get escalationPayloadImportTitle => 'Import custom payload';
+
+  @override
+  String get escalationPayloadImportPickFile => 'Choose payload file';
+
+  @override
+  String get escalationPayloadImportName => 'Display name';
+
+  @override
+  String get escalationPayloadImportNameHint =>
+      'Leave empty to use the file name';
+
+  @override
+  String get escalationPayloadImportMode => 'Execution mode';
+
+  @override
+  String get escalationPayloadImportModeHelper => 'Helper load';
+
+  @override
+  String get escalationPayloadImportModeStandalone => 'Run directly';
+
+  @override
+  String get escalationPayloadImportModeHelperDesc =>
+      'For .so payloads, loaded by the built-in helper';
+
+  @override
+  String get escalationPayloadImportModeStandaloneDesc =>
+      'For executables with their own entry point, run with arguments';
+
+  @override
+  String get escalationPayloadImportArguments => 'Arguments';
+
+  @override
+  String get escalationPayloadImportArgumentsHint => 'Optional';
+
+  @override
+  String get escalationPayloadImportConfirm => 'Import';
+
+  @override
+  String get escalationPayloadImportNeedFile => 'Choose a payload file first';
+
+  @override
+  String get escalationPayloadImportFileMissing =>
+      'The local file does not exist';
+
+  @override
+  String get escalationPayloadImportFileEmpty => 'The file is empty';
+
+  @override
+  String get escalationPayloadImportPushFailed =>
+      'Failed to push to the device';
+
+  @override
+  String get escalationPayloadDelete => 'Delete';
+
+  @override
+  String get escalationPayloadDeleteConfirmTitle => 'Delete custom payload?';
+
+  @override
+  String escalationPayloadDeleteConfirmBody(String name) {
+    return 'The file for \"$name\" will be removed from the device and this entry will be dropped from the list.';
+  }
+
+  @override
+  String get escalationPayloadDeleteFailed => 'Delete failed';
 
   @override
   String escalationPayloadCatalogCount(int count) {

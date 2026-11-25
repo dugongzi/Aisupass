@@ -13,6 +13,10 @@ part of 'privileged_runner_provider.dart';
 /// 这是唯一一处把「Stellar」与「无线 ADB」接在一起：服务需要一个已经具备
 /// shell 身份的执行者把自己跑起来，当前可用的是无线 ADB 通道。Stellar 的
 /// 状态机与 UI 都不感知这件事，只按 [PrivilegedRunResult] 分型。
+///
+/// 执行前先自己把通道连上：调用方要的是「跑这条命令」，不是「先手动去连一次
+/// ADB 再回来点按钮」，所以没连接时由这里发起配对，而不是把「请先连接」退回
+/// 给调用方去提示用户。配对码输入位置这一设置由通道自己遵守，这里只搬原因码。
 
 @ProviderFor(privilegedRunner)
 const privilegedRunnerProvider = PrivilegedRunnerProvider._();
@@ -22,15 +26,28 @@ const privilegedRunnerProvider = PrivilegedRunnerProvider._();
 /// 这是唯一一处把「Stellar」与「无线 ADB」接在一起：服务需要一个已经具备
 /// shell 身份的执行者把自己跑起来，当前可用的是无线 ADB 通道。Stellar 的
 /// 状态机与 UI 都不感知这件事，只按 [PrivilegedRunResult] 分型。
+///
+/// 执行前先自己把通道连上：调用方要的是「跑这条命令」，不是「先手动去连一次
+/// ADB 再回来点按钮」，所以没连接时由这里发起配对，而不是把「请先连接」退回
+/// 给调用方去提示用户。配对码输入位置这一设置由通道自己遵守，这里只搬原因码。
+
 final class PrivilegedRunnerProvider
     extends
-        $FunctionalProvider<PrivilegedRunner, PrivilegedRunner, PrivilegedRunner>
+        $FunctionalProvider<
+          PrivilegedRunner,
+          PrivilegedRunner,
+          PrivilegedRunner
+        >
     with $Provider<PrivilegedRunner> {
   /// 特权命令的执行出口。
   ///
   /// 这是唯一一处把「Stellar」与「无线 ADB」接在一起：服务需要一个已经具备
   /// shell 身份的执行者把自己跑起来，当前可用的是无线 ADB 通道。Stellar 的
   /// 状态机与 UI 都不感知这件事，只按 [PrivilegedRunResult] 分型。
+  ///
+  /// 执行前先自己把通道连上：调用方要的是「跑这条命令」，不是「先手动去连一次
+  /// ADB 再回来点按钮」，所以没连接时由这里发起配对，而不是把「请先连接」退回
+  /// 给调用方去提示用户。配对码输入位置这一设置由通道自己遵守，这里只搬原因码。
   const PrivilegedRunnerProvider._()
     : super(
         from: null,
@@ -64,5 +81,4 @@ final class PrivilegedRunnerProvider
   }
 }
 
-String _$privilegedRunnerHash() =>
-    r'9a4c7e12d5b83f60c1e9a7d2f4b85c30e6d1a9b7';
+String _$privilegedRunnerHash() => r'450a8cd648228c7d2f328108d88aed1580708b8e';

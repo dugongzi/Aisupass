@@ -1,25 +1,49 @@
+import 'dart:async';
+
 import 'package:Aisupass/common/widgets/loading.dart';
 import 'package:Aisupass/common/widgets/ref_error.dart';
+import 'package:Aisupass/common/widgets/toast.dart';
 import 'package:Aisupass/core/extensions/context_extensions.dart';
 import 'package:Aisupass/core/themes/app_fonts.dart';
+import 'package:Aisupass/features/escalation/domain/models/imported_payload.dart';
 import 'package:Aisupass/features/escalation/domain/models/payload.dart';
 import 'package:Aisupass/features/escalation/presentation/providers/escalation_query_provider.dart';
+import 'package:Aisupass/features/escalation/presentation/providers/payload_import_action_provider.dart';
+import 'package:Aisupass/features/escalation/presentation/providers/payload_import_query_provider.dart';
+import 'package:Aisupass/features/escalation/presentation/widgets/payload_import_dialog.dart';
 import 'package:Aisupass/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-/// 弹出载荷清单，返回用户点中的那一份；直接关掉则是 `null`。
+/// 载荷提权的选择结果。
+sealed class PayloadPick {
+  const PayloadPick();
+}
+
+/// 自动匹配当前设备。
+final class PayloadPickAuto extends PayloadPick {
+  const PayloadPickAuto();
+}
+
+/// 用户挑中的具体载荷：包内 catalog 条目或导入的自定义载荷。
+final class PayloadPickItem extends PayloadPick {
+  const PayloadPickItem(this.payload);
+
+  final Payload payload;
+}
+
+/// 弹出载荷提权弹窗。
 ///
-/// 清单有一百多条，铺在页面里会把终端挤走，所以收进弹窗按需打开。
-Future<Payload?> showPayloadCatalogDialog(BuildContext context) =>
-    showDialog<Payload>(
+/// 清单有一百多条，铺在页面里会把版面挤走，所以收进弹窗按需打开。
+Future<PayloadPick?> showPayloadPickDialog(BuildContext context) =>
+    showDialog<PayloadPick>(
       context: context,
       builder: (BuildContext context) => const PayloadCatalogDialog(),
     );
 
-/// 载荷清单弹窗：把包内 catalog 的全部条目摊开，带搜索，点一条就选中。
+/// 载荷提权弹窗：自动匹配入口 + 完整载荷列表 + 导入自定义载荷。
 ///
 /// 选中只是「挑出哪一份」，真跑之前还要走二次确认。
 class PayloadCatalogDialog extends HookConsumerWidget {
@@ -30,6 +54,9 @@ class PayloadCatalogDialog extends HookConsumerWidget {
     final AppLocalizations l10n = context.l10n;
     final ColorScheme scheme = context.colorScheme;
     final AsyncValue<List<Payload>> catalog = ref.watch(payloadsProvider);
+    final AsyncValue<List<ImportedPayload>> imported = ref.watch(
+      importedPayloadsProvider,
+    );
 
     final TextEditingController search = useTextEditingController();
     useEffect(() => search.dispose, <Object?>[search]);
@@ -37,13 +64,43 @@ class PayloadCatalogDialog extends HookConsumerWidget {
     final ValueNotifier<String> keywordInput = useState<String>('');
     final String keyword = keywordInput.value.trim().toLowerCase();
 
-    // 过滤放在 build 顶层：头部要报「筛完还剩多少条」。
-    final List<Payload> all = catalog.value ?? const <Payload>[];
+    // 自定义载荷放前面：用户自己导进来的，多半就是这一次要用它。
+    final List<ImportedPayload> custom =
+        imported.value ?? const <ImportedPayload>[];
+    final List<Payload> all = <Payload>[
+      ...custom.map((ImportedPayload item) => item.toPayload()),
+      ...?catalog.value,
+    ];
     final List<Payload> shown = keyword.isEmpty
         ? all
         : all
               .where((Payload payload) => _matches(payload, keyword))
               .toList(growable: false);
+
+    // 自定义条目按设备路径索引：列表里靠它认出哪一行可以删。
+    final Map<String, ImportedPayload> customByPath = <String, ImportedPayload>{
+      for (final ImportedPayload item in custom) item.devicePath: item,
+    };
+
+    final bool loading = !catalog.hasValue && catalog.isLoading;
+
+    /// 导入一份自定义载荷；导入成功后列表由写操作侧失效刷新。
+    Future<void> importPayload() async {
+      await showPayloadImportDialog(context);
+    }
+
+    /// 删除一条自定义载荷：先确认，成功由写操作侧失效刷新列表。
+    Future<void> deletePayload(ImportedPayload item) async {
+      final bool confirmed = await _confirmDelete(context, item);
+      if (!confirmed || !context.mounted) return;
+      try {
+        await ref
+            .read(payloadImportActionsProvider)
+            .delete(devicePath: item.devicePath);
+      } catch (error) {
+        ToastMessage.error(_deleteFailureText(l10n, error));
+      }
+    }
 
     return Dialog(
       backgroundColor: scheme.surface,
@@ -58,11 +115,12 @@ class PayloadCatalogDialog extends HookConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             _CatalogHeader(
-              title: l10n.escalationPayloadCatalogTitle,
+              title: l10n.escalationPayloadRootTitle,
               // 条数要等读完 catalog 才有，没读完就不占位。
               subtitle: catalog.hasValue
                   ? l10n.escalationPayloadCatalogCount(shown.length)
                   : null,
+              onImport: () => unawaited(importPayload()),
               onClose: () => Navigator.of(context).pop(),
             ),
             _SearchField(
@@ -76,43 +134,56 @@ class PayloadCatalogDialog extends HookConsumerWidget {
               color: scheme.outline.withValues(alpha: 0.24),
             ),
             Flexible(
-              child: catalog.when(
-                loading: () => SizedBox(height: 200.h, child: const Loading()),
-                error: (Object error, StackTrace stackTrace) => SizedBox(
-                  height: 220.h,
-                  child: RefError(
-                    onRetry: () => ref.invalidate(payloadsProvider),
-                  ),
-                ),
-                data: (List<Payload> payloads) {
-                  if (payloads.isEmpty) {
-                    return _CatalogEmpty(
-                      icon: Icons.inventory_2_outlined,
-                      message: l10n.escalationPayloadCatalogEmpty,
-                    );
-                  }
-                  if (shown.isEmpty) {
-                    return _CatalogEmpty(
-                      icon: Icons.search_off_rounded,
-                      message: l10n.escalationPayloadCatalogNoMatch,
-                    );
-                  }
+              child: loading
+                  ? SizedBox(height: 200.h, child: const Loading())
+                  : catalog.hasError
+                  ? SizedBox(
+                      height: 220.h,
+                      child: RefError(
+                        onRetry: () => ref.invalidate(payloadsProvider),
+                      ),
+                    )
+                  : shown.isEmpty
+                  ? _CatalogEmpty(
+                      icon: keyword.isEmpty
+                          ? Icons.inventory_2_outlined
+                          : Icons.search_off_rounded,
+                      message: keyword.isEmpty
+                          ? l10n.escalationPayloadCatalogEmpty
+                          : l10n.escalationPayloadCatalogNoMatch,
+                    )
                   // shrinkWrap：命中少时弹窗跟着变矮，不要留一块空白。
-                  return ListView.builder(
-                    shrinkWrap: true,
-                    padding: EdgeInsets.symmetric(vertical: 4.h),
-                    itemCount: shown.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      final Payload payload = shown[index];
-                      // 点一条就把它带回给页面，弹窗自己关掉。
-                      return InkWell(
-                        onTap: () => Navigator.of(context).pop(payload),
-                        child: _PayloadTile(payload: payload),
-                      );
-                    },
-                  );
-                },
-              ),
+                  : ListView.builder(
+                      shrinkWrap: true,
+                      padding: EdgeInsets.symmetric(vertical: 4.h),
+                      // 第 0 项固定是自动匹配入口，其余才是载荷条目。
+                      itemCount: shown.length + 1,
+                      itemBuilder: (BuildContext context, int index) {
+                        if (index == 0) {
+                          return InkWell(
+                            onTap: () =>
+                                Navigator.of(context)
+                                    .pop(const PayloadPickAuto()),
+                            child: const _AutoMatchRow(),
+                          );
+                        }
+                        final Payload payload = shown[index - 1];
+                        final ImportedPayload? custom =
+                            customByPath[payload.library];
+                        // 点一条就把它带回给页面，弹窗自己关掉；自定义条目多一个删除入口。
+                        return InkWell(
+                          onTap: () =>
+                              Navigator.of(context)
+                                  .pop(PayloadPickItem(payload)),
+                          child: _PayloadTile(
+                            payload: payload,
+                            onDelete: custom == null
+                                ? null
+                                : () => unawaited(deletePayload(custom)),
+                          ),
+                        );
+                      },
+                    ),
             ),
           ],
         ),
@@ -131,11 +202,100 @@ bool _matches(Payload payload, String keyword) =>
     payload.buildId.toLowerCase().contains(keyword) ||
     payload.kernelVersion.contains(keyword);
 
-/// 弹窗头部：标题、条数、关闭键。
+/// 删除确认；返回 `true` 表示用户确认。
+Future<bool> _confirmDelete(BuildContext context, ImportedPayload item) async {
+  final AppLocalizations l10n = context.l10n;
+  final bool? confirmed = await showDialog<bool>(
+    context: context,
+    builder: (BuildContext dialogContext) => AlertDialog(
+      title: Text(l10n.escalationPayloadDeleteConfirmTitle),
+      content: Text(l10n.escalationPayloadDeleteConfirmBody(item.displayName)),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: Text(l10n.aiCancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: Text(l10n.escalationPayloadDelete),
+        ),
+      ],
+    ),
+  );
+  return confirmed ?? false;
+}
+
+/// 删除失败 → 展示文案；非预期异常原样带上。
+String _deleteFailureText(AppLocalizations l10n, Object error) {
+  if (error is! PayloadImportException) return '$error';
+  final String base = switch (error.code) {
+    'deleteFailed' => l10n.escalationPayloadDeleteFailed,
+    _ => error.code,
+  };
+  return error.detail.isEmpty ? base : '$base：${error.detail}';
+}
+
+/// 自动匹配入口：不挑具体条目，交给设备身份匹配。
+class _AutoMatchRow extends StatelessWidget {
+  const _AutoMatchRow();
+
+  @override
+  Widget build(BuildContext context) {
+    final AppLocalizations l10n = context.l10n;
+    final ColorScheme scheme = context.colorScheme;
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: scheme.primary.withValues(alpha: 0.06),
+        border: Border(
+          bottom: BorderSide(color: scheme.outline.withValues(alpha: 0.16)),
+        ),
+      ),
+      child: Row(
+        children: <Widget>[
+          Icon(Icons.auto_awesome_rounded, size: 18.sp, color: scheme.primary),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  l10n.escalationPayloadAutoMatch,
+                  style: TextStyle(
+                    fontSize: 13.5.sp,
+                    fontWeight: FontWeight.w600,
+                    color: scheme.onSurface,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  l10n.escalationPayloadAutoMatchDesc,
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            Icons.chevron_right_rounded,
+            size: 20.sp,
+            color: scheme.onSurfaceVariant,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 弹窗头部：标题、条数、导入键、关闭键。
 class _CatalogHeader extends StatelessWidget {
   const _CatalogHeader({
     required this.title,
     required this.subtitle,
+    required this.onImport,
     required this.onClose,
   });
 
@@ -144,10 +304,14 @@ class _CatalogHeader extends StatelessWidget {
   /// 条数，还没加载出来时为 null。
   final String? subtitle;
 
+  /// 导入自定义载荷。
+  final VoidCallback onImport;
+
   final VoidCallback onClose;
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = context.l10n;
     final ColorScheme scheme = context.colorScheme;
     final String? count = subtitle;
 
@@ -181,6 +345,11 @@ class _CatalogHeader extends StatelessWidget {
                 ],
               ],
             ),
+          ),
+          IconButton(
+            onPressed: onImport,
+            tooltip: l10n.escalationPayloadImport,
+            icon: Icon(Icons.add_circle_outline_rounded, size: 21.sp),
           ),
           IconButton(
             onPressed: onClose,
@@ -287,16 +456,20 @@ class _SearchField extends StatelessWidget {
   }
 }
 
-/// 一条载荷：展示名 + 厂商与文件名，右侧挂内核标记。
+/// 一条载荷：展示名 + 厂商与文件名，右侧挂内核标记；自定义条目挂删除键。
 class _PayloadTile extends StatelessWidget {
-  const _PayloadTile({required this.payload});
+  const _PayloadTile({required this.payload, this.onDelete});
 
   final Payload payload;
+
+  /// 删除该条自定义载荷；`null` 表示这是包内条目，不可删。
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
     final AppLocalizations l10n = context.l10n;
     final ColorScheme scheme = context.colorScheme;
+    final VoidCallback? onDelete = this.onDelete;
 
     // 内核信息一条不落：已知就写出版本号，未知/不限用文字说明。
     final String kernelLabel = payload.kernelUnknown
@@ -356,6 +529,22 @@ class _PayloadTile extends StatelessWidget {
               ),
             ),
           ),
+          // 只有自定义条目能删：包内条目是随包发布的，删不掉也不该给这个入口。
+          if (onDelete != null) ...<Widget>[
+            SizedBox(width: 4.w),
+            IconButton(
+              onPressed: onDelete,
+              tooltip: l10n.escalationPayloadDelete,
+              visualDensity: VisualDensity.compact,
+              constraints: BoxConstraints(minWidth: 32.w, minHeight: 32.h),
+              padding: EdgeInsets.zero,
+              icon: Icon(
+                Icons.delete_outline_rounded,
+                size: 18.sp,
+                color: scheme.error,
+              ),
+            ),
+          ],
         ],
       ),
     );
