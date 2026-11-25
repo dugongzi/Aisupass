@@ -3005,7 +3005,7 @@ abstract class AppLocalizations {
   /// GhostKey 成功但 KSU 阶段失败
   ///
   /// In zh, this message translates to:
-  /// **'临时 root 已就绪，KernelSU 接管失败'**
+  /// **'临时 root 已就绪，移交给管理器失败'**
   String get escalationGhostKeyKsuFailed;
 
   /// GhostKey 会话超时或被取消
@@ -3158,12 +3158,6 @@ abstract class AppLocalizations {
   /// **'profile 命中'**
   String get escalationGhostKeyFieldProfile;
 
-  /// GhostKey 确认弹窗：是否接管 KSU
-  ///
-  /// In zh, this message translates to:
-  /// **'接管 KSU'**
-  String get escalationGhostKeyFieldRunKsu;
-
   /// GhostKey 确认弹窗：是否接受 fallback
   ///
   /// In zh, this message translates to:
@@ -3245,7 +3239,7 @@ abstract class AppLocalizations {
   /// 阶段名：ksu
   ///
   /// In zh, this message translates to:
-  /// **'接管 KernelSU'**
+  /// **'移交给管理器'**
   String get escalationGhostKeyStageKsuName;
 
   /// 阶段进行中提示：calib_a
@@ -3275,7 +3269,7 @@ abstract class AppLocalizations {
   /// 阶段进行中提示：ksu
   ///
   /// In zh, this message translates to:
-  /// **'移交 KernelSU'**
+  /// **'正在移交给管理器'**
   String get escalationGhostKeyStageKsuHint;
 
   /// 菜单项与确认弹窗标题
@@ -3425,31 +3419,31 @@ abstract class AppLocalizations {
   /// 全链路成功时的结论
   ///
   /// In zh, this message translates to:
-  /// **'内核模块已加载，KernelSU 已接管{manager}'**
+  /// **'内核模块已加载，已交由{manager}接管'**
   String escalationGhostLockSucceeded(String manager);
 
-  /// 原生因 KernelSU 已加载而提前结束时显示的结论
+  /// 原生因内核模块已加载而提前结束时显示的结论
   ///
   /// In zh, this message translates to:
-  /// **'KernelSU 本次开机已接管，未重复执行'**
+  /// **'内核模块本次开机已接管，未重复执行'**
   String get escalationGhostLockAlreadyRooted;
 
   /// 只拿到临时 root 时的结论
   ///
   /// In zh, this message translates to:
-  /// **'拿到临时 root，但 KernelSU 模块尚未加载'**
+  /// **'拿到临时 root，但内核模块尚未加载'**
   String get escalationGhostLockTempRootOnly;
 
   /// W3 未清掉 seccomp 时的结论
   ///
   /// In zh, this message translates to:
-  /// **'临时的 root 子进程仍带 seccomp 过滤，KernelSU 无法加载'**
+  /// **'临时的 root 子进程仍带 seccomp 过滤，内核模块无法加载'**
   String get escalationGhostLockSeccompBlocked;
 
   /// ksud late-load 失败时的结论
   ///
   /// In zh, this message translates to:
-  /// **'KernelSU 模块加载失败，见上方 ksud 输出'**
+  /// **'内核模块加载失败，见上方 ksud 输出'**
   String get escalationGhostLockKsuFailed;
 
   /// W1 阶段失败时的结论
@@ -3871,18 +3865,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'GhostKey'**
   String get settingsGhostKeySection;
-
-  /// 设置页：是否在末段接管 KernelSU
-  ///
-  /// In zh, this message translates to:
-  /// **'接管 KernelSU'**
-  String get settingsGhostKeyRunKsuTitle;
-
-  /// 设置页：接管 KernelSU 的说明
-  ///
-  /// In zh, this message translates to:
-  /// **'提权完成后自动把内核能力移交给 KernelSU'**
-  String get settingsGhostKeyRunKsuDesc;
 
   /// 设置页：是否接受 calib_b 的 fallback
   ///
@@ -5849,13 +5831,13 @@ abstract class AppLocalizations {
   /// 失败归因规则 KsuAlreadyLive 的标题
   ///
   /// In zh, this message translates to:
-  /// **'KernelSU 模块已驻留：旧模块仍在内存，late-load 被跳过'**
+  /// **'内核模块已驻留：旧模块仍在内存，late-load 被跳过'**
   String get ghostKeyDiagKsuAlreadyLiveTitle;
 
   /// 失败归因规则 KsuAlreadyLive 的原因 1
   ///
   /// In zh, this message translates to:
-  /// **'上一次提权注入的 kernelsu 模块还活着'**
+  /// **'上一次提权注入的内核模块还活着'**
   String get ghostKeyDiagKsuAlreadyLiveCause1;
 
   /// 失败归因规则 KsuAlreadyLive 的建议 1
@@ -5879,7 +5861,7 @@ abstract class AppLocalizations {
   /// 失败归因规则 KsuModuleAbsent 的原因 1
   ///
   /// In zh, this message translates to:
-  /// **'设备上的 KernelSU 管理器 / ksud 版本过旧，KMI 不匹配'**
+  /// **'设备上的 root 管理器 / ksud 版本过旧，KMI 不匹配'**
   String get ghostKeyDiagKsuModuleAbsentCause1;
 
   /// 失败归因规则 KsuModuleAbsent 的原因 2
@@ -5891,7 +5873,7 @@ abstract class AppLocalizations {
   /// 失败归因规则 KsuModuleAbsent 的建议 1
   ///
   /// In zh, this message translates to:
-  /// **'更新设备上的 KernelSU 管理器到最新版'**
+  /// **'更新设备上的 root 管理器到最新版'**
   String get ghostKeyDiagKsuModuleAbsentSuggestion1;
 
   /// 失败归因规则 KsuModuleAbsent 的建议 2
@@ -5903,13 +5885,13 @@ abstract class AppLocalizations {
   /// 失败归因规则 KsuKsudMissing 的标题
   ///
   /// In zh, this message translates to:
-  /// **'找不到 ksud：设备上未安装 KernelSU 管理器且内置兜底失效'**
+  /// **'找不到 ksud：设备上未安装 root 管理器且内置兜底失效'**
   String get ghostKeyDiagKsuKsudMissingTitle;
 
   /// 失败归因规则 KsuKsudMissing 的原因 1
   ///
   /// In zh, this message translates to:
-  /// **'KernelSU 管理器未安装'**
+  /// **'root 管理器未安装'**
   String get ghostKeyDiagKsuKsudMissingCause1;
 
   /// 失败归因规则 KsuKsudMissing 的原因 2
@@ -5921,7 +5903,7 @@ abstract class AppLocalizations {
   /// 失败归因规则 KsuKsudMissing 的建议 1
   ///
   /// In zh, this message translates to:
-  /// **'先安装 KernelSU 官方管理器，再重跑流水线'**
+  /// **'先安装一个 root 管理器，再重跑流水线'**
   String get ghostKeyDiagKsuKsudMissingSuggestion1;
 
   /// 失败归因规则 HostShizukuUnavailable 的标题

@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$GhostKeyRunDefaultsDto {
 
- bool get runKsu; bool get acceptFallbackPageOffset;
+ bool get acceptFallbackPageOffset;
 /// Create a copy of GhostKeyRunDefaultsDto
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $GhostKeyRunDefaultsDtoCopyWith<GhostKeyRunDefaultsDto> get copyWith => _$GhostK
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GhostKeyRunDefaultsDto&&(identical(other.runKsu, runKsu) || other.runKsu == runKsu)&&(identical(other.acceptFallbackPageOffset, acceptFallbackPageOffset) || other.acceptFallbackPageOffset == acceptFallbackPageOffset));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GhostKeyRunDefaultsDto&&(identical(other.acceptFallbackPageOffset, acceptFallbackPageOffset) || other.acceptFallbackPageOffset == acceptFallbackPageOffset));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,runKsu,acceptFallbackPageOffset);
+int get hashCode => Object.hash(runtimeType,acceptFallbackPageOffset);
 
 @override
 String toString() {
-  return 'GhostKeyRunDefaultsDto(runKsu: $runKsu, acceptFallbackPageOffset: $acceptFallbackPageOffset)';
+  return 'GhostKeyRunDefaultsDto(acceptFallbackPageOffset: $acceptFallbackPageOffset)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $GhostKeyRunDefaultsDtoCopyWith<$Res>  {
   factory $GhostKeyRunDefaultsDtoCopyWith(GhostKeyRunDefaultsDto value, $Res Function(GhostKeyRunDefaultsDto) _then) = _$GhostKeyRunDefaultsDtoCopyWithImpl;
 @useResult
 $Res call({
- bool runKsu, bool acceptFallbackPageOffset
+ bool acceptFallbackPageOffset
 });
 
 
@@ -65,10 +65,9 @@ class _$GhostKeyRunDefaultsDtoCopyWithImpl<$Res>
 
 /// Create a copy of GhostKeyRunDefaultsDto
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? runKsu = null,Object? acceptFallbackPageOffset = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? acceptFallbackPageOffset = null,}) {
   return _then(_self.copyWith(
-runKsu: null == runKsu ? _self.runKsu : runKsu // ignore: cast_nullable_to_non_nullable
-as bool,acceptFallbackPageOffset: null == acceptFallbackPageOffset ? _self.acceptFallbackPageOffset : acceptFallbackPageOffset // ignore: cast_nullable_to_non_nullable
+acceptFallbackPageOffset: null == acceptFallbackPageOffset ? _self.acceptFallbackPageOffset : acceptFallbackPageOffset // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }
@@ -154,10 +153,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool runKsu,  bool acceptFallbackPageOffset)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool acceptFallbackPageOffset)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GhostKeyRunDefaultsDto() when $default != null:
-return $default(_that.runKsu,_that.acceptFallbackPageOffset);case _:
+return $default(_that.acceptFallbackPageOffset);case _:
   return orElse();
 
 }
@@ -175,10 +174,10 @@ return $default(_that.runKsu,_that.acceptFallbackPageOffset);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool runKsu,  bool acceptFallbackPageOffset)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool acceptFallbackPageOffset)  $default,) {final _that = this;
 switch (_that) {
 case _GhostKeyRunDefaultsDto():
-return $default(_that.runKsu,_that.acceptFallbackPageOffset);case _:
+return $default(_that.acceptFallbackPageOffset);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -195,10 +194,10 @@ return $default(_that.runKsu,_that.acceptFallbackPageOffset);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool runKsu,  bool acceptFallbackPageOffset)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool acceptFallbackPageOffset)?  $default,) {final _that = this;
 switch (_that) {
 case _GhostKeyRunDefaultsDto() when $default != null:
-return $default(_that.runKsu,_that.acceptFallbackPageOffset);case _:
+return $default(_that.acceptFallbackPageOffset);case _:
   return null;
 
 }
@@ -210,10 +209,9 @@ return $default(_that.runKsu,_that.acceptFallbackPageOffset);case _:
 @JsonSerializable()
 
 class _GhostKeyRunDefaultsDto extends GhostKeyRunDefaultsDto {
-  const _GhostKeyRunDefaultsDto({this.runKsu = true, this.acceptFallbackPageOffset = true}): super._();
+  const _GhostKeyRunDefaultsDto({this.acceptFallbackPageOffset = true}): super._();
   factory _GhostKeyRunDefaultsDto.fromJson(Map<String, dynamic> json) => _$GhostKeyRunDefaultsDtoFromJson(json);
 
-@override@JsonKey() final  bool runKsu;
 @override@JsonKey() final  bool acceptFallbackPageOffset;
 
 /// Create a copy of GhostKeyRunDefaultsDto
@@ -229,16 +227,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GhostKeyRunDefaultsDto&&(identical(other.runKsu, runKsu) || other.runKsu == runKsu)&&(identical(other.acceptFallbackPageOffset, acceptFallbackPageOffset) || other.acceptFallbackPageOffset == acceptFallbackPageOffset));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GhostKeyRunDefaultsDto&&(identical(other.acceptFallbackPageOffset, acceptFallbackPageOffset) || other.acceptFallbackPageOffset == acceptFallbackPageOffset));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,runKsu,acceptFallbackPageOffset);
+int get hashCode => Object.hash(runtimeType,acceptFallbackPageOffset);
 
 @override
 String toString() {
-  return 'GhostKeyRunDefaultsDto(runKsu: $runKsu, acceptFallbackPageOffset: $acceptFallbackPageOffset)';
+  return 'GhostKeyRunDefaultsDto(acceptFallbackPageOffset: $acceptFallbackPageOffset)';
 }
 
 
@@ -249,7 +247,7 @@ abstract mixin class _$GhostKeyRunDefaultsDtoCopyWith<$Res> implements $GhostKey
   factory _$GhostKeyRunDefaultsDtoCopyWith(_GhostKeyRunDefaultsDto value, $Res Function(_GhostKeyRunDefaultsDto) _then) = __$GhostKeyRunDefaultsDtoCopyWithImpl;
 @override @useResult
 $Res call({
- bool runKsu, bool acceptFallbackPageOffset
+ bool acceptFallbackPageOffset
 });
 
 
@@ -266,10 +264,9 @@ class __$GhostKeyRunDefaultsDtoCopyWithImpl<$Res>
 
 /// Create a copy of GhostKeyRunDefaultsDto
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? runKsu = null,Object? acceptFallbackPageOffset = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? acceptFallbackPageOffset = null,}) {
   return _then(_GhostKeyRunDefaultsDto(
-runKsu: null == runKsu ? _self.runKsu : runKsu // ignore: cast_nullable_to_non_nullable
-as bool,acceptFallbackPageOffset: null == acceptFallbackPageOffset ? _self.acceptFallbackPageOffset : acceptFallbackPageOffset // ignore: cast_nullable_to_non_nullable
+acceptFallbackPageOffset: null == acceptFallbackPageOffset ? _self.acceptFallbackPageOffset : acceptFallbackPageOffset // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }

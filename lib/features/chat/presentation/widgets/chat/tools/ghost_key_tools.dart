@@ -43,15 +43,14 @@ List<ChatToolDefinition> ghostKeyTools(Ref ref) {
     ChatToolDefinition(
       name: 'ghost_key_get_run_defaults',
       description:
-          'Read persisted GhostKey preferences: whether to take over KernelSU '
-          'and whether to accept the fallback page offset.',
+          'Read the persisted GhostKey preference: whether to accept the '
+          'fallback page offset. Root handoff always uses the selected manager.',
       parameters: noArgsSchema,
       execute: (Map<String, dynamic> arguments) async {
         final GhostKeyRunDefaults defaults = await ref.read(
           ghostKeyRunDefaultsProvider.future,
         );
         return jsonEncode(<String, Object?>{
-          'runKsu': defaults.runKsu,
           'acceptFallbackPageOffset': defaults.acceptFallbackPageOffset,
         });
       },
@@ -59,25 +58,21 @@ List<ChatToolDefinition> ghostKeyTools(Ref ref) {
     ChatToolDefinition(
       name: 'ghost_key_save_run_defaults',
       description:
-          'Persist GhostKey preferences. Only changes preferences, no device '
+          'Persist the GhostKey preference. Only changes preferences, no device '
           'state and no run.',
       parameters: objectSchema(
         properties: <String, dynamic>{
-          'runKsu': boolProperty(
-            description: 'Take over KernelSU in the final stage.',
-          ),
           'acceptFallbackPageOffset': boolProperty(
             description: 'Accept calibrate-b fallback confidence.',
           ),
         },
-        required: <String>['runKsu', 'acceptFallbackPageOffset'],
+        required: <String>['acceptFallbackPageOffset'],
       ),
       execute: (Map<String, dynamic> arguments) async {
         final GhostKeyRunDefaults current = await ref.read(
           ghostKeyRunDefaultsProvider.future,
         );
         final GhostKeyRunDefaults defaults = current.copyWith(
-          runKsu: boolArg(arguments, 'runKsu', fallback: current.runKsu),
           acceptFallbackPageOffset: boolArg(
             arguments,
             'acceptFallbackPageOffset',
@@ -86,7 +81,6 @@ List<ChatToolDefinition> ghostKeyTools(Ref ref) {
         );
         await ref.read(ghostKeyActionsProvider).saveRunDefaults(defaults);
         return jsonEncode(<String, Object?>{
-          'runKsu': defaults.runKsu,
           'acceptFallbackPageOffset': defaults.acceptFallbackPageOffset,
         });
       },

@@ -110,7 +110,7 @@ List<ChatToolDefinition> escalationQueryTools(Ref ref) => <ChatToolDefinition>[
   ChatToolDefinition(
     name: 'escalation_list_root_managers',
     description:
-        'List KernelSU-family root managers actually installed on the device. '
+        'List root managers actually installed on the device. '
         'Each entry can be handed off to after a temporary root is obtained.',
     parameters: noArgsSchema,
     execute: (Map<String, dynamic> arguments) async {

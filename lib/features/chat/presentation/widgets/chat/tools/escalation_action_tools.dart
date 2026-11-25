@@ -67,7 +67,7 @@ List<ChatToolDefinition> escalationActionTools(Ref ref) => <ChatToolDefinition>[
   ChatToolDefinition(
     name: 'escalation_handoff_root',
     description:
-        'Hand the temporary root over to an installed KernelSU-family manager. '
+        'Hand the temporary root over to an installed root manager. '
         'Omit packageName to use the manager the user selected. Requires '
         'explicit user confirmation.',
     parameters: objectSchema(

@@ -33,15 +33,17 @@ class GhostKeyActionDatasource {
       GhostKeyPreflightDto.fromNative(await _native.preflight());
 
   /// 受理一次运行。
+  ///
+  /// 末段移交给管理器不单独设开关：接管方就是全局选中的管理器，
+  /// 选中了（[managerPackage] 非空）才移交，没选就跳过该阶段。
   Future<GhostKeyStartOutcome> start({
     required String managerPackage,
-    required bool runKsu,
     required bool acceptFallbackPageOffset,
   }) async {
     final pigeon.Cve98260StartResult result = await _native.start(
       pigeon.Cve98260Request(
         managerPackage: managerPackage,
-        runKsu: runKsu,
+        runKsu: managerPackage.isNotEmpty,
         acceptFallbackPageOffset: acceptFallbackPageOffset,
       ),
     );
@@ -65,19 +67,11 @@ class GhostKeyActionDatasource {
   /// 取消运行。
   Future<void> cancel({required String sessionId}) => _native.cancel(sessionId);
 
-  /// 是否在末段接管 KernelSU；缺省 `true`。
-  Future<bool> readRunKsu() =>
-      _storage.read<bool>(StorageKeys.ghostKeyRunKsu, defaultValue: true);
-
   /// 是否接受 `calib_b` 的 fallback 置信度；缺省 `true`。
   Future<bool> readAcceptFallback() => _storage.read<bool>(
     StorageKeys.ghostKeyAcceptFallbackPageOffset,
     defaultValue: true,
   );
-
-  /// 写「接管 KernelSU」开关。
-  Future<void> writeRunKsu({required bool value}) =>
-      _storage.write<bool>(StorageKeys.ghostKeyRunKsu, value);
 
   /// 写「接受 fallback」开关。
   Future<void> writeAcceptFallback({required bool value}) =>

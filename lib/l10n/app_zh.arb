@@ -1883,7 +1883,7 @@
   "@escalationGhostKeyVerifyFailed": {
     "description": "GhostKey verify 阶段失败"
   },
-  "escalationGhostKeyKsuFailed": "临时 root 已就绪，KernelSU 接管失败",
+  "escalationGhostKeyKsuFailed": "临时 root 已就绪，移交给管理器失败",
   "@escalationGhostKeyKsuFailed": {
     "description": "GhostKey 成功但 KSU 阶段失败"
   },
@@ -2000,10 +2000,6 @@
   "@escalationGhostKeyFieldProfile": {
     "description": "GhostKey 确认弹窗：profile 命中字段"
   },
-  "escalationGhostKeyFieldRunKsu": "接管 KSU",
-  "@escalationGhostKeyFieldRunKsu": {
-    "description": "GhostKey 确认弹窗：是否接管 KSU"
-  },
   "escalationGhostKeyFieldFallback": "接受降级偏移",
   "@escalationGhostKeyFieldFallback": {
     "description": "GhostKey 确认弹窗：是否接受 fallback"
@@ -2061,7 +2057,7 @@
   "@escalationGhostKeyStageVerifyName": {
     "description": "阶段名：verify"
   },
-  "escalationGhostKeyStageKsuName": "接管 KernelSU",
+  "escalationGhostKeyStageKsuName": "移交给管理器",
   "@escalationGhostKeyStageKsuName": {
     "description": "阶段名：ksu"
   },
@@ -2081,7 +2077,7 @@
   "@escalationGhostKeyStageVerifyHint": {
     "description": "阶段进行中提示：verify"
   },
-  "escalationGhostKeyStageKsuHint": "移交 KernelSU",
+  "escalationGhostKeyStageKsuHint": "正在移交给管理器",
   "@escalationGhostKeyStageKsuHint": {
     "description": "阶段进行中提示：ksu"
   },
@@ -2209,7 +2205,7 @@
       }
     }
   },
-  "escalationGhostLockSucceeded": "内核模块已加载，KernelSU 已接管{manager}",
+  "escalationGhostLockSucceeded": "内核模块已加载，已交由{manager}接管",
   "@escalationGhostLockSucceeded": {
     "description": "全链路成功时的结论",
     "placeholders": {
@@ -2218,19 +2214,19 @@
       }
     }
   },
-  "escalationGhostLockAlreadyRooted": "KernelSU 本次开机已接管，未重复执行",
+  "escalationGhostLockAlreadyRooted": "内核模块本次开机已接管，未重复执行",
   "@escalationGhostLockAlreadyRooted": {
-    "description": "原生因 KernelSU 已加载而提前结束时显示的结论"
+    "description": "原生因内核模块已加载而提前结束时显示的结论"
   },
-  "escalationGhostLockTempRootOnly": "拿到临时 root，但 KernelSU 模块尚未加载",
+  "escalationGhostLockTempRootOnly": "拿到临时 root，但内核模块尚未加载",
   "@escalationGhostLockTempRootOnly": {
     "description": "只拿到临时 root 时的结论"
   },
-  "escalationGhostLockSeccompBlocked": "临时的 root 子进程仍带 seccomp 过滤，KernelSU 无法加载",
+  "escalationGhostLockSeccompBlocked": "临时的 root 子进程仍带 seccomp 过滤，内核模块无法加载",
   "@escalationGhostLockSeccompBlocked": {
     "description": "W3 未清掉 seccomp 时的结论"
   },
-  "escalationGhostLockKsuFailed": "KernelSU 模块加载失败，见上方 ksud 输出",
+  "escalationGhostLockKsuFailed": "内核模块加载失败，见上方 ksud 输出",
   "@escalationGhostLockKsuFailed": {
     "description": "ksud late-load 失败时的结论"
   },
@@ -2543,14 +2539,6 @@
   "settingsGhostKeySection": "GhostKey",
   "@settingsGhostKeySection": {
     "description": "设置页 GhostKey 分组的小标题"
-  },
-  "settingsGhostKeyRunKsuTitle": "接管 KernelSU",
-  "@settingsGhostKeyRunKsuTitle": {
-    "description": "设置页：是否在末段接管 KernelSU"
-  },
-  "settingsGhostKeyRunKsuDesc": "提权完成后自动把内核能力移交给 KernelSU",
-  "@settingsGhostKeyRunKsuDesc": {
-    "description": "设置页：接管 KernelSU 的说明"
   },
   "settingsGhostKeyAcceptFallbackTitle": "接受降级偏移",
   "@settingsGhostKeyAcceptFallbackTitle": {
@@ -4006,11 +3994,11 @@
   "@ghostKeyDiagVerifyFailedSuggestion2": {
     "description": "失败归因规则 VerifyFailed 的建议 2"
   },
-  "ghostKeyDiagKsuAlreadyLiveTitle": "KernelSU 模块已驻留：旧模块仍在内存，late-load 被跳过",
+  "ghostKeyDiagKsuAlreadyLiveTitle": "内核模块已驻留：旧模块仍在内存，late-load 被跳过",
   "@ghostKeyDiagKsuAlreadyLiveTitle": {
     "description": "失败归因规则 KsuAlreadyLive 的标题"
   },
-  "ghostKeyDiagKsuAlreadyLiveCause1": "上一次提权注入的 kernelsu 模块还活着",
+  "ghostKeyDiagKsuAlreadyLiveCause1": "上一次提权注入的内核模块还活着",
   "@ghostKeyDiagKsuAlreadyLiveCause1": {
     "description": "失败归因规则 KsuAlreadyLive 的原因 1"
   },
@@ -4026,7 +4014,7 @@
   "@ghostKeyDiagKsuModuleAbsentTitle": {
     "description": "失败归因规则 KsuModuleAbsent 的标题"
   },
-  "ghostKeyDiagKsuModuleAbsentCause1": "设备上的 KernelSU 管理器 / ksud 版本过旧，KMI 不匹配",
+  "ghostKeyDiagKsuModuleAbsentCause1": "设备上的 root 管理器 / ksud 版本过旧，KMI 不匹配",
   "@ghostKeyDiagKsuModuleAbsentCause1": {
     "description": "失败归因规则 KsuModuleAbsent 的原因 1"
   },
@@ -4034,7 +4022,7 @@
   "@ghostKeyDiagKsuModuleAbsentCause2": {
     "description": "失败归因规则 KsuModuleAbsent 的原因 2"
   },
-  "ghostKeyDiagKsuModuleAbsentSuggestion1": "更新设备上的 KernelSU 管理器到最新版",
+  "ghostKeyDiagKsuModuleAbsentSuggestion1": "更新设备上的 root 管理器到最新版",
   "@ghostKeyDiagKsuModuleAbsentSuggestion1": {
     "description": "失败归因规则 KsuModuleAbsent 的建议 1"
   },
@@ -4042,11 +4030,11 @@
   "@ghostKeyDiagKsuModuleAbsentSuggestion2": {
     "description": "失败归因规则 KsuModuleAbsent 的建议 2"
   },
-  "ghostKeyDiagKsuKsudMissingTitle": "找不到 ksud：设备上未安装 KernelSU 管理器且内置兜底失效",
+  "ghostKeyDiagKsuKsudMissingTitle": "找不到 ksud：设备上未安装 root 管理器且内置兜底失效",
   "@ghostKeyDiagKsuKsudMissingTitle": {
     "description": "失败归因规则 KsuKsudMissing 的标题"
   },
-  "ghostKeyDiagKsuKsudMissingCause1": "KernelSU 管理器未安装",
+  "ghostKeyDiagKsuKsudMissingCause1": "root 管理器未安装",
   "@ghostKeyDiagKsuKsudMissingCause1": {
     "description": "失败归因规则 KsuKsudMissing 的原因 1"
   },
@@ -4054,7 +4042,7 @@
   "@ghostKeyDiagKsuKsudMissingCause2": {
     "description": "失败归因规则 KsuKsudMissing 的原因 2"
   },
-  "ghostKeyDiagKsuKsudMissingSuggestion1": "先安装 KernelSU 官方管理器，再重跑流水线",
+  "ghostKeyDiagKsuKsudMissingSuggestion1": "先安装一个 root 管理器，再重跑流水线",
   "@ghostKeyDiagKsuKsudMissingSuggestion1": {
     "description": "失败归因规则 KsuKsudMissing 的建议 1"
   },

@@ -7,12 +7,13 @@ import 'package:Aisupass/features/escalation/presentation/providers/escalation_a
 import 'package:Aisupass/features/escalation/presentation/widgets/dirty_frag_setting_row.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-/// GhostKey 设置组：两个跨运行持久开关。
+/// GhostKey 设置组：跨运行持久开关。
 ///
 /// 渲染用本地值，点击先翻界面再落盘：等 provider 重载再翻，会有一帧回跳。
+///
+/// 「移交给管理器」不在这里：接管方是全局选中的 root 管理器，每次运行都按它移交。
 class GhostKeySettingSection extends HookConsumerWidget {
   const GhostKeySettingSection({super.key});
 
@@ -47,39 +48,13 @@ class GhostKeySettingSection extends HookConsumerWidget {
       }
     }
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        DirtyFragSettingRow(
-          icon: Icons.gavel_rounded,
-          title: context.l10n.settingsGhostKeyRunKsuTitle,
-          subtitle: context.l10n.settingsGhostKeyRunKsuDesc,
-          value: shown.runKsu,
-          onChanged: (bool value) => save(shown.copyWith(runKsu: value)),
-        ),
-        const _RowDivider(),
-        DirtyFragSettingRow(
-          icon: Icons.tune_rounded,
-          title: context.l10n.settingsGhostKeyAcceptFallbackTitle,
-          subtitle: context.l10n.settingsGhostKeyAcceptFallbackDesc,
-          value: shown.acceptFallbackPageOffset,
-          onChanged: (bool value) =>
-              save(shown.copyWith(acceptFallbackPageOffset: value)),
-        ),
-      ],
+    return DirtyFragSettingRow(
+      icon: Icons.tune_rounded,
+      title: context.l10n.settingsGhostKeyAcceptFallbackTitle,
+      subtitle: context.l10n.settingsGhostKeyAcceptFallbackDesc,
+      value: shown.acceptFallbackPageOffset,
+      onChanged: (bool value) =>
+          save(shown.copyWith(acceptFallbackPageOffset: value)),
     );
   }
-}
-
-/// 组内分隔线。
-class _RowDivider extends StatelessWidget {
-  const _RowDivider();
-
-  @override
-  Widget build(BuildContext context) => Divider(
-    height: 1,
-    indent: 62.w,
-    endIndent: 16.w,
-    color: context.colorScheme.outlineVariant.withValues(alpha: 0.5),
-  );
 }

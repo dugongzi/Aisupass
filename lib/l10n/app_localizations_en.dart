@@ -1704,7 +1704,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get escalationGhostKeyKsuFailed =>
-      'Temporary root ready, KernelSU takeover failed';
+      'Temporary root ready, handoff to the manager failed';
 
   @override
   String get escalationGhostKeyTimedOut => 'GhostKey timed out';
@@ -1791,9 +1791,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get escalationGhostKeyFieldProfile => 'Profile matched';
 
   @override
-  String get escalationGhostKeyFieldRunKsu => 'Take over KSU';
-
-  @override
   String get escalationGhostKeyFieldFallback => 'Accept fallback offset';
 
   @override
@@ -1835,7 +1832,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get escalationGhostKeyStageVerifyName => 'Verify temporary root';
 
   @override
-  String get escalationGhostKeyStageKsuName => 'Take over KernelSU';
+  String get escalationGhostKeyStageKsuName => 'Hand off to manager';
 
   @override
   String get escalationGhostKeyStageCalibAHint => 'Locating kernel base';
@@ -1850,7 +1847,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get escalationGhostKeyStageVerifyHint => 'Verifying root channel';
 
   @override
-  String get escalationGhostKeyStageKsuHint => 'Handing over to KernelSU';
+  String get escalationGhostKeyStageKsuHint => 'Handing off to the manager';
 
   @override
   String get escalationGhostLockTitle => 'GhostLock root';
@@ -1942,24 +1939,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String escalationGhostLockSucceeded(String manager) {
-    return 'Kernel module loaded; KernelSU took over$manager';
+    return 'Kernel module loaded; handed over to$manager';
   }
 
   @override
   String get escalationGhostLockAlreadyRooted =>
-      'KernelSU already owns this boot; the exploit was skipped';
+      'The kernel module already owns this boot; the exploit was skipped';
 
   @override
   String get escalationGhostLockTempRootOnly =>
-      'Temporary root obtained, but the KernelSU module is not loaded yet';
+      'Temporary root obtained, but the kernel module is not loaded yet';
 
   @override
   String get escalationGhostLockSeccompBlocked =>
-      'The rooted child still runs under a seccomp filter, so KernelSU cannot load';
+      'The rooted child still runs under a seccomp filter, so the kernel module cannot load';
 
   @override
   String get escalationGhostLockKsuFailed =>
-      'KernelSU module load failed; see the ksud output above';
+      'Kernel module load failed; see the ksud output above';
 
   @override
   String get escalationGhostLockW1Failed =>
@@ -2210,13 +2207,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsGhostKeySection => 'GhostKey';
-
-  @override
-  String get settingsGhostKeyRunKsuTitle => 'Take over KernelSU';
-
-  @override
-  String get settingsGhostKeyRunKsuDesc =>
-      'Hand kernel capability to KernelSU after escalation';
 
   @override
   String get settingsGhostKeyAcceptFallbackTitle => 'Accept fallback offset';
@@ -3373,11 +3363,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ghostKeyDiagKsuAlreadyLiveTitle =>
-      'The KernelSU module is already resident: the old module is still in memory, so late-load was skipped';
+      'The kernel module is already resident: the old module is still in memory, so late-load was skipped';
 
   @override
   String get ghostKeyDiagKsuAlreadyLiveCause1 =>
-      'The kernelsu module injected by the previous escalation is still alive';
+      'The kernel module injected by the previous escalation is still alive';
 
   @override
   String get ghostKeyDiagKsuAlreadyLiveSuggestion1 =>
@@ -3393,7 +3383,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ghostKeyDiagKsuModuleAbsentCause1 =>
-      'The KernelSU manager / ksud on the device is too old, so the KMI does not match';
+      'The root manager / ksud on the device is too old, so the KMI does not match';
 
   @override
   String get ghostKeyDiagKsuModuleAbsentCause2 =>
@@ -3401,7 +3391,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ghostKeyDiagKsuModuleAbsentSuggestion1 =>
-      'Update the KernelSU manager on the device to the latest version';
+      'Update the root manager on the device to the latest version';
 
   @override
   String get ghostKeyDiagKsuModuleAbsentSuggestion2 =>
@@ -3409,11 +3399,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ghostKeyDiagKsuKsudMissingTitle =>
-      'ksud not found: no KernelSU manager on the device and the bundled fallback failed';
+      'ksud not found: no root manager on the device and the bundled fallback failed';
 
   @override
-  String get ghostKeyDiagKsuKsudMissingCause1 =>
-      'The KernelSU manager is not installed';
+  String get ghostKeyDiagKsuKsudMissingCause1 => 'No root manager is installed';
 
   @override
   String get ghostKeyDiagKsuKsudMissingCause2 =>
@@ -3421,7 +3410,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ghostKeyDiagKsuKsudMissingSuggestion1 =>
-      'Install the official KernelSU manager first, then re-run the pipeline';
+      'Install a root manager first, then re-run the pipeline';
 
   @override
   String get ghostKeyDiagHostShizukuUnavailableTitle =>

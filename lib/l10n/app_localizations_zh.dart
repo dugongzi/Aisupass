@@ -1567,7 +1567,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get escalationGhostKeyVerifyFailed => '临时 root 通道校验失败';
 
   @override
-  String get escalationGhostKeyKsuFailed => '临时 root 已就绪，KernelSU 接管失败';
+  String get escalationGhostKeyKsuFailed => '临时 root 已就绪，移交给管理器失败';
 
   @override
   String get escalationGhostKeyTimedOut => 'GhostKey 超时';
@@ -1650,9 +1650,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get escalationGhostKeyFieldProfile => 'profile 命中';
 
   @override
-  String get escalationGhostKeyFieldRunKsu => '接管 KSU';
-
-  @override
   String get escalationGhostKeyFieldFallback => '接受降级偏移';
 
   @override
@@ -1694,7 +1691,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get escalationGhostKeyStageVerifyName => '校验临时 root';
 
   @override
-  String get escalationGhostKeyStageKsuName => '接管 KernelSU';
+  String get escalationGhostKeyStageKsuName => '移交给管理器';
 
   @override
   String get escalationGhostKeyStageCalibAHint => '定位内核基址';
@@ -1709,7 +1706,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get escalationGhostKeyStageVerifyHint => '校验 root 通道';
 
   @override
-  String get escalationGhostKeyStageKsuHint => '移交 KernelSU';
+  String get escalationGhostKeyStageKsuHint => '正在移交给管理器';
 
   @override
   String get escalationGhostLockTitle => 'GhostLock 提权';
@@ -1799,21 +1796,21 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String escalationGhostLockSucceeded(String manager) {
-    return '内核模块已加载，KernelSU 已接管$manager';
+    return '内核模块已加载，已交由$manager接管';
   }
 
   @override
-  String get escalationGhostLockAlreadyRooted => 'KernelSU 本次开机已接管，未重复执行';
+  String get escalationGhostLockAlreadyRooted => '内核模块本次开机已接管，未重复执行';
 
   @override
-  String get escalationGhostLockTempRootOnly => '拿到临时 root，但 KernelSU 模块尚未加载';
+  String get escalationGhostLockTempRootOnly => '拿到临时 root，但内核模块尚未加载';
 
   @override
   String get escalationGhostLockSeccompBlocked =>
-      '临时的 root 子进程仍带 seccomp 过滤，KernelSU 无法加载';
+      '临时的 root 子进程仍带 seccomp 过滤，内核模块无法加载';
 
   @override
-  String get escalationGhostLockKsuFailed => 'KernelSU 模块加载失败，见上方 ksud 输出';
+  String get escalationGhostLockKsuFailed => '内核模块加载失败，见上方 ksud 输出';
 
   @override
   String get escalationGhostLockW1Failed => '关闭 SELinux 失败，见上方输出';
@@ -2045,12 +2042,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsGhostKeySection => 'GhostKey';
-
-  @override
-  String get settingsGhostKeyRunKsuTitle => '接管 KernelSU';
-
-  @override
-  String get settingsGhostKeyRunKsuDesc => '提权完成后自动把内核能力移交给 KernelSU';
 
   @override
   String get settingsGhostKeyAcceptFallbackTitle => '接受降级偏移';
@@ -3149,11 +3140,10 @@ class AppLocalizationsZh extends AppLocalizations {
       '检查 SELinux 状态（设置 → 开发者选项），不强制改 Permissive';
 
   @override
-  String get ghostKeyDiagKsuAlreadyLiveTitle =>
-      'KernelSU 模块已驻留：旧模块仍在内存，late-load 被跳过';
+  String get ghostKeyDiagKsuAlreadyLiveTitle => '内核模块已驻留：旧模块仍在内存，late-load 被跳过';
 
   @override
-  String get ghostKeyDiagKsuAlreadyLiveCause1 => '上一次提权注入的 kernelsu 模块还活着';
+  String get ghostKeyDiagKsuAlreadyLiveCause1 => '上一次提权注入的内核模块还活着';
 
   @override
   String get ghostKeyDiagKsuAlreadyLiveSuggestion1 => '重启设备后再跑一次，管理器才能看到新接管';
@@ -3168,31 +3158,29 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get ghostKeyDiagKsuModuleAbsentCause1 =>
-      '设备上的 KernelSU 管理器 / ksud 版本过旧，KMI 不匹配';
+      '设备上的 root 管理器 / ksud 版本过旧，KMI 不匹配';
 
   @override
   String get ghostKeyDiagKsuModuleAbsentCause2 => '模块加载路径被内核限制';
 
   @override
-  String get ghostKeyDiagKsuModuleAbsentSuggestion1 =>
-      '更新设备上的 KernelSU 管理器到最新版';
+  String get ghostKeyDiagKsuModuleAbsentSuggestion1 => '更新设备上的 root 管理器到最新版';
 
   @override
   String get ghostKeyDiagKsuModuleAbsentSuggestion2 => '重试一次；连续失败请保存日志并注明管理器版本';
 
   @override
   String get ghostKeyDiagKsuKsudMissingTitle =>
-      '找不到 ksud：设备上未安装 KernelSU 管理器且内置兜底失效';
+      '找不到 ksud：设备上未安装 root 管理器且内置兜底失效';
 
   @override
-  String get ghostKeyDiagKsuKsudMissingCause1 => 'KernelSU 管理器未安装';
+  String get ghostKeyDiagKsuKsudMissingCause1 => 'root 管理器未安装';
 
   @override
   String get ghostKeyDiagKsuKsudMissingCause2 => '内置兜底 ksud 与当前架构 / KMI 不兼容';
 
   @override
-  String get ghostKeyDiagKsuKsudMissingSuggestion1 =>
-      '先安装 KernelSU 官方管理器，再重跑流水线';
+  String get ghostKeyDiagKsuKsudMissingSuggestion1 => '先安装一个 root 管理器，再重跑流水线';
 
   @override
   String get ghostKeyDiagHostShizukuUnavailableTitle =>

@@ -16,7 +16,8 @@ abstract class GhostKeyActionRepository {
 
   /// 跑一次，按块吐出证据。
   ///
-  /// [manager] 在 `runKsu` 为 `true` 时必需；为 `false` 时可空（不接管 KSU）。
+  /// 末段是否移交 root 由全局选中的 [manager] 决定：有选中就移交给它，
+  /// 没选中则只拿临时 root。
   Stream<GhostKeyOutcome> run({RootManager? manager});
 
   /// 取消运行。

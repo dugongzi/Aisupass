@@ -40,7 +40,6 @@ class GhostKeyActionRepositoryImpl implements GhostKeyActionRepository {
   @override
   Future<GhostKeyRunDefaults> runDefaults() async {
     final GhostKeyRunDefaultsDto dto = GhostKeyRunDefaultsDto(
-      runKsu: await _datasource.readRunKsu(),
       acceptFallbackPageOffset: await _datasource.readAcceptFallback(),
     );
     return dto.toEntity();
@@ -48,7 +47,6 @@ class GhostKeyActionRepositoryImpl implements GhostKeyActionRepository {
 
   @override
   Future<void> saveRunDefaults({required GhostKeyRunDefaults defaults}) async {
-    await _datasource.writeRunKsu(value: defaults.runKsu);
     await _datasource.writeAcceptFallback(
       value: defaults.acceptFallbackPageOffset,
     );
@@ -57,16 +55,11 @@ class GhostKeyActionRepositoryImpl implements GhostKeyActionRepository {
   @override
   Stream<GhostKeyOutcome> run({RootManager? manager}) async* {
     final GhostKeyRunDefaults defaults = await runDefaults();
-    final bool runKsu = defaults.runKsu;
-    final String managerPackage = runKsu ? (manager?.packageName ?? '') : '';
-    if (runKsu && managerPackage.isEmpty) {
-      yield _notStarted('badRequest');
-      return;
-    }
+    // 接管方就是全局选中的 root 管理器：选中了才在末段移交，没选就只拿临时 root。
+    final String managerPackage = manager?.packageName ?? '';
 
     final GhostKeyStartOutcome accepted = await _datasource.start(
       managerPackage: managerPackage,
-      runKsu: runKsu,
       acceptFallbackPageOffset: defaults.acceptFallbackPageOffset,
     );
     if (!accepted.accepted) {

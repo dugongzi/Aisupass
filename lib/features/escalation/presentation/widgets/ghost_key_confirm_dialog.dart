@@ -25,10 +25,11 @@ Future<bool?> showGhostKeyConfirmDialog(
   ),
 );
 
-/// 确认弹窗：把自检快照与两个持久开关摊开。
+/// 确认弹窗：把自检快照与持久开关摊开。
 ///
-/// `runKsu` / `acceptFallbackPageOffset` **只读展示**——它们的开关在设置页，
+/// `acceptFallbackPageOffset` **只读展示**——它的开关在设置页，
 /// 这里开第二扇门会让「唯一真相」变成两份。
+/// 末段恒定把临时 root 移交给全局选中的管理器，不单独展示。
 class _GhostKeyConfirmDialog extends HookWidget {
   const _GhostKeyConfirmDialog({
     required this.manager,
@@ -76,10 +77,6 @@ class _GhostKeyConfirmDialog extends HookWidget {
             _Field(
               label: l10n.escalationGhostKeyFieldProfile,
               value: preflight.profileMatched ? yesNo : noNo,
-            ),
-            _Field(
-              label: l10n.escalationGhostKeyFieldRunKsu,
-              value: defaults.runKsu ? onOff : offOn,
             ),
             _Field(
               label: l10n.escalationGhostKeyFieldFallback,
