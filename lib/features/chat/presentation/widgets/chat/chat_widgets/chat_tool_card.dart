@@ -236,6 +236,7 @@ String _toolLabel(BuildContext context, String name) {
     'get_adb_status' => context.l10n.chatToolCheckAdb,
     'adb_shell_exec' => context.l10n.chatToolExecAdbShell,
     'adb_pairing_request' => context.l10n.chatToolRequestAdbPairing,
+    'stellar_service_status' => context.l10n.chatToolReadStellarStatus,
     'web_search' => context.l10n.chatToolWebSearch,
     'fetch_web_page' => context.l10n.chatToolFetchWebPage,
     'open_in_browser' => context.l10n.chatToolOpenInBrowser,

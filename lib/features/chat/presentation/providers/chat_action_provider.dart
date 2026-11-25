@@ -3,6 +3,8 @@ import 'dart:convert';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import 'package:Aisupass/core/models/command_channel.dart';
+import 'package:Aisupass/core/providers/command_channel_provider.dart';
 import 'package:Aisupass/core/providers/device_info_provider.dart';
 import 'package:Aisupass/core/providers/system_status_provider.dart';
 import 'package:Aisupass/core/storage/storage_providers.dart';
@@ -38,6 +40,7 @@ import 'package:Aisupass/features/chat/presentation/widgets/chat/tools/kernel_pr
 import 'package:Aisupass/features/chat/presentation/widgets/chat/tools/local_file_tools.dart';
 import 'package:Aisupass/features/chat/presentation/widgets/chat/tools/ota_tools.dart';
 import 'package:Aisupass/features/chat/presentation/widgets/chat/tools/run_log_tools.dart';
+import 'package:Aisupass/features/chat/presentation/widgets/chat/tools/stellar_tools.dart';
 import 'package:Aisupass/features/chat/presentation/widgets/chat/tools/tool_schema.dart';
 import 'package:Aisupass/features/chat/presentation/widgets/chat/tools/web_search_tools.dart';
 import 'package:flutter/foundation.dart';
@@ -220,7 +223,11 @@ List<ChatToolDefinition> chatTools(Ref ref) => <ChatToolDefinition>[
       });
     },
   ),
-  ...adbTools(ref),
+  // 命令工具按当前通道二选一：两条通道各自的工具集互不引用。
+  ...switch (ref.watch(commandChannelControllerProvider)) {
+    CommandChannel.adb => adbTools(ref),
+    CommandChannel.stellar => stellarTools(ref),
+  },
   ...browserTools(ref),
   ...webSearchTools(ref),
   ...escalationQueryTools(ref),

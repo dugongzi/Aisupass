@@ -13,6 +13,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 enum ChatManualGroup {
   device,
   adb,
+  stellar,
   web,
   escalation,
   ghostKey,
@@ -47,6 +48,7 @@ ChatManualGroup resolveChatManualGroup(String name) {
   if (name.startsWith('ota_')) return ChatManualGroup.ota;
   if (name.startsWith('run_log_')) return ChatManualGroup.runLog;
   if (name.startsWith('adb_')) return ChatManualGroup.adb;
+  if (name.startsWith('stellar_')) return ChatManualGroup.stellar;
   if (name == 'open_in_browser' ||
       name == 'web_search' ||
       name == 'fetch_web_page') {
@@ -335,6 +337,11 @@ class _GroupCard extends HookWidget {
         l10n.chatManualGroupAdb,
         l10n.chatManualGroupAdbDesc,
         Icons.terminal_rounded,
+      ),
+      ChatManualGroup.stellar => (
+        l10n.chatManualGroupStellar,
+        l10n.chatManualGroupStellarDesc,
+        Icons.verified_user_outlined,
       ),
       ChatManualGroup.web => (
         l10n.chatManualGroupWeb,
