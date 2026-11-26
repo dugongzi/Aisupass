@@ -2417,7 +2417,7 @@ abstract class AppLocalizations {
   /// 手动提权页-管理器没装：给出包名与安装出路
   ///
   /// In zh, this message translates to:
-  /// **'设备上没装 {manager}：找不到它的 libksud.so（包名 {package}）。请先安装 {manager}，再回来重试。'**
+  /// **'设备上没装 {manager}：找不到它自带的 ksud（包名 {package}）。请先安装 {manager}，再回来重试。'**
   String escalationHandoffManagerMissing(String manager, String package);
 
   /// 手动提权页-移交时设备没有 su
@@ -2447,7 +2447,7 @@ abstract class AppLocalizations {
   /// 手动提权页-扫描结果为空时移交不可用
   ///
   /// In zh, this message translates to:
-  /// **'设备上没有可移交的 root 管理器：装好一个带 libksud.so 的管理器，用右上角胶囊选中它再试。'**
+  /// **'设备上没有可移交的 root 管理器：装好一个自带 ksud 的管理器，用右上角胶囊选中它再试。'**
   String get escalationHandoffNoManager;
 
   /// 手动提权页-底部左侧菜单按钮的提示文案
@@ -2855,7 +2855,7 @@ abstract class AppLocalizations {
   /// 没有选中管理器时的提示
   ///
   /// In zh, this message translates to:
-  /// **'先在右上角胶囊里选中一个带 libksud.so 的管理器'**
+  /// **'先在右上角胶囊里选中一个自带 ksud 的管理器'**
   String get escalationDirtyFragNoManager;
 
   /// 开始执行时写进终端的那一行
@@ -3331,12 +3331,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'无'**
   String get escalationGhostLockValueNone;
-
-  /// 包内没有 ksud、将由所选管理器提供时的字段值
-  ///
-  /// In zh, this message translates to:
-  /// **'由所选管理器提供'**
-  String get escalationGhostLockKsudFromManager;
 
   /// 读不到信息时的替代文字
   ///
@@ -5885,25 +5879,25 @@ abstract class AppLocalizations {
   /// 失败归因规则 KsuKsudMissing 的标题
   ///
   /// In zh, this message translates to:
-  /// **'找不到 ksud：设备上未安装 root 管理器且内置兜底失效'**
+  /// **'找不到 ksud：选中的 root 管理器里没有可用的 ksud'**
   String get ghostKeyDiagKsuKsudMissingTitle;
 
   /// 失败归因规则 KsuKsudMissing 的原因 1
   ///
   /// In zh, this message translates to:
-  /// **'root 管理器未安装'**
+  /// **'root 管理器未安装，或右上角胶囊里没有选中它'**
   String get ghostKeyDiagKsuKsudMissingCause1;
 
   /// 失败归因规则 KsuKsudMissing 的原因 2
   ///
   /// In zh, this message translates to:
-  /// **'内置兜底 ksud 与当前架构 / KMI 不兼容'**
+  /// **'该管理器的 ksud 与当前架构不兼容，或它的库已损坏'**
   String get ghostKeyDiagKsuKsudMissingCause2;
 
   /// 失败归因规则 KsuKsudMissing 的建议 1
   ///
   /// In zh, this message translates to:
-  /// **'先安装一个 root 管理器，再重跑流水线'**
+  /// **'先安装一个 root 管理器并在右上角胶囊里选中它，再重跑流水线'**
   String get ghostKeyDiagKsuKsudMissingSuggestion1;
 
   /// 失败归因规则 HostShizukuUnavailable 的标题

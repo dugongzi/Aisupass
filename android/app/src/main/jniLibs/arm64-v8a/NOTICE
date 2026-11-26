@@ -6,11 +6,6 @@ KSuRoot 提供的二进制（127 个文件与上游逐字节一致）：
   覆盖：libksu_*（122 份载荷）、libbaseline_6_1.so、libbaseline_6_12.so、
         libbs.so、libionstack.so、libcve43499root.so
 
-libksud.so：
-  来源：https://github.com/tiann/KernelSU（版本未固定，内嵌 kernelsu.ko）
-  许可证：GNU General Public License v3.0-or-later
-  分发该二进制需同时提供对应源码或有效的书面提供承诺。
-
 libvrext.so、libaisup_probe.so：由本仓库源码构建。
 
 许可证全文：仓库根 LICENSE（GPL-3.0）、LICENSES/Apache-2.0.txt、LICENSES/GPL-2.0.txt

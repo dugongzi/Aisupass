@@ -104,10 +104,11 @@ class GhostLockRequest {
     required this.safeMode,
   });
 
-  /// 选中的 root 管理器包名，仅用于在缺内置 ksud 时定位 `libksud.so`。
+  /// 选中的 root 管理器包名，用于定位它自带的 ksud。
   ///
-  /// 空串表示没有选中管理器：Kotlin 侧只用内置 `libksud.so`，
-  /// 没有内置时 KSU 阶段必然失败，但临时 root 仍可用。
+  /// 定位只认这个管理器自己的 `lib/arm64`：固定名 `libksud.so` 优先，没有则扫
+  /// 随机名（四条 ksud 帮助文案全中 + 实测 `late-load --help` 通过）。空串表示
+  /// 没选中管理器，KSU 阶段必然失败——不会拿别处的 ksud 顶替。
   String managerPackage;
 
   /// 是否在执行前把 `/data/adb/modules` 下的模块标记为 disabled。
@@ -187,7 +188,10 @@ class GhostLockPreflight {
   /// `nativeLibraryDir/libghostlock.so` 是否存在。
   bool binaryPresent;
 
-  /// 将传给 `GHOSTLOCK_KSUD` 的路径；空串表示没有可用 ksud。
+  /// 将传给 `GHOSTLOCK_KSUD` 的路径。
+  ///
+  /// 与实际执行同一个来源：全局选中管理器自带的 ksud。
+  /// 空串表示该管理器里没有可用的 ksud（此时 KSU 阶段必然失败，但临时 root 仍可用）。
   String ksudPath;
 
   /// profile 编码失败的原因码；成功为空串。
@@ -918,14 +922,17 @@ class GhostLockNative {
   final String pigeonVar_messageChannelSuffix;
 
   /// 读设备与资产状态，不解码 profile 之外的任何东西。
-  Future<GhostLockPreflight> preflight() async {
+  ///
+  /// [managerPackage] 只影响回填的 `ksudPath`，用于让确认弹窗展示的路径与
+  /// 实际执行一致；传空串表示只看包内自带的那份。
+  Future<GhostLockPreflight> preflight(String managerPackage) async {
     final pigeonVar_channelName = 'dev.flutter.pigeon.Aisupass.GhostLockNative.preflight$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[managerPackage]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(

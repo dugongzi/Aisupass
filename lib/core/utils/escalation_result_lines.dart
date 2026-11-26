@@ -83,7 +83,7 @@ EscalationLines handoffResultLines(
   }
   if (outcome.ksudPath.isNotEmpty) {
     head.add((
-      text: 'libksud.so: ${outcome.ksudPath}',
+      text: 'ksud: ${outcome.ksudPath}',
       tone: EscalationTone.dim,
     ));
   }

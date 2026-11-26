@@ -10,8 +10,8 @@ abstract class EscalationQueryRepository {
 
   /// 扫描设备上真实安装的 root 管理器。
   ///
-  /// 判据与移交脚本一致：安装目录里带 `libksud.so` 才算，空列表表示一个
-  /// 都没装。
+  /// 判据与移交/提权完全一致：`lib/arm64` 下自带可用 ksud（固定名 `libksud.so`
+  /// 优先，随机名须通过指纹与实测 `late-load --help`）才算，空列表表示一个都没装。
   Future<List<RootManager>> installedRootManagers();
 
   /// 读取用户选定的 root 管理器。

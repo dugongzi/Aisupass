@@ -6,6 +6,7 @@ import android.os.Looper
 import java.io.File
 import java.util.concurrent.Executors
 import org.supass.ai_su_pass.core.bridge.adb_shell_native.AdbShellNativeImpl
+import org.supass.ai_su_pass.core.root.KsudLocator
 import org.supass.ai_su_pass.core.shell.ShellStatus
 import org.supass.ai_su_pass.cve98260.AssetConfigLoader
 import org.supass.ai_su_pass.cve98260.BuiltinProfileCatalog
@@ -29,7 +30,6 @@ class Cve98260NativeImpl(
 
     private companion object {
         const val BIN_NAME = "libcve98260.so"
-        const val KSUD_FILE = "libksud.so"
         const val PROBE_TIMEOUT_MS = 5_000L
         const val SHELL_UID = 2000L
     }
@@ -153,7 +153,7 @@ class Cve98260NativeImpl(
             request = request,
             binPath = bin.absolutePath,
             profileBlob = blob,
-            ksudPath = bundledKsudPath(),
+            ksudPath = resolveKsud(request.managerPackage),
             channel = channel,
         )
         synchronized(sessions) { sessions[session.sessionId] = session }
@@ -165,11 +165,15 @@ class Cve98260NativeImpl(
         )
     }
 
-    /** Absolute path of the bundled ksud; recomputed per start, never cached. */
-    private fun bundledKsudPath(): String {
-        val file = File(context.applicationInfo.nativeLibraryDir, KSUD_FILE)
-        return if (file.isFile) file.absolutePath else ""
-    }
+    /**
+     * 末段要加载的 ksud。
+     *
+     * 只有一个来源：全局选中的那个管理器自带的 ksud（固定名优先，随机名靠指纹 +
+     * 实测 `late-load --help`）。找不到就返回空串，由会话层把 KSU 阶段标成失败，
+     * 不拿包内那份顶替——那会绕过用户的选择。
+     */
+    private fun resolveKsud(managerPackage: String): String =
+        KsudLocator.locate(context, managerPackage)
 
     private fun parseSeccomp(stdout: String): Long {
         val line = stdout.lineSequence().firstOrNull { it.startsWith("Seccomp:") } ?: return -1L

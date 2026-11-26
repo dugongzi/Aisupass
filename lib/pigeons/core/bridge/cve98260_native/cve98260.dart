@@ -11,16 +11,17 @@ class Cve98260Request {
     required this.acceptFallbackPageOffset,
   });
 
-  /// KernelSU 管理器的包名，仅用于 Dart 侧展示与「是否已装管理器」的提示。
+  /// root 管理器的包名（全局选中的那一个）。
   ///
-  /// **原生不消费该字段**：`ksu.c:find_ksud()` 只认 `CVE98260_KSUD` /
-  /// `<CVE98260_HOME>/ksud` / `/data/local/tmp/ksud` / `/data/adb/ksud` 四条路径，
-  /// 且本任务（G8）改用内置 `jniLibs/arm64-v8a/libksud.so`，ksud 路径由 Kotlin 侧
-  /// 从 `nativeLibraryDir` 取出后经 `CVE98260_KSUD` 传入，与 `managerPackage` 无关。
-  /// 空串表示不指定管理器。
+  /// 原生按它定位它自己的 ksud：`lib/arm64` 下固定名 `libksud.so` 优先，没有则扫
+  /// 随机名（四条 ksud 帮助文案全中 + 实测 `late-load --help` 通过）。找不到就
+  /// 没有 ksud 可用，KSU 阶段失败——不会拿别处的 ksud 顶替。
+  /// 空串表示没选管理器：此时不接管，`runKsu` 也应为 `false`。
   String managerPackage;
 
   /// 是否在第 5 阶段执行 `ksu-takeover`。
+  ///
+  /// 由 Dart 侧按「是否选中管理器」推导，不是用户开关。
   bool runKsu;
 
   /// 是否接受 `calibrate-b` 的 `fallback` 置信度。

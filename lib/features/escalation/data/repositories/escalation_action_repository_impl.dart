@@ -18,9 +18,13 @@ class EscalationActionRepositoryImpl implements EscalationActionRepository {
   void observeOutput(String text) => _datasource.observeOutput(text);
 
   @override
-  Future<HandoffOutcome> handoffRoot({required RootManager manager}) async {
+  Future<HandoffOutcome> handoffRoot({
+    required RootManager manager,
+    required String ksudPath,
+  }) async {
     final HandoffOutcomeDto dto = await _datasource.handoffRoot(
       manager: manager,
+      ksudPath: ksudPath,
     );
     return dto.toEntity();
   }

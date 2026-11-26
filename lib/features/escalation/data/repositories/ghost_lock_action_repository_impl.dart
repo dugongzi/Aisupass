@@ -21,8 +21,10 @@ class GhostLockActionRepositoryImpl implements GhostLockActionRepository {
   String _sessionId = '';
 
   @override
-  Future<GhostLockPreflight> preflight() async =>
-      (await _datasource.preflight()).toEntity();
+  Future<GhostLockPreflight> preflight({RootManager? manager}) async =>
+      (await _datasource.preflight(
+        managerPackage: manager?.packageName ?? '',
+      )).toEntity();
 
   @override
   Stream<GhostLockOutcome> run({

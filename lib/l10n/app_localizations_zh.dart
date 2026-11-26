@@ -1239,7 +1239,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String escalationHandoffManagerMissing(String manager, String package) {
-    return '设备上没装 $manager：找不到它的 libksud.so（包名 $package）。请先安装 $manager，再回来重试。';
+    return '设备上没装 $manager：找不到它自带的 ksud（包名 $package）。请先安装 $manager，再回来重试。';
   }
 
   @override
@@ -1258,7 +1258,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get escalationHandoffNoManager =>
-      '设备上没有可移交的 root 管理器：装好一个带 libksud.so 的管理器，用右上角胶囊选中它再试。';
+      '设备上没有可移交的 root 管理器：装好一个自带 ksud 的管理器，用右上角胶囊选中它再试。';
 
   @override
   String get escalationMenuTitle => '更多操作';
@@ -1475,7 +1475,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get escalationDirtyFragKernelUnknown => '未知';
 
   @override
-  String get escalationDirtyFragNoManager => '先在右上角胶囊里选中一个带 libksud.so 的管理器';
+  String get escalationDirtyFragNoManager => '先在右上角胶囊里选中一个自带 ksud 的管理器';
 
   @override
   String escalationDirtyFragRunning(String manager) {
@@ -1737,9 +1737,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get escalationGhostLockValueNone => '无';
-
-  @override
-  String get escalationGhostLockKsudFromManager => '由所选管理器提供';
 
   @override
   String get escalationGhostLockValueUnknown => '未知';
@@ -3171,16 +3168,17 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get ghostKeyDiagKsuKsudMissingTitle =>
-      '找不到 ksud：设备上未安装 root 管理器且内置兜底失效';
+      '找不到 ksud：选中的 root 管理器里没有可用的 ksud';
 
   @override
-  String get ghostKeyDiagKsuKsudMissingCause1 => 'root 管理器未安装';
+  String get ghostKeyDiagKsuKsudMissingCause1 => 'root 管理器未安装，或右上角胶囊里没有选中它';
 
   @override
-  String get ghostKeyDiagKsuKsudMissingCause2 => '内置兜底 ksud 与当前架构 / KMI 不兼容';
+  String get ghostKeyDiagKsuKsudMissingCause2 => '该管理器的 ksud 与当前架构不兼容，或它的库已损坏';
 
   @override
-  String get ghostKeyDiagKsuKsudMissingSuggestion1 => '先安装一个 root 管理器，再重跑流水线';
+  String get ghostKeyDiagKsuKsudMissingSuggestion1 =>
+      '先安装一个 root 管理器并在右上角胶囊里选中它，再重跑流水线';
 
   @override
   String get ghostKeyDiagHostShizukuUnavailableTitle =>

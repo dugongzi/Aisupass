@@ -50,8 +50,8 @@ List<ChatToolDefinition> ghostLockTools(Ref ref) {
         properties: <String, dynamic>{
           'managerPackage': stringProperty(
             description:
-                'Manager package used to locate libksud.so; omit to use the '
-                'selected manager.',
+                'Manager package used to locate its bundled ksud; omit to use '
+                'the selected manager.',
           ),
           'safeMode': boolProperty(
             description:

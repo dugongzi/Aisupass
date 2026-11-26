@@ -193,7 +193,7 @@ class FlutterError (
 ) : Throwable()
 
 /**
- * 设备上已安装的一个 KernelSU 系 root 管理器。
+ * 设备上已安装的一个 root 管理器（KernelSU 系及其各分支）。
  *
  * 字段全部非空：名字与图标取不到时回落成安装包名与空字节数组，
  * 不让 `null` 穿过通道。
@@ -270,15 +270,25 @@ private open class RootManagerNativePigeonCodec : StandardMessageCodec() {
  * root 管理器扫描原生接口。
  *
  * 契约原则：
- * 1. 只回答「哪些应用带了 `libksud.so`」，选择与排序交给上层；
+ * 1. 只回答「哪些应用自带可用的 ksud」：应用 `lib/arm64` 下固定名 `libksud.so`
+ *    优先（须是该目录下的直接文件且为 arm64 可执行 ELF）；没有固定名时扫随机名，
+ *    要求四条 ksud 帮助文案全中 **且** 真能跑通 `late-load --help`（认
+ *    `--kmi/--allow-shell/--package-name`）。不按包名、不按版本认人；
  * 2. 不抛异常，扫描失败以空列表表达；
- * 3. 不缓存安装路径，`nativeLibraryDir` 每次现读。
+ * 3. 只读管理器自己的原生库目录，不读 APK、不写盘。
  *
  * Generated interface from Pigeon that represents a handler of messages from Flutter.
  */
 interface RootManagerNative {
-  /** 扫描设备上装了 `libksud.so` 的应用。 */
+  /** 扫描设备上自带 ksud 的应用。 */
   fun scan(callback: (Result<List<RootManagerInfo>>) -> Unit)
+  /**
+   * 取指定管理器自带 ksud 的绝对路径。
+   *
+   * 判据与 [scan] 一致；包名非法、未安装或自带库里没有可用的 ksud 时返回空串。
+   * 移交脚本用它免掉按文件名 `find`。
+   */
+  fun resolveKsudPath(packageName: String, callback: (Result<String>) -> Unit)
 
   companion object {
     /** The codec used by RootManagerNative. */
@@ -294,6 +304,26 @@ interface RootManagerNative {
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             api.scan{ result: Result<List<RootManagerInfo>> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(RootManagerNativePigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(RootManagerNativePigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.Aisupass.RootManagerNative.resolveKsudPath$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val packageNameArg = args[0] as String
+            api.resolveKsudPath(packageNameArg) { result: Result<String> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(RootManagerNativePigeonUtils.wrapError(error))

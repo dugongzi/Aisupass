@@ -35,11 +35,15 @@ class EscalationQueryDatasource {
   Future<String> readSelectedRootManagerPackage() =>
       _storage.read<String>(StorageKeys.escalationSelectedRootManager);
 
-  /// 扫描设备上带 `libksud.so` 的应用。原生对象在本层收敛为 DTO。
+  /// 扫描设备上自带 ksud 的应用（固定名或携带指纹的随机名）。原生对象在本层收敛为 DTO。
   Future<List<RootManagerDto>> scanRootManagers() async =>
       (await _managers.scan())
           .map(RootManagerDto.fromNative)
           .toList(growable: false);
+
+  /// 取指定管理器自带 ksud 的绝对路径；未安装或找不到时返回空串。
+  Future<String> resolveKsudPath(String packageName) =>
+      _managers.resolveKsudPath(packageName);
 
   /// 读取并解析载荷清单。解析失败直接抛出，不吞异常。
   Future<List<PayloadDto>> loadPayloadCatalog() async {

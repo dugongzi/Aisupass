@@ -16,7 +16,8 @@ abstract class HandoffOutcome with _$HandoffOutcome {
     /// 本次移交的目标管理器。
     required RootManager manager,
 
-    /// 脚本定位到的 `libksud.so` 路径，只有 [HandoffKind.success] 时可靠。
+    /// 本次实际使用的 ksud 路径（脚本回显的那一行），只有 [HandoffKind.success]
+    /// 时可靠。
     required String ksudPath,
 
     /// 命令退出码；`-1` 表示命令没跑起来。

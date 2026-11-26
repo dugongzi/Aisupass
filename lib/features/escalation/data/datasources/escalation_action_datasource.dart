@@ -126,12 +126,18 @@ class EscalationActionDatasource {
   Future<void> writeSelectedRootManagerPackage(String packageName) => _storage
       .write<String>(StorageKeys.escalationSelectedRootManager, packageName);
 
-  /// 把临时 root 交给设备上的 KernelSU 系管理器。
+  /// 把临时 root 交给设备上的 root 管理器。
   ///
-  /// 一条命令：「定位 `libksud.so` + `late-load`」合成执行。这里不做 root
+  /// 一条命令：「定位 ksud + `late-load`」合成执行。这里不做 root
   /// 预检：载荷刚移交完时 `su` 未必就绪，预检会把已成功的接管误判成没有
   /// root。没 root 时这条命令自己会失败，退出码与输出就是真实原因。
-  Future<HandoffOutcomeDto> handoffRoot({required RootManager manager}) async {
+  ///
+  /// [ksudPath] 必须由原生侧按选中管理器解析好传进来；为空说明管理器里没有可用的
+  /// ksud，脚本会直接打 NO_KSUD 并以 exit 3 结束，由上层报「管理器没装」。
+  Future<HandoffOutcomeDto> handoffRoot({
+    required RootManager manager,
+    required String ksudPath,
+  }) async {
     final String managerPackage = manager.packageName;
     if (!HandoffScript.packagePattern.hasMatch(managerPackage)) {
       return _outcome(
@@ -144,7 +150,7 @@ class EscalationActionDatasource {
     final DateTime startedAt = DateTime.now();
 
     final pigeon.ShellExecResult handoff = await _su.run(
-      HandoffScript.build(managerPackage),
+      HandoffScript.build(managerPackage, ksudPath: ksudPath),
       timeoutMs: SuShell.handoffTimeoutMs,
     );
 
@@ -175,15 +181,16 @@ class EscalationActionDatasource {
       );
     }
 
-    final String ksudPath = HandoffScript.ksudPathFrom(handoff.stdout);
+    // 脚本自己回显的定位结果；传进来的 [ksudPath] 只是构造命令时的入参。
+    final String reportedPath = HandoffScript.ksudPathFrom(handoff.stdout);
     // 路径来自设备输出，含引号 / 反引号 / `$` 时原样回显可被复制去拼命令。
-    if (ksudPath.isNotEmpty &&
-        HandoffScript.unsafePathChars.hasMatch(ksudPath)) {
+    if (reportedPath.isNotEmpty &&
+        HandoffScript.unsafePathChars.hasMatch(reportedPath)) {
       return _outcome(
         kind: HandoffKind.failed,
         manager: manager,
         exitCode: handoff.exitCode,
-        output: '${HandoffScript.ksudLibrary} 路径含无法安全转义的字符：$ksudPath\n$output',
+        output: 'ksud 路径含无法安全转义的字符：$reportedPath\n$output',
         durationMs: durationMs,
         timedOut: handoff.timedOut,
       );
@@ -196,7 +203,7 @@ class EscalationActionDatasource {
     return _outcome(
       kind: handedOff ? HandoffKind.success : HandoffKind.failed,
       manager: manager,
-      ksudPath: ksudPath,
+      ksudPath: reportedPath,
       exitCode: handoff.exitCode,
       output: output,
       durationMs: durationMs,

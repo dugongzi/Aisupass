@@ -50,10 +50,9 @@
 | GhostLock | [YuKongA/ghostlock-app](https://github.com/YuKongA/ghostlock-app) | `4ebc726` | Apache-2.0 | [jni/cve43499](android/app/src/main/jni/cve43499) → `libghostlock.so` |
 | DirtyFrag | [DONGDERS/DirtyFalg-vr](https://github.com/DONGDERS/DirtyFalg-vr)、[payload_extract_rs](https://github.com/YuKongA/payload_extract_rs) | `d4f5c9f` / `5534f07` | GPL-2.0-only / GPL-2.0 | [jni/dfroot](android/app/src/main/jni/dfroot)、[jni/vrext](android/app/src/main/jni/vrext) |
 | GhostKey | [Again1996-bit/CVE-2026-98260-GhostKey](https://github.com/Again1996-bit/CVE-2026-98260-GhostKey) | `9c216a8` | **无** | [jni/cve98260](android/app/src/main/jni/cve98260) → `libcve98260.so` |
-| 预编译载荷 | [hmascs/KSuRoot](https://github.com/hmascs/KSuRoot) | `4.1.2` | Apache-2.0 | [jniLibs/arm64-v8a](android/app/src/main/jniLibs/arm64-v8a)，130 个 `.so` 中的 127 个 |
-| 模块加载 | [tiann/KernelSU](https://github.com/tiann/KernelSU) | 未固定 | GPL-3.0-or-later | `jniLibs/arm64-v8a/libksud.so` |
+| 预编译载荷 | [hmascs/KSuRoot](https://github.com/hmascs/KSuRoot) | `4.1.2` | Apache-2.0 | [jniLibs/arm64-v8a](android/app/src/main/jniLibs/arm64-v8a)，129 个 `.so` 中的 127 个 |
 
-> 逐组件出处、逐文件修改声明、72 个载荷上游的分布与未决许可证风险，见 **[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)**。root 管理器不链接，应用只在进程外调用其 `ksud`。
+> 逐组件出处、逐文件修改声明、72 个载荷上游的分布与未决许可证风险，见 **[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)**。root 管理器既不链接也不随包：应用只定位**选中的那个管理器自带**的 `ksud`（固定名优先，否则靠指纹 + 真跑一次 `late-load --help` 确认），在进程外调用。
 
 ## 构建
 
@@ -83,7 +82,7 @@ flutter build apk --debug
 
 `jni/cve43499`、`jni/dfroot`、`jni/vrext`、`jni/cve98260`、`jniLibs/arm64-v8a` 下各有一份 `NOTICE`，记录该目录的出处与改动。App 内「设置 → 关于 → 开源协议 / 第三方开源声明」可离线查看全部文档。
 
-> **待处理**：GPL-2.0-only 与 GPL-3.0 的组合、GhostKey 移植缺少许可证、`libksud.so` 的源码提供义务——详见声明文件第 11 节。
+> **待处理**：GPL-2.0-only 与 GPL-3.0 的组合、GhostKey 移植缺少许可证——详见声明文件第 11 节。
 
 ## 致谢
 

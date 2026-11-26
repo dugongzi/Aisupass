@@ -21,8 +21,12 @@ class GhostLockActionDatasource {
   final pigeon.GhostLockNative _native;
 
   /// 运行前自检。
-  Future<GhostLockPreflightDto> preflight() async =>
-      GhostLockPreflightDto.fromNative(await _native.preflight());
+  ///
+  /// [managerPackage] 只用于回填 `ksudPath`，让弹窗展示的路径与实际执行一致。
+  Future<GhostLockPreflightDto> preflight({String managerPackage = ''}) async =>
+      GhostLockPreflightDto.fromNative(
+        await _native.preflight(managerPackage),
+      );
 
   /// 受理一次运行。
   Future<GhostLockStartOutcome> start({

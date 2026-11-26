@@ -199,10 +199,11 @@ class FlutterError (
  */
 data class GhostLockRequest (
   /**
-   * 选中的 root 管理器包名，仅用于在缺内置 ksud 时定位 `libksud.so`。
+   * 选中的 root 管理器包名，用于定位它自带的 ksud。
    *
-   * 空串表示没有选中管理器：Kotlin 侧只用内置 `libksud.so`，
-   * 没有内置时 KSU 阶段必然失败，但临时 root 仍可用。
+   * 定位只认这个管理器自己的 `lib/arm64`：固定名 `libksud.so` 优先，没有则扫
+   * 随机名（四条 ksud 帮助文案全中 + 实测 `late-load --help` 通过）。空串表示
+   * 没选中管理器，KSU 阶段必然失败——不会拿别处的 ksud 顶替。
    */
   val managerPackage: String,
   /**
@@ -269,7 +270,12 @@ data class GhostLockPreflight (
   val route: String,
   /** `nativeLibraryDir/libghostlock.so` 是否存在。 */
   val binaryPresent: Boolean,
-  /** 将传给 `GHOSTLOCK_KSUD` 的路径；空串表示没有可用 ksud。 */
+  /**
+   * 将传给 `GHOSTLOCK_KSUD` 的路径。
+   *
+   * 与实际执行同一个来源：全局选中管理器自带的 ksud。
+   * 空串表示该管理器里没有可用的 ksud（此时 KSU 阶段必然失败，但临时 root 仍可用）。
+   */
   val ksudPath: String,
   /** profile 编码失败的原因码；成功为空串。 */
   val profileError: String
@@ -971,8 +977,13 @@ private open class GhostLockNativePigeonCodec : StandardMessageCodec() {
  * Generated interface from Pigeon that represents a handler of messages from Flutter.
  */
 interface GhostLockNative {
-  /** 读设备与资产状态，不解码 profile 之外的任何东西。 */
-  fun preflight(callback: (Result<GhostLockPreflight>) -> Unit)
+  /**
+   * 读设备与资产状态，不解码 profile 之外的任何东西。
+   *
+   * [managerPackage] 只影响回填的 `ksudPath`，用于让确认弹窗展示的路径与
+   * 实际执行一致；传空串表示只看包内自带的那份。
+   */
+  fun preflight(managerPackage: String, callback: (Result<GhostLockPreflight>) -> Unit)
   /** 受理一次运行。 */
   fun start(request: GhostLockRequest, callback: (Result<GhostLockStartResult>) -> Unit)
   /** 取走自上次轮询以来积累的输出。 */
@@ -992,8 +1003,10 @@ interface GhostLockNative {
       run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.Aisupass.GhostLockNative.preflight$separatedMessageChannelSuffix", codec)
         if (api != null) {
-          channel.setMessageHandler { _, reply ->
-            api.preflight{ result: Result<GhostLockPreflight> ->
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val managerPackageArg = args[0] as String
+            api.preflight(managerPackageArg) { result: Result<GhostLockPreflight> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(GhostLockNativePigeonUtils.wrapError(error))

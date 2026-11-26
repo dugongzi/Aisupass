@@ -105,10 +105,17 @@ class EscalationActions {
 
 /// 把临时 root 移交给用户选定的 [manager]。
 ///
+/// 先由原生按该管理器解析 ksud 路径（支持改了名的管理器），再拼脚本；
 /// 管理器未安装时返回 [HandoffKind.managerMissing]，不抛异常。
 @riverpod
-Future<HandoffOutcome> handoffRoot(Ref ref, {required RootManager manager}) =>
-    ref.watch(escalationActionRepositoryProvider).handoffRoot(manager: manager);
+Future<HandoffOutcome> handoffRoot(Ref ref, {required RootManager manager}) async {
+  final String ksudPath = await ref
+      .watch(escalationQueryDatasourceProvider)
+      .resolveKsudPath(manager.packageName);
+  return ref
+      .watch(escalationActionRepositoryProvider)
+      .handoffRoot(manager: manager, ksudPath: ksudPath);
+}
 
 /// root 管理器的写操作。
 ///
@@ -324,8 +331,14 @@ GhostLockActionRepository ghostLockActionRepository(Ref ref) =>
 
 /// 运行前自检。
 @riverpod
-Future<GhostLockPreflight> ghostLockPreflight(Ref ref) =>
-    ref.watch(ghostLockActionRepositoryProvider).preflight();
+Future<GhostLockPreflight> ghostLockPreflight(Ref ref) {
+  // 自检里的 ksudPath 要与实际执行一致，所以带上全局选中的管理器。
+  // 读不到（还在加载或报错）时先按包内自带兜底，读出来后自动重算。
+  final RootManager? manager = ref.watch(selectedRootManagerProvider).value;
+  return ref
+      .watch(ghostLockActionRepositoryProvider)
+      .preflight(manager: manager);
+}
 
 /// GhostLock 运行期的写操作。
 ///

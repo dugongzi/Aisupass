@@ -6,7 +6,7 @@ enum HandoffKind {
   /// 成功：命令退 0，且输出里没有已知失败关键字。
   success,
 
-  /// 管理器没装：`/data/app` 下没有该包名的 `libksud.so`。
+  /// 管理器没装：设备上找不到该包名自带的 ksud。
   managerMissing,
 
   /// 设备上没有 su：载荷还没跑，或跑完没拿到临时 root。

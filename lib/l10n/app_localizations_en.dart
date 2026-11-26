@@ -1348,7 +1348,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String escalationHandoffManagerMissing(String manager, String package) {
-    return '$manager is not installed on this device: no libksud.so found for package $package. Install $manager first, then retry.';
+    return '$manager is not installed on this device: no ksud found for package $package. Install $manager first, then retry.';
   }
 
   @override
@@ -1370,7 +1370,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get escalationHandoffNoManager =>
-      'No root manager available to hand off to: install a manager that ships libksud.so, select it from the pill in the top-right corner, then retry.';
+      'No root manager available to hand off to: install a manager that ships ksud, select it from the pill in the top-right corner, then retry.';
 
   @override
   String get escalationMenuTitle => 'More actions';
@@ -1602,7 +1602,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get escalationDirtyFragNoManager =>
-      'Pick a manager with libksud.so from the capsule at the top right first';
+      'Pick a manager that ships ksud from the capsule at the top right first';
 
   @override
   String escalationDirtyFragRunning(String manager) {
@@ -1878,10 +1878,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get escalationGhostLockValueNone => 'none';
-
-  @override
-  String get escalationGhostLockKsudFromManager =>
-      'Provided by the selected manager';
 
   @override
   String get escalationGhostLockValueUnknown => 'unknown';
@@ -3399,18 +3395,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ghostKeyDiagKsuKsudMissingTitle =>
-      'ksud not found: no root manager on the device and the bundled fallback failed';
+      'ksud not found: the selected root manager has no usable ksud';
 
   @override
-  String get ghostKeyDiagKsuKsudMissingCause1 => 'No root manager is installed';
+  String get ghostKeyDiagKsuKsudMissingCause1 =>
+      'No root manager is installed, or none is selected in the capsule';
 
   @override
   String get ghostKeyDiagKsuKsudMissingCause2 =>
-      'The bundled fallback ksud is incompatible with the current architecture / KMI';
+      'That manager\'s ksud is incompatible with this architecture, or its library is corrupted';
 
   @override
   String get ghostKeyDiagKsuKsudMissingSuggestion1 =>
-      'Install a root manager first, then re-run the pipeline';
+      'Install a root manager, select it in the top-right capsule, then re-run the pipeline';
 
   @override
   String get ghostKeyDiagHostShizukuUnavailableTitle =>

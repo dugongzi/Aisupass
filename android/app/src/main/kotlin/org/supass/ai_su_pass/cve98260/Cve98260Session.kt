@@ -47,7 +47,6 @@ private const val EXIT_INJECT = 4
 private const val EXIT_VERIFY = 5
 
 private const val WORK_DIR = "/data/local/tmp/cve98260"
-private const val KSUD_NAME = "libksud.so"
 private const val RESULT_SLIDE = "slide.txt"
 private const val RESULT_PAGE_OFFSET = "page_offset.txt"
 private const val RESULT_PAGE_OFFSET_SCORE = "page_offset.score"
@@ -369,7 +368,7 @@ internal class Cve98260Session(
         emit(Cve98260Stage.KSU, Cve98260Status.RUNNING)
         if (ksudPath.isEmpty()) {
             synchronized(lock) {
-                logBuffer.append("[ksu] bundled ksud missing: ").append(KSUD_NAME).append('\n')
+                logBuffer.append("[ksu] no ksud available: 选中的管理器里没有可用的 ksud\n")
             }
             emit(Cve98260Stage.KSU, Cve98260Status.FAILED)
             return 0

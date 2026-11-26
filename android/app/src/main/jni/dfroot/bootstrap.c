@@ -233,7 +233,10 @@ int main(void)
             write(fd, ctx, strlen(ctx));
             close(fd);
         }
-        if (run_ctx(NULL, (char *[]){ KSUD_STAGE, "late-load", "--package-name", su_manager, NULL }) == 0) {
+        // ksud 一定已由应用侧从所选管理器的 APK 里解出并落位到 KSUD_STAGE；
+        // 这里不再猜别的路径，缺失就让 late-load 直接失败。
+        const char *ksud = KSUD_STAGE;
+        if (run_ctx(NULL, (char *[]){ (char *)ksud, "late-load", "--package-name", su_manager, NULL }) == 0) {
             touch("/dev/dfm6");
             if (soft_reboot) {
                 while (late_load_running()) sleep(1);

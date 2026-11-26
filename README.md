@@ -50,10 +50,9 @@
 | GhostLock | [YuKongA/ghostlock-app](https://github.com/YuKongA/ghostlock-app) | `4ebc726` | Apache-2.0 | [jni/cve43499](android/app/src/main/jni/cve43499) → `libghostlock.so` |
 | DirtyFrag | [DONGDERS/DirtyFalg-vr](https://github.com/DONGDERS/DirtyFalg-vr), [payload_extract_rs](https://github.com/YuKongA/payload_extract_rs) | `d4f5c9f` / `5534f07` | GPL-2.0-only / GPL-2.0 | [jni/dfroot](android/app/src/main/jni/dfroot), [jni/vrext](android/app/src/main/jni/vrext) |
 | GhostKey | [Again1996-bit/CVE-2026-98260-GhostKey](https://github.com/Again1996-bit/CVE-2026-98260-GhostKey) | `9c216a8` | **none** | [jni/cve98260](android/app/src/main/jni/cve98260) → `libcve98260.so` |
-| Payloads | [hmascs/KSuRoot](https://github.com/hmascs/KSuRoot) | `4.1.2` | Apache-2.0 | [jniLibs/arm64-v8a](android/app/src/main/jniLibs/arm64-v8a), 127 of 130 `.so` |
-| Module loading | [tiann/KernelSU](https://github.com/tiann/KernelSU) | not pinned | GPL-3.0-or-later | `jniLibs/arm64-v8a/libksud.so` |
+| Payloads | [hmascs/KSuRoot](https://github.com/hmascs/KSuRoot) | `4.1.2` | Apache-2.0 | [jniLibs/arm64-v8a](android/app/src/main/jniLibs/arm64-v8a), 127 of 129 `.so` |
 
-> Per-component provenance, per-file modification statements, the 72-repo payload breakdown and open license risks live in **[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)** (Chinese). Root managers are not linked; the app only invokes their `ksud` out of process.
+> Per-component provenance, per-file modification statements, the 72-repo payload breakdown and open license risks live in **[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)** (Chinese). Root managers are neither linked nor bundled: the app locates the selected manager's own `ksud` (fixed name first, otherwise fingerprint + a real `late-load --help` probe) and invokes it out of process.
 
 ## Build
 
@@ -83,7 +82,7 @@ Distributed under **GNU GPL v3.0** ([LICENSE](LICENSE)).
 
 `NOTICE` files under `jni/cve43499`, `jni/dfroot`, `jni/vrext`, `jni/cve98260` and `jniLibs/arm64-v8a` record provenance per vendored directory. In the app, **Settings → About → License / Third-party Notices** renders all of these offline.
 
-> **Open issues**: the GPL-2.0-only / GPL-3.0 combination, the unlicensed GhostKey port, and the source-offer obligation for `libksud.so` — see §11 of the notices file.
+> **Open issues**: the GPL-2.0-only / GPL-3.0 combination and the unlicensed GhostKey port — see §11 of the notices file.
 
 ## Credits
 

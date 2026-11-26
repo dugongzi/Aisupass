@@ -26,6 +26,9 @@ Future<bool?> showGhostLockConfirmDialog(
 ///
 /// 安全模式只在本次生效、不落偏好：它改变的是本轮执行时 root 脚本对
 /// `/data/adb/modules/*` 的处理，不是用户长期意愿。
+///
+/// `ksud` 一行直接展示自检算出的路径（管理器自带优先、包内兜底），不再按
+/// 「谁来提供」二次推断，避免展示与执行不一致。
 class _GhostLockConfirmDialog extends HookWidget {
   const _GhostLockConfirmDialog({
     required this.manager,
@@ -93,12 +96,10 @@ class _GhostLockConfirmDialog extends HookWidget {
             ),
             _Field(
               label: l10n.escalationGhostLockFieldKsud,
-              // preflight 只查包内 ksud；为空时实际执行会回退到所选管理器的。
+              // 自检与实际执行同一个来源：全局选中管理器自带的 ksud。
               value: preflight.ksudPath.isNotEmpty
                   ? preflight.ksudPath
-                  : manager == null
-                  ? l10n.escalationGhostLockValueNone
-                  : l10n.escalationGhostLockKsudFromManager,
+                  : l10n.escalationGhostLockValueNone,
             ),
             SizedBox(height: 4.h),
             SwitchListTile(

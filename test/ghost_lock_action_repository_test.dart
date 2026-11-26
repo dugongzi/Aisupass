@@ -20,17 +20,18 @@ class _FakeNative extends pigeon.GhostLockNative {
   int _index = 0;
 
   @override
-  Future<pigeon.GhostLockPreflight> preflight() async => pigeon.GhostLockPreflight(
-    adbConnected: true,
-    shellUid: 2000,
-    seccomp: 0,
-    release: '6.6.118',
-    profileRelease: '6.6.118',
-    route: 'select_stack',
-    binaryPresent: true,
-    ksudPath: '',
-    profileError: '',
-  );
+  Future<pigeon.GhostLockPreflight> preflight(String managerPackage) async =>
+      pigeon.GhostLockPreflight(
+        adbConnected: true,
+        shellUid: 2000,
+        seccomp: 0,
+        release: '6.6.118',
+        profileRelease: '6.6.118',
+        route: 'select_stack',
+        binaryPresent: true,
+        ksudPath: '',
+        profileError: '',
+      );
 
   @override
   Future<pigeon.GhostLockStartResult> start(

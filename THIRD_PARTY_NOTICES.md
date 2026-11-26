@@ -51,9 +51,8 @@ JitPack 仓库声明见 [settings.gradle.kts](android/settings.gradle.kts#L14-L2
 | --- | --- | --- | --- | --- | --- |
 | [hmascs/KSuRoot](https://github.com/hmascs/KSuRoot) | 4.1.2（`aa475cb`） | `Apache-2.0` | 122 份 `libksu_*` 载荷、`libbaseline_6_1/6_12`、`libbs`、`libionstack`、`libcve43499root` | [jniLibs/arm64-v8a](android/app/src/main/jniLibs/arm64-v8a)，127 个文件哈希一致 | 无 |
 | [hmascs/KSuRoot](https://github.com/hmascs/KSuRoot)（载荷清单与构建配方） | 4.1.2 | `Apache-2.0` | 清单元数据（`generatedFrom: hmascs/KSuRoot@main`）、基线载荷构建配方 | [payloads/catalog.json](assets/escalation/payloads/catalog.json) | 无 |
-| [tiann/KernelSU](https://github.com/tiann/KernelSU) | 未固定 | `GPL-3.0-or-later` | 内嵌 `kernelsu.ko` 的 `ksud`，用于 late-load 内核模块 | `jniLibs/arm64-v8a/libksud.so` | 无（按二进制引入） |
 
-`jniLibs` 共 130 个 `.so`：127 个来自 KSuRoot，其余为 `libksud.so`（本节）与 `libvrext.so`、`libaisup_probe.so`（第 8 节，由本仓库构建）。
+`jniLibs` 共 129 个 `.so`：127 个来自 KSuRoot，其余为 `libvrext.so`、`libaisup_probe.so`（第 8 节，由本仓库构建）。本仓库**不随包分发任何 ksud**。
 
 ## 6. 载荷清单来源
 
@@ -72,7 +71,7 @@ OTA 清单（[pixel.json](assets/escalation/ota/pixel.json)、[realme.json](asse
 
 ## 7. 不随包分发的运行时依赖
 
-root 管理器**不链接、不随包**：运行时只扫描设备上已安装管理器的 `libksud.so`，在进程外调用 `ksud`。
+root 管理器**不链接、不随包**：运行时只在**全局选中的那个管理器**自己的 `lib/arm64` 里定位 ksud——固定名 `libksud.so` 优先，否则要求四条 ksud 帮助文案全中并实测 `late-load --help` 通过——然后在进程外调用它。不按包名建白名单，也不接受任何硬编码的管理器清单。
 
 | 组件 | 说明 |
 | --- | --- |
@@ -97,7 +96,7 @@ root 管理器**不链接、不随包**：运行时只扫描设备上已安装�
 
 | 许可证 | 文件 | 适用范围 |
 | --- | --- | --- |
-| GNU GPL v3.0 | [LICENSE](LICENSE) | 本项目自身；同时覆盖 `ksud` 所附 GPL-3.0-or-later |
+| GNU GPL v3.0 | [LICENSE](LICENSE) | 本项目自身 |
 | GNU GPL v2.0 | [LICENSES/GPL-2.0.txt](LICENSES/GPL-2.0.txt) | DirtyFalg-vr（`jni/dfroot`、`jni/vrext`）与 payload_extract_rs |
 | Apache License 2.0 | [LICENSES/Apache-2.0.txt](LICENSES/Apache-2.0.txt) | ghostlock-app、KSuRoot、libadb-android（本项目所选分支）、conscrypt、commons-compress |
 

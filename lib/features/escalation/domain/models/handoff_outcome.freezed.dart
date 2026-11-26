@@ -16,7 +16,8 @@ mixin _$HandoffOutcome {
 
 /// 结果形态，UI 按它分支。
  HandoffKind get kind;/// 本次移交的目标管理器。
- RootManager get manager;/// 脚本定位到的 `libksud.so` 路径，只有 [HandoffKind.success] 时可靠。
+ RootManager get manager;/// 本次实际使用的 ksud 路径（脚本回显的那一行），只有 [HandoffKind.success]
+/// 时可靠。
  String get ksudPath;/// 命令退出码；`-1` 表示命令没跑起来。
  int get exitCode;/// 命令两路输出的合并结果，原样给用户核对。
  String get output;/// 耗时（毫秒）。
@@ -235,7 +236,8 @@ class _HandoffOutcome extends HandoffOutcome {
 @override final  HandoffKind kind;
 /// 本次移交的目标管理器。
 @override final  RootManager manager;
-/// 脚本定位到的 `libksud.so` 路径，只有 [HandoffKind.success] 时可靠。
+/// 本次实际使用的 ksud 路径（脚本回显的那一行），只有 [HandoffKind.success]
+/// 时可靠。
 @override final  String ksudPath;
 /// 命令退出码；`-1` 表示命令没跑起来。
 @override final  int exitCode;

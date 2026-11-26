@@ -6,6 +6,7 @@ import android.os.Looper
 import java.io.File
 import java.util.concurrent.Executors
 import org.supass.ai_su_pass.core.bridge.adb_shell_native.AdbShellNativeImpl
+import org.supass.ai_su_pass.core.root.KsudLocator
 import org.supass.ai_su_pass.core.shell.ShellStatus
 import org.supass.ai_su_pass.cve43499.GhostLockAssets
 import org.supass.ai_su_pass.cve43499.GhostLockCatalog
@@ -27,7 +28,6 @@ class GhostLockNativeImpl(
 
     private companion object {
         const val BIN_NAME = "libghostlock.so"
-        const val KSUD_FILE = "libksud.so"
         const val PROBE_TIMEOUT_MS = 5_000L
         const val SHELL_UID = 2000L
     }
@@ -50,9 +50,12 @@ class GhostLockNativeImpl(
 
     private val sessions = LinkedHashMap<String, GhostLockSession>()
 
-    override fun preflight(callback: (Result<GhostLockPreflight>) -> Unit) {
+    override fun preflight(
+        managerPackage: String,
+        callback: (Result<GhostLockPreflight>) -> Unit,
+    ) {
         preflightExecutor.execute {
-            val result = runCatching { buildPreflight() }
+            val result = runCatching { buildPreflight(managerPackage) }
             mainHandler.post { callback(result) }
         }
     }
@@ -108,7 +111,7 @@ class GhostLockNativeImpl(
         preflightExecutor.shutdownNow()
     }
 
-    private fun buildPreflight(): GhostLockPreflight {
+    private fun buildPreflight(managerPackage: String): GhostLockPreflight {
         val channel = shell.shellChannel
         val connected = channel.status() == ShellStatus.READY
         var uid = -1L
@@ -131,8 +134,8 @@ class GhostLockNativeImpl(
             profileRelease = matched?.getOrNull()?.release.orEmpty(),
             route = matched?.getOrNull()?.route.orEmpty(),
             binaryPresent = File(context.applicationInfo.nativeLibraryDir, BIN_NAME).isFile,
-            // 自检不带管理器，只报包内 ksud；为空时执行阶段会回退到所选管理器的。
-            ksudPath = resolveKsud(""),
+            // 与实际执行同一条解析：只认全局选中管理器自带的 ksud。
+            ksudPath = resolveKsud(managerPackage),
             profileError = matched?.exceptionOrNull()?.message.orEmpty(),
         )
     }
@@ -175,17 +178,15 @@ class GhostLockNativeImpl(
         )
     }
 
-    /** 内置 ksud 优先；缺失时回退到选中管理器的 `nativeLibraryDir/libksud.so`。 */
-    private fun resolveKsud(managerPackage: String): String {
-        val bundled = File(context.applicationInfo.nativeLibraryDir, KSUD_FILE)
-        if (bundled.isFile) return bundled.absolutePath
-        if (managerPackage.isEmpty()) return ""
-        return runCatching {
-            val info = context.packageManager.getApplicationInfo(managerPackage, 0)
-            val candidate = File(info.nativeLibraryDir, KSUD_FILE)
-            if (candidate.isFile) candidate.absolutePath else ""
-        }.getOrDefault("")
-    }
+    /**
+     * 末段要加载的 ksud。
+     *
+     * 只有一个来源：全局选中的那个管理器自带的 ksud（固定名优先，随机名靠指纹 +
+     * 实测 `late-load --help`）。找不到就返回空串，让上层如实报「没有可用的 ksud」，
+     * 不拿包内那份顶替——那会绕过用户的选择，也会把失败藏到运行中途。
+     */
+    private fun resolveKsud(managerPackage: String): String =
+        KsudLocator.locate(context, managerPackage)
 
     private fun parseSeccomp(stdout: String): Long {
         val line = stdout.lineSequence().firstOrNull { it.startsWith("Seccomp:") } ?: return -1L

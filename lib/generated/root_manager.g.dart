@@ -97,7 +97,7 @@ int _deepHash(Object? value) {
 }
 
 
-/// 设备上已安装的一个 KernelSU 系 root 管理器。
+/// 设备上已安装的一个 root 管理器（KernelSU 系及其各分支）。
 ///
 /// 字段全部非空：名字与图标取不到时回落成安装包名与空字节数组，
 /// 不让 `null` 穿过通道。
@@ -184,9 +184,12 @@ class _PigeonCodec extends StandardMessageCodec {
 /// root 管理器扫描原生接口。
 ///
 /// 契约原则：
-/// 1. 只回答「哪些应用带了 `libksud.so`」，选择与排序交给上层；
+/// 1. 只回答「哪些应用自带可用的 ksud」：应用 `lib/arm64` 下固定名 `libksud.so`
+///    优先（须是该目录下的直接文件且为 arm64 可执行 ELF）；没有固定名时扫随机名，
+///    要求四条 ksud 帮助文案全中 **且** 真能跑通 `late-load --help`（认
+///    `--kmi/--allow-shell/--package-name`）。不按包名、不按版本认人；
 /// 2. 不抛异常，扫描失败以空列表表达；
-/// 3. 不缓存安装路径，`nativeLibraryDir` 每次现读。
+/// 3. 只读管理器自己的原生库目录，不读 APK、不写盘。
 class RootManagerNative {
   /// Constructor for [RootManagerNative].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
@@ -200,7 +203,7 @@ class RootManagerNative {
 
   final String pigeonVar_messageChannelSuffix;
 
-  /// 扫描设备上装了 `libksud.so` 的应用。
+  /// 扫描设备上自带 ksud 的应用。
   Future<List<RootManagerInfo>> scan() async {
     final pigeonVar_channelName = 'dev.flutter.pigeon.Aisupass.RootManagerNative.scan$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
@@ -218,5 +221,28 @@ class RootManagerNative {
     )
     ;
     return (pigeonVar_replyValue! as List<Object?>).cast<RootManagerInfo>();
+  }
+
+  /// 取指定管理器自带 ksud 的绝对路径。
+  ///
+  /// 判据与 [scan] 一致；包名非法、未安装或自带库里没有可用的 ksud 时返回空串。
+  /// 移交脚本用它免掉按文件名 `find`。
+  Future<String> resolveKsudPath(String packageName) async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.Aisupass.RootManagerNative.resolveKsudPath$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[packageName]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
+    return pigeonVar_replyValue! as String;
   }
 }

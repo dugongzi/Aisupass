@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:Aisupass/core/storage/json_codec.dart';
 import 'package:Aisupass/core/storage/key_value_store.dart';
+import 'package:Aisupass/core/utils/handoff_script.dart';
 import 'package:Aisupass/features/escalation/data/datasources/escalation_action_datasource.dart';
 import 'package:Aisupass/features/escalation/data/repositories/escalation_action_repository_impl.dart';
 import 'package:Aisupass/features/escalation/domain/enums/handoff_kind.dart';
@@ -384,35 +385,33 @@ void main() {
   });
 
   group('移交阶段', () {
-    /// 管理器安装目录里的 ksud，形如 `find` 会打出来的真实路径。
+    /// 管理器安装目录里的 ksud，形如原生定位器给出的真实路径。
     const String ksudPath =
         '/data/app/~~abc==/me.weishu.kernelsu-xyz==/lib/arm64/libksud.so';
 
-    /// 定位 + `late-load` 合成的那一条命令：两者必须在同一个 shell 会话里。
-    bool isHandoff(String command) =>
-        command.contains('find /data/app') && command.contains('late-load');
+    /// 接管 + `late-load` 合成的那一条命令：两者必须在同一个 shell 会话里。
+    bool isHandoff(String command) => command.contains('late-load');
 
-    test('用同一条 su 完成定位与 late-load，不做 root 预检', () async {
+    test('用同一条 su 完成接管与 late-load，不做 root 预检', () async {
       final _FakeNative fake = _FakeNative((String command) {
         if (isHandoff(command)) return _ok('KSUD=$ksudPath\nlate load ok\n');
         fail('不该走到这里: $command');
       });
 
       final HandoffOutcome result = await _repository(fake)
-          .handoffRoot(manager: _kernelsu);
+          .handoffRoot(manager: _kernelsu, ksudPath: ksudPath);
 
       expect(result.kind, HandoffKind.success);
       expect(result.exitCode, 0);
       expect(result.ksudPath, ksudPath);
-      // 只发一条：定位与 late-load 必须活在同一次 shell 会话里，`$KSUD` 才传得
+      // 只发一条：接管与 late-load 必须活在同一次 shell 会话里，`$KSUD` 才传得
       // 下去。拆成两条不只是多弹一次授权框，中间还有 TOCTOU 窗口。
       expect(fake.commands, hasLength(1));
 
       final String handoff = fake.commands[0];
-      expect(handoff, contains(r'KSUD=\$(find /data/app -name libksud.so'));
-      expect(handoff, contains('| grep -F me.weishu.kernelsu | head -n 1'));
-      expect(handoff, contains(r'if [ -z \"\$KSUD\" ]'));
-      expect(handoff, contains(r'echo \"NO_KSUD\"; exit 3'));
+      // 路径原样来自原生定位器，单引号包住直接用，脚本不再自己找。
+      expect(handoff, contains("KSUD='$ksudPath';"));
+      expect(handoff, isNot(contains('find /data/app')));
       expect(handoff, contains(r'echo \"KSUD=\$KSUD\"'));
       expect(handoff, contains(r'\"\$KSUD\" late-load --allow-shell'));
       expect(handoff, contains('--package-name me.weishu.kernelsu'));
@@ -424,7 +423,7 @@ void main() {
         fail('不该走到这里: $command');
       });
 
-      await _repository(fake).handoffRoot(manager: _kernelsu);
+      await _repository(fake).handoffRoot(manager: _kernelsu, ksudPath: ksudPath);
 
       expect(fake.commands, hasLength(1));
       for (final String command in fake.commands) {
@@ -439,48 +438,31 @@ void main() {
       }
     });
 
-    test('找不到 libksud.so 时归为「管理器没装」而不是笼统失败', () async {
+    test('原生没给出 ksud 路径时归为「管理器没装」而不是笼统失败', () async {
       final _FakeNative fake = _FakeNative((String command) {
-        if (isHandoff(command)) return _fail(3, stderr: 'NO_KSUD\n');
-        fail('不该走到这里: $command');
+        // 空路径时脚本只打标记就退，不会尝试 late-load。
+        expect(command, contains('NO_KSUD'));
+        return _fail(3, stderr: 'NO_KSUD\n');
       });
 
       final HandoffOutcome result = await _repository(fake)
-          .handoffRoot(manager: _sukisu);
+          .handoffRoot(manager: _sukisu, ksudPath: '');
 
       // 这是最常见的一种失败，必须单独分型：用户唯一能自救的动作是去装管理器。
       expect(result.kind, HandoffKind.managerMissing);
       expect(result.exitCode, 3);
       expect(result.manager.packageName, 'com.sukisu.ultra');
       expect(fake.commands, hasLength(1));
-      expect(fake.commands[0], contains('grep -F com.sukisu.ultra'));
     });
 
     test('只有退出码 3、没有 NO_KSUD 字样时仍按未安装处理', () async {
-      final _FakeNative fake = _FakeNative((String command) {
-        if (isHandoff(command)) return _fail(3);
-        fail('不该走到这里: $command');
-      });
+      final _FakeNative fake = _FakeNative((String command) => _fail(3));
 
       final HandoffOutcome result = await _repository(fake)
-          .handoffRoot(manager: _kernelsu);
+          .handoffRoot(manager: _kernelsu, ksudPath: ksudPath);
 
       // 脚本提前挂掉时可能只留下退出码，标记未必打得出来。
       expect(result.kind, HandoffKind.managerMissing);
-    });
-
-    test('ksud 路径含无法转义的字符时拒绝转述', () async {
-      final _FakeNative fake = _FakeNative((String command) {
-        if (isHandoff(command)) return _ok('KSUD=/data/app/x/libksud.so"\n');
-        fail('不该走到这里: $command');
-      });
-
-      final HandoffOutcome result = await _repository(fake)
-          .handoffRoot(manager: _kernelsu);
-
-      expect(result.kind, HandoffKind.failed);
-      expect(result.output, contains('无法安全转义'));
-      expect(fake.commands, hasLength(1));
     });
 
     test('设备没有 su 时单独分型，不并入一般失败', () async {
@@ -495,7 +477,7 @@ void main() {
       });
 
       final HandoffOutcome result = await _repository(fake)
-          .handoffRoot(manager: _kernelsu);
+          .handoffRoot(manager: _kernelsu, ksudPath: ksudPath);
 
       expect(result.kind, HandoffKind.noSu);
       expect(result.exitCode, 127);
@@ -508,7 +490,7 @@ void main() {
       });
 
       final HandoffOutcome result = await _repository(fake)
-          .handoffRoot(manager: _kernelsu);
+          .handoffRoot(manager: _kernelsu, ksudPath: ksudPath);
 
       expect(result.kind, HandoffKind.failed);
       expect(result.exitCode, 7);
@@ -524,7 +506,7 @@ void main() {
       });
 
       final HandoffOutcome result = await _repository(fake)
-          .handoffRoot(manager: _kernelsu);
+          .handoffRoot(manager: _kernelsu, ksudPath: ksudPath);
 
       expect(result.kind, HandoffKind.failed);
       expect(result.exitCode, 0);
@@ -542,7 +524,7 @@ void main() {
       });
 
       final HandoffOutcome result = await _repository(fake)
-          .handoffRoot(manager: _kernelsu);
+          .handoffRoot(manager: _kernelsu, ksudPath: ksudPath);
 
       expect(result.kind, HandoffKind.failed);
       expect(result.output, contains('failure'));
@@ -555,7 +537,7 @@ void main() {
       });
 
       final HandoffOutcome result = await _repository(fake)
-          .handoffRoot(manager: _kernelsu);
+          .handoffRoot(manager: _kernelsu, ksudPath: ksudPath);
 
       // 兜底原因交给 UI 按 kind 出文案，这里只保证退出码与分型不丢。
       expect(result.kind, HandoffKind.failed);
@@ -570,11 +552,44 @@ void main() {
       });
 
       final HandoffOutcome result = await _repository(fake)
-          .handoffRoot(manager: _kernelsu);
+          .handoffRoot(manager: _kernelsu, ksudPath: ksudPath);
 
       expect(result.kind, HandoffKind.success);
       expect(result.ksudPath, isEmpty);
       expect(result.output, isEmpty);
+    });
+
+    test('原生已解析出 ksud 路径时直接用该路径', () async {
+      const String resolved =
+          '/data/app/~~abc==/com.sukisu.ultra-xyz==/lib/arm64/librenamed.so';
+      final _FakeNative fake = _FakeNative((String command) {
+        if (isHandoff(command)) return _ok('KSUD=$resolved\nok\n');
+        fail('不该走到这里: $command');
+      });
+
+      final HandoffOutcome result = await _repository(fake)
+          .handoffRoot(manager: _sukisu, ksudPath: resolved);
+
+      expect(result.kind, HandoffKind.success);
+      expect(result.ksudPath, resolved);
+      final String handoff = fake.commands.single;
+      expect(handoff, contains("KSUD='$resolved';"));
+      // 改了名的管理器拿不到固定文件名，只能靠原生给的全路径。
+      expect(handoff, isNot(contains('find /data/app')));
+      expect(handoff, contains('--package-name com.sukisu.ultra'));
+    });
+
+    test('原生给的路径含无法安全转义的字符时直接判没找到', () {
+      // 不退回按文件名找：路径已经不可信，只能如实报「没有可用的 ksud」。
+      final String handoff = HandoffScript.build(
+        'me.weishu.kernelsu',
+        ksudPath: '/data/app/x/libksud.so"',
+      );
+
+      expect(handoff, contains('NO_KSUD'));
+      expect(handoff, contains('exit 3'));
+      expect(handoff, isNot(contains('find')));
+      expect(handoff, isNot(contains('late-load')));
     });
   });
 }

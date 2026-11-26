@@ -201,9 +201,11 @@ data class DirtyFragRequest (
   /**
    * 接管方包名，写进 DE 偏好供 bootstrap 读取。
    *
-   * 原生侧用 `PackageManager` 解出该应用的 `nativeLibraryDir`，从中取
-   * `libksud.so` 拷到 `<de>/ksud`。**Dart 层拿不到这个路径**：此时还没有
-   * root，`find` 进不去 `/data/app`，所以路径解析只发生在原生侧。
+   * 原生侧用 `PackageManager` 解出该应用的 `lib/arm64`，定位它自带的 ksud
+   * （固定名 `libksud.so` 优先，没有则扫随机名并要求实测 `late-load --help` 通过），
+   * 拷到 `<de>/ksud`；拿不到就当场拒绝，不猜别处的路径。
+   * **Dart 层拿不到这个路径**：此时还没有 root，`find` 进不去 `/data/app`，
+   * 所以路径解析只发生在原生侧。
    */
   val managerPackage: String,
   /** 是否启用 VR（vivo `vr.ko`）反制阶段。 */

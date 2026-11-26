@@ -17,6 +17,7 @@ import java.security.SecureRandom
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.thread
+import org.supass.ai_su_pass.core.root.KsudLocator
 
 /**
  * DirtyFrag 执行体：不依赖 Pigeon、不依赖 Flutter。
@@ -107,21 +108,21 @@ class DirtyFragSession(private val context: Context) {
             ?: return StartOutcome(false, "", "stagingFailed")
         val ownNativeDir = context.applicationInfo.nativeLibraryDir
 
-        val managerNativeDir = try {
-            context.packageManager.getApplicationInfo(params.managerPackage, 0).nativeLibraryDir
-        } catch (e: Exception) {
+        // 接管方必须是真实安装的管理器：用管理器 lib/arm64 下那份 ksud（固定名优先，
+        // 随机名靠指纹 + 实测 late-load --help 认）。拿不到就当场拒绝，不猜路径。
+        val ksudPath = KsudLocator.locate(context, params.managerPackage)
+        if (ksudPath.isEmpty() || !File(ksudPath).isFile) {
             return StartOutcome(false, "", "missingBinary")
         }
 
-        val ksudSrc = File(managerNativeDir, "libksud.so")
         val bootstrapSrc = File(ownNativeDir, "libbootstrap.so")
         val bin = File(ownNativeDir, "libdfroot.so")
-        if (!ksudSrc.isFile || !bootstrapSrc.isFile || !bin.isFile) {
+        if (!bootstrapSrc.isFile || !bin.isFile) {
             return StartOutcome(false, "", "missingBinary")
         }
 
         try {
-            stageExecutable(ksudSrc, File(deParent, "ksud"))
+            stageExecutable(File(ksudPath), File(deParent, "ksud"))
             stageExecutable(bootstrapSrc, File(deParent, "bootstrap"))
         } catch (e: Exception) {
             return StartOutcome(false, "", "stagingFailed")
