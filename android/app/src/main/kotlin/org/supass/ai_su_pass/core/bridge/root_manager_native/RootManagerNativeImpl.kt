@@ -1,6 +1,7 @@
 package org.supass.ai_su_pass.core.bridge.root_manager_native
 
 import android.content.Context
+import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -74,6 +75,35 @@ class RootManagerNativeImpl(private val context: Context) : RootManagerNative {
             val path = runCatching { KsudLocator.locate(context, packageName) }
                 .getOrDefault("")
             mainHandler.post { callback(Result.success(path)) }
+        }
+    }
+
+    /**
+     * 把管理器拉到前台。
+     *
+     * 用 [android.content.pm.PackageManager.getLaunchIntentForPackage] 让系统自己查
+     * 入口 Activity，不写死类名——官方 KernelSU 的 ksud 在 `late-load` 收尾是靠
+     * `am start -n <包名>/me.weishu.kernelsu.ui.MainActivity` 拉起自己，第三方分支
+     * 的入口类名各不相同，照抄这条命令就什么也拉不起来。
+     *
+     * 应用上下文启动必须带 [Intent.FLAG_ACTIVITY_NEW_TASK]，否则抛
+     * AndroidRuntimeException；管理器没有启动入口时返回 false，交由上层忽略。
+     */
+    override fun launchManager(
+        packageName: String,
+        callback: (Result<Boolean>) -> Unit,
+    ) {
+        val target = packageName.trim()
+        executor.execute {
+            val launched = runCatching {
+                val intent = context.packageManager.getLaunchIntentForPackage(target)
+                    ?: return@runCatching false
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+                true
+            }.onFailure { Log.w(TAG, "启动管理器失败: $target", it) }
+                .getOrDefault(false)
+            mainHandler.post { callback(Result.success(launched)) }
         }
     }
 

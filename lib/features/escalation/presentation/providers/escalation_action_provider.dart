@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:Aisupass/core/providers/adb_shell_provider.dart';
 import 'package:Aisupass/core/providers/escalation_native_provider.dart';
 import 'package:Aisupass/core/storage/storage_providers.dart';
 import 'package:Aisupass/features/escalation/data/datasources/dirty_frag_action_datasource.dart';
 import 'package:Aisupass/features/escalation/data/datasources/escalation_action_datasource.dart';
+import 'package:Aisupass/features/escalation/data/datasources/escalation_query_datasource.dart';
 import 'package:Aisupass/features/escalation/data/datasources/ghost_key_action_datasource.dart';
 import 'package:Aisupass/features/escalation/data/datasources/ghost_lock_action_datasource.dart';
 import 'package:Aisupass/features/escalation/data/datasources/ghost_lock_profile_action_datasource.dart';
@@ -103,18 +106,44 @@ class EscalationActions {
       _ref.read(escalationActionRepositoryProvider).observeOutput(text);
 }
 
-/// 把临时 root 移交给用户选定的 [manager]。
+/// 把临时 root 移交给用户选定的 [manager]，成功后把该管理器拉到前台。
 ///
 /// 先由原生按该管理器解析 ksud 路径（支持改了名的管理器），再拼脚本；
 /// 管理器未安装时返回 [HandoffKind.managerMissing]，不抛异常。
 @riverpod
 Future<HandoffOutcome> handoffRoot(Ref ref, {required RootManager manager}) async {
-  final String ksudPath = await ref
-      .watch(escalationQueryDatasourceProvider)
-      .resolveKsudPath(manager.packageName);
-  return ref
+  final EscalationQueryDatasource query = ref.watch(
+    escalationQueryDatasourceProvider,
+  );
+  final String ksudPath = await query.resolveKsudPath(manager.packageName);
+  final HandoffOutcome outcome = await ref
       .watch(escalationActionRepositoryProvider)
       .handoffRoot(manager: manager, ksudPath: ksudPath);
+  // 移交成功后主动把管理器拉到前台。
+  //
+  // 这一步原先只有官方 KernelSU 才「有」：它的 ksud 在 `late-load` 收尾自己跑
+  // `am force-stop` + `am start -n <包名>/me.weishu.kernelsu.ui.MainActivity`。
+  // 第三方分支要么没这段，要么组件名对不上，用户就会觉得移交没生效。
+  if (outcome.success) {
+    unawaited(_launchManagerAfterHandoff(query, manager.packageName));
+  }
+  return outcome;
+}
+
+/// 移交成功后拉起管理器的延迟。
+///
+/// `ksud late-load` 进来第一件事就是 daemonize：shell 命令退 0 时模块其实还在后台
+/// 加载，官方 ksud 的收尾（`am force-stop` + `am start`）也在那之后。立刻拉起会被
+/// 它顺手杀掉，所以等它把这一轮跑完再拉。
+const Duration _managerLaunchDelay = Duration(milliseconds: 1500);
+
+/// 延迟拉起目标管理器；拉起失败不影响移交结果，只留在原生日志里。
+Future<void> _launchManagerAfterHandoff(
+  EscalationQueryDatasource query,
+  String packageName,
+) async {
+  await Future<void>.delayed(_managerLaunchDelay);
+  await query.launchRootManager(packageName);
 }
 
 /// root 管理器的写操作。

@@ -185,9 +185,9 @@ class _PigeonCodec extends StandardMessageCodec {
 ///
 /// 契约原则：
 /// 1. 只回答「哪些应用自带可用的 ksud」：应用 `lib/arm64` 下固定名 `libksud.so`
-///    优先（须是该目录下的直接文件且为 arm64 可执行 ELF）；没有固定名时扫随机名，
-///    要求四条 ksud 帮助文案全中 **且** 真能跑通 `late-load --help`（认
-///    `--kmi/--allow-shell/--package-name`）。不按包名、不按版本认人；
+///    优先；没有固定名时扫随机名，判据是 arm64 可执行 ELF 头 + 二进制里的 ksud
+///    子命令文本（`post-fs-data` / `boot-completed` / `late-load`）。不按包名、
+///    不按库文件名猜；
 /// 2. 不抛异常，扫描失败以空列表表达；
 /// 3. 只读管理器自己的原生库目录，不读 APK、不写盘。
 class RootManagerNative {
@@ -244,5 +244,31 @@ class RootManagerNative {
     )
     ;
     return pigeonVar_replyValue! as String;
+  }
+
+  /// 把指定管理器拉到前台。
+  ///
+  /// 用 `getLaunchIntentForPackage` 解析启动入口，不写死 Activity 类名：各分支的
+  /// 入口类名并不统一，而官方 KernelSU 的 `ksud late-load` 尾部是靠
+  /// `am start -n <包名>/me.weishu.kernelsu.ui.MainActivity` 这个写死的组件名
+  /// 拉起自己的——换成分支后组件名对不上，就拉不起来了。
+  /// 包名非法、未安装或没有启动入口时返回 false。
+  Future<bool> launchManager(String packageName) async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.Aisupass.RootManagerNative.launchManager$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[packageName]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
+    return pigeonVar_replyValue! as bool;
   }
 }

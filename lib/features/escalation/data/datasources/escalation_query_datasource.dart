@@ -45,6 +45,12 @@ class EscalationQueryDatasource {
   Future<String> resolveKsudPath(String packageName) =>
       _managers.resolveKsudPath(packageName);
 
+  /// 把管理器 App 拉到前台；没有可用的启动入口时返回 `false`，不抛异常。
+  ///
+  /// 入口由系统按包名解析（`getLaunchIntentForPackage`），不写死 Activity 类名。
+  Future<bool> launchRootManager(String packageName) =>
+      _managers.launchManager(packageName);
+
   /// 读取并解析载荷清单。解析失败直接抛出，不吞异常。
   Future<List<PayloadDto>> loadPayloadCatalog() async {
     final String raw = await _bundle.loadString(catalogPath);
