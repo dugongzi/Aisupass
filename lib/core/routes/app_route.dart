@@ -5,6 +5,8 @@ import 'package:Aisupass/features/ai/presentation/pages/ai_config_edit_page.dart
 import 'package:Aisupass/features/ai/presentation/pages/ai_config_page.dart';
 import 'package:Aisupass/features/chat/presentation/pages/chat_page.dart';
 import 'package:Aisupass/features/chat/presentation/pages/in_app_browser_page.dart';
+import 'package:Aisupass/features/coolapk/presentation/pages/coolapk_captcha_page.dart';
+import 'package:Aisupass/features/coolapk/presentation/pages/coolapk_login_page.dart';
 import 'package:Aisupass/features/escalation/presentation/pages/ghost_lock_profile_page.dart';
 import 'package:Aisupass/features/escalation/presentation/pages/kernel_profile_edit_page.dart';
 import 'package:Aisupass/features/escalation/presentation/pages/kernel_profile_page.dart';
@@ -29,6 +31,16 @@ class AppRoute {
   /// 浏览器路径；[url] 会编码进 query，避免 `&` 被当成参数分隔符。
   static String browserPath(String url) =>
       '$browser?url=${Uri.encodeComponent(url)}';
+
+  // 酷安登录页（WebView 里过验证码后抓取令牌）
+  static const coolapkLogin = '/coolapk/login';
+
+  // 酷安人机验证页（详情接口被风控时，过验证拿 validate 票据）
+  static const coolapkCaptcha = '/coolapk/captcha';
+
+  /// 人机验证页路径；[captchaId] 来自被风控接口的响应。
+  static String coolapkCaptchaPath(String captchaId) =>
+      '$coolapkCaptcha?captchaId=${Uri.encodeComponent(captchaId)}';
 
   // AI 配置
   static const aiConfig = '/aiConfig';
@@ -125,6 +137,16 @@ final List<GoRoute> appRoutes = [
     path: AppRoute.browser,
     builder: (context, state) =>
         InAppBrowserPage(initialUrl: state.uri.queryParameters['url'] ?? ''),
+  ),
+  GoRoute(
+    path: AppRoute.coolapkLogin,
+    builder: (context, state) => const CoolapkLoginPage(),
+  ),
+  GoRoute(
+    path: AppRoute.coolapkCaptcha,
+    builder: (context, state) => CoolapkCaptchaPage(
+      captchaId: state.uri.queryParameters['captchaId'] ?? '',
+    ),
   ),
   GoRoute(
     path: AppRoute.kernelProfile,

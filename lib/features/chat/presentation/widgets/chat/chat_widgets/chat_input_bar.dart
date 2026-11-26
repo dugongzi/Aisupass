@@ -131,9 +131,7 @@ class ChatInputBar extends HookConsumerWidget {
         );
         if (picked == null || !context.mounted) return;
 
-        final ChatAttachmentStore store = ref.read(
-          chatAttachmentStoreProvider,
-        );
+        final ChatAttachmentStore store = ref.read(chatAttachmentStoreProvider);
         final List<ChatAttachment> added = <ChatAttachment>[];
         for (final PlatformFile file in picked.files) {
           if (!context.mounted) return;
@@ -410,10 +408,7 @@ class _BarIconButton extends HookWidget {
 
 /// 输入框上方的附件预览，右上角带移除按钮。
 class _AttachmentPreview extends HookWidget {
-  const _AttachmentPreview({
-    required this.attachment,
-    required this.onRemove,
-  });
+  const _AttachmentPreview({required this.attachment, required this.onRemove});
 
   final ChatAttachment attachment;
   final VoidCallback onRemove;

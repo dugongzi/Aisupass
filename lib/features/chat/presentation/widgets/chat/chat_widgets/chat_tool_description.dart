@@ -15,6 +15,10 @@ String localizedChatToolDescription(AppLocalizations l10n, String name) {
     'stellar_service_status' => l10n.chatToolDesc_stellar_service_status,
     'web_search' => l10n.chatToolDesc_web_search,
     'coolapk_search' => l10n.chatToolDesc_coolapk_search,
+    'coolapk_login' => l10n.chatToolDesc_coolapk_login,
+    'coolapk_feed_detail' => l10n.chatToolDesc_coolapk_feed_detail,
+    'coolapk_feed_all_replies' => l10n.chatToolDesc_coolapk_feed_all_replies,
+    'coolapk_offer_download' => l10n.chatToolDesc_coolapk_offer_download,
     'fetch_web_page' => l10n.chatToolDesc_fetch_web_page,
     'open_in_browser' => l10n.chatToolDesc_open_in_browser,
     'escalation_get_device_identity' =>
@@ -33,7 +37,8 @@ String localizedChatToolDescription(AppLocalizations l10n, String name) {
     'escalation_select_root_manager' =>
       l10n.chatToolDesc_escalation_select_root_manager,
     'ghost_key_preflight' => l10n.chatToolDesc_ghost_key_preflight,
-    'ghost_key_get_run_defaults' => l10n.chatToolDesc_ghost_key_get_run_defaults,
+    'ghost_key_get_run_defaults' =>
+      l10n.chatToolDesc_ghost_key_get_run_defaults,
     'ghost_key_save_run_defaults' =>
       l10n.chatToolDesc_ghost_key_save_run_defaults,
     'ghost_key_start' => l10n.chatToolDesc_ghost_key_start,
@@ -105,7 +110,8 @@ String localizedChatToolDescription(AppLocalizations l10n, String name) {
     'dirty_frag_is_armed' => l10n.chatToolDesc_dirty_frag_is_armed,
     'dirty_frag_get_run_defaults' =>
       l10n.chatToolDesc_dirty_frag_get_run_defaults,
-    'dirty_frag_get_expert_mode' => l10n.chatToolDesc_dirty_frag_get_expert_mode,
+    'dirty_frag_get_expert_mode' =>
+      l10n.chatToolDesc_dirty_frag_get_expert_mode,
     'dirty_frag_get_boot_autostart' =>
       l10n.chatToolDesc_dirty_frag_get_boot_autostart,
     'dirty_frag_get_vr_progress' =>

@@ -618,7 +618,131 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatToolWebSearch => '联网搜索';
 
   @override
+  String get chatToolCoolapkLogin => '检查酷安登录';
+
+  @override
   String get chatToolCoolapkSearch => '搜索酷安';
+
+  @override
+  String get chatToolCoolapkFeedDetail => '读取酷安帖子正文';
+
+  @override
+  String get chatToolCoolapkFeedAllReplies => '读取酷安全部评论';
+
+  @override
+  String get chatToolCoolapkOfferDownload => '给出酷安下载地址';
+
+  @override
+  String get chatCoolapkNoReplies => '这条帖子暂无评论';
+
+  @override
+  String get chatCoolapkNoRepliesHint => '评论接口没有返回内容，可以打开原帖看看有没有新的回复。';
+
+  @override
+  String get chatCoolapkOpenPost => '打开酷安查看';
+
+  @override
+  String get chatCoolapkOpenFailed => '未安装酷安或打开失败，链接已复制';
+
+  @override
+  String get chatCoolapkCaptchaTitle => '酷安要求人机验证';
+
+  @override
+  String get chatCoolapkCaptchaHint => '酷安给帖子正文接口加了人机验证，通过一次后就能正常读取正文和评论。';
+
+  @override
+  String get chatCoolapkCaptchaAction => '去验证';
+
+  @override
+  String get chatCoolapkCaptchaPassedTitle => '人机验证已通过';
+
+  @override
+  String get chatCoolapkCaptchaPassedHint => '正在继续读取帖子内容，无需再操作。';
+
+  @override
+  String get chatCoolapkCaptchaPassedAction => '已通过';
+
+  @override
+  String chatCoolapkRomFound(int count) {
+    return '找到 $count 个下载地址';
+  }
+
+  @override
+  String get chatCoolapkDownloadFailed => '无法直接打开，链接已复制';
+
+  @override
+  String get chatCoolapkLoginRequiredTitle => '需要登录酷安';
+
+  @override
+  String get chatCoolapkLoginRequiredHint => '这个内容要登录后才能读取，登录完可以直接让我重试。';
+
+  @override
+  String get chatCoolapkLoginAction => '登录酷安';
+
+  @override
+  String get coolapkLoginTitle => '酷安登录';
+
+  @override
+  String get coolapkLoginHint => '登录成功后会自动读取令牌；若没有反应，点下面的按钮手动读取。';
+
+  @override
+  String get coolapkLoginThirdPartyHint =>
+      '微信、微博登录会跳转到对应 App 授权，跳出后请回到这里；若一直无法跳转，请改用手机号或密码登录。';
+
+  @override
+  String get coolapkLoginNotDetected => '没检测到有效的登录状态，请完成登录后再试';
+
+  @override
+  String get coolapkLoginCaptureAction => '我已登录，读取令牌';
+
+  @override
+  String get coolapkLoginClearCookie => '清除登录 Cookie';
+
+  @override
+  String get coolapkLoginClearCookieConfirm => '清除后需要重新登录酷安。';
+
+  @override
+  String get coolapkLoginCookieCleared => '已清除登录 Cookie';
+
+  @override
+  String get coolapkLoginSucceeded => '酷安登录成功';
+
+  @override
+  String get coolapkCaptchaTitle => '酷安人机验证';
+
+  @override
+  String get coolapkCaptchaHint => '拖动滑块完成验证，通过后会自动返回。';
+
+  @override
+  String get coolapkCaptchaRetry => '重新加载';
+
+  @override
+  String get coolapkCaptchaSucceeded => '验证通过，请重新发送消息';
+
+  @override
+  String get coolapkCaptchaFailed => '验证失败，请重试';
+
+  @override
+  String get coolapkCaptchaSaveFailed => '验证结果保存失败，请重试';
+
+  @override
+  String get coolapkCaptchaCopyError => '复制错误信息';
+
+  @override
+  String get coolapkCaptchaLoading => '正在加载验证组件…';
+
+  @override
+  String get coolapkCaptchaErrorCopied => '错误信息已复制';
+
+  @override
+  String get coolapkCaptchaDesktopUnsupported => '人机验证需要在 Android 设备上完成。';
+
+  @override
+  String get coolapkLoginCaptureFailed => '没读到登录令牌，请确认已登录后再试';
+
+  @override
+  String get coolapkLoginDesktopUnsupported =>
+      '酷安登录目前只能在 Android 上完成，拿不到其他平台的登录会话';
 
   @override
   String get chatToolOpenInBrowser => '用浏览器打开网页';
@@ -836,6 +960,21 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get chatToolDesc_coolapk_search => '在酷安社区搜索帖子、用户与话题，游客态可读，用于真实机型与刷机经验';
+
+  @override
+  String get chatToolDesc_coolapk_login => '检查酷安登录状态；帖子正文与完整评论需要账号，未登录时提示用户登录';
+
+  @override
+  String get chatToolDesc_coolapk_feed_detail =>
+      '读取某条酷安帖子的完整正文，需要登录；正文里常直接写着下载地址';
+
+  @override
+  String get chatToolDesc_coolapk_feed_all_replies =>
+      '读取某条酷安帖子的全部评论与楼中楼，需要登录；冷门帖的热门评论为空时用它';
+
+  @override
+  String get chatToolDesc_coolapk_offer_download =>
+      '把在帖子或评论里找到的下载地址交给用户，并生成带下载按钮和原帖跳转的卡片';
 
   @override
   String get chatToolDesc_fetch_web_page => '抓取指定网页的原始源码，同时返回状态码与内容类型';

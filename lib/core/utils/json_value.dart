@@ -19,6 +19,22 @@ List<String> stringListFromJson(Object? value) => <String>[
       if (item is String && item.isNotEmpty) item,
 ];
 
+/// 字符串字段宽松取值：数字等标量转成字符串，`null` 返回空串。
+///
+/// 社区接口的 id 常在不同接口里混用 int 与 String，统一收敛为 String。
+String stringFromJson(Object? value) => value?.toString().trim() ?? '';
+
+/// 布尔字段宽松取值：`1` / `"1"` / `"true"` 视为真，其余为假。
+bool boolFromJson(Object? value) {
+  if (value is bool) return value;
+  if (value is num) return value != 0;
+  if (value is String) {
+    final String text = value.trim().toLowerCase();
+    return text == '1' || text == 'true';
+  }
+  return false;
+}
+
 /// 井号标签串：按逗号拆开、去掉 `#` 后以 [separator] 拼接。
 ///
 /// 例：`#HyperOS4#,#玩机技巧#` → `HyperOS4 玩机技巧`。

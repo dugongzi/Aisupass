@@ -42,8 +42,7 @@ class ChatToolCard extends HookWidget {
         arguments.isNotEmpty && arguments != '{}' && arguments != 'null';
     final String result = call.result.trim();
     final String error = call.error.trim();
-    final bool hasBody =
-        hasArguments || result.isNotEmpty || error.isNotEmpty;
+    final bool hasBody = hasArguments || result.isNotEmpty || error.isNotEmpty;
 
     final Widget row = InkWell(
       onTap: hasBody ? () => expanded.value = !expanded.value : null,
@@ -58,7 +57,9 @@ class ChatToolCard extends HookWidget {
             SizedBox(
               width: isDesktop ? 16 : 16.w,
               height: isDesktop ? 16 : 16.w,
-              child: Center(child: _StatusMark(status: call.status, tint: tint)),
+              child: Center(
+                child: _StatusMark(status: call.status, tint: tint),
+              ),
             ),
             SizedBox(width: isDesktop ? 8 : 8.w),
             Expanded(
@@ -238,7 +239,11 @@ String _toolLabel(BuildContext context, String name) {
     'adb_pairing_request' => context.l10n.chatToolRequestAdbPairing,
     'stellar_service_status' => context.l10n.chatToolReadStellarStatus,
     'web_search' => context.l10n.chatToolWebSearch,
+    'coolapk_login' => context.l10n.chatToolCoolapkLogin,
     'coolapk_search' => context.l10n.chatToolCoolapkSearch,
+    'coolapk_feed_detail' => context.l10n.chatToolCoolapkFeedDetail,
+    'coolapk_feed_all_replies' => context.l10n.chatToolCoolapkFeedAllReplies,
+    'coolapk_offer_download' => context.l10n.chatToolCoolapkOfferDownload,
     'fetch_web_page' => context.l10n.chatToolFetchWebPage,
     'open_in_browser' => context.l10n.chatToolOpenInBrowser,
     _ => name.isEmpty ? context.l10n.chatToolRunning : _humanize(name),
@@ -278,10 +283,7 @@ List<AppDataRow>? _resultRows(BuildContext context, ChatToolCall call) {
     final DeviceInfoField? field = _parseField('${entry.key}');
     if (field == null) return null;
     rows.add(
-      AppDataRow(
-        label: _fieldLabel(context, field),
-        value: '${entry.value}',
-      ),
+      AppDataRow(label: _fieldLabel(context, field), value: '${entry.value}'),
     );
   }
   return rows.isEmpty ? null : rows;
@@ -411,9 +413,7 @@ class _ToolBody extends HookWidget {
                 onTap: () => showAll.value = !showAll.value,
                 borderRadius: BorderRadius.circular(4),
                 child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    vertical: isDesktop ? 2 : 2.h,
-                  ),
+                  padding: EdgeInsets.symmetric(vertical: isDesktop ? 2 : 2.h),
                   child: Text(
                     showAll.value
                         ? context.l10n.chatToolCollapse
@@ -443,9 +443,7 @@ class _ToolBody extends HookWidget {
       ),
       decoration: BoxDecoration(
         border: Border(
-          left: BorderSide(
-            color: colors.outlineVariant.withValues(alpha: 0.6),
-          ),
+          left: BorderSide(color: colors.outlineVariant.withValues(alpha: 0.6)),
         ),
       ),
       child: Row(
@@ -456,10 +454,7 @@ class _ToolBody extends HookWidget {
             onPressed: () => copy(copyText),
             visualDensity: VisualDensity.compact,
             padding: EdgeInsets.zero,
-            constraints: const BoxConstraints.tightFor(
-              width: 24,
-              height: 24,
-            ),
+            constraints: const BoxConstraints.tightFor(width: 24, height: 24),
             iconSize: isDesktop ? 14 : 14.sp,
             color: colors.onSurfaceVariant.withValues(alpha: 0.7),
             icon: const Icon(Icons.copy_rounded),

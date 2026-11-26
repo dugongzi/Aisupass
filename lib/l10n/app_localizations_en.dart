@@ -629,7 +629,144 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatToolWebSearch => 'Search the web';
 
   @override
+  String get chatToolCoolapkLogin => 'Check Coolapk sign-in';
+
+  @override
   String get chatToolCoolapkSearch => 'Search Coolapk';
+
+  @override
+  String get chatToolCoolapkFeedDetail => 'Read Coolapk post body';
+
+  @override
+  String get chatToolCoolapkFeedAllReplies => 'Read all Coolapk comments';
+
+  @override
+  String get chatToolCoolapkOfferDownload => 'Offer Coolapk download links';
+
+  @override
+  String get chatCoolapkNoReplies => 'No comments on this post';
+
+  @override
+  String get chatCoolapkNoRepliesHint =>
+      'The comment list came back empty. Open the original post to check for new replies.';
+
+  @override
+  String get chatCoolapkOpenPost => 'Open in Coolapk';
+
+  @override
+  String get chatCoolapkOpenFailed =>
+      'Coolapk not installed or failed to open, link copied';
+
+  @override
+  String get chatCoolapkCaptchaTitle => 'Coolapk wants a captcha';
+
+  @override
+  String get chatCoolapkCaptchaHint =>
+      'Coolapk put a captcha wall on its post detail endpoint. Clear it once and post bodies plus comments read normally.';
+
+  @override
+  String get chatCoolapkCaptchaAction => 'Verify';
+
+  @override
+  String get chatCoolapkCaptchaPassedTitle => 'Verification passed';
+
+  @override
+  String get chatCoolapkCaptchaPassedHint =>
+      'Continuing to read the post, no further action needed.';
+
+  @override
+  String get chatCoolapkCaptchaPassedAction => 'Passed';
+
+  @override
+  String chatCoolapkRomFound(int count) {
+    return 'Found $count download links';
+  }
+
+  @override
+  String get chatCoolapkDownloadFailed => 'Cannot open directly, link copied';
+
+  @override
+  String get chatCoolapkLoginRequiredTitle => 'Coolapk login required';
+
+  @override
+  String get chatCoolapkLoginRequiredHint =>
+      'This content needs a Coolapk account. Sign in, then ask me to retry.';
+
+  @override
+  String get chatCoolapkLoginAction => 'Sign in to Coolapk';
+
+  @override
+  String get coolapkLoginTitle => 'Coolapk sign in';
+
+  @override
+  String get coolapkLoginHint =>
+      'The token is read automatically once you sign in. If nothing happens, tap the button below.';
+
+  @override
+  String get coolapkLoginThirdPartyHint =>
+      'WeChat and Weibo sign-in hand off to their own apps; come back here after authorising. If nothing opens, use your phone number or password instead.';
+
+  @override
+  String get coolapkLoginNotDetected =>
+      'No valid sign-in detected. Finish signing in and try again.';
+
+  @override
+  String get coolapkLoginCaptureAction => 'I have signed in, read the token';
+
+  @override
+  String get coolapkLoginClearCookie => 'Clear login cookie';
+
+  @override
+  String get coolapkLoginClearCookieConfirm =>
+      'You will need to sign in to Coolapk again.';
+
+  @override
+  String get coolapkLoginCookieCleared => 'Login cookie cleared';
+
+  @override
+  String get coolapkLoginSucceeded => 'Signed in to Coolapk';
+
+  @override
+  String get coolapkCaptchaTitle => 'Coolapk captcha';
+
+  @override
+  String get coolapkCaptchaHint =>
+      'Slide to finish the check. The page closes itself once it passes.';
+
+  @override
+  String get coolapkCaptchaRetry => 'Reload';
+
+  @override
+  String get coolapkCaptchaSucceeded =>
+      'Verification passed, send your message again';
+
+  @override
+  String get coolapkCaptchaFailed => 'Verification failed, please retry';
+
+  @override
+  String get coolapkCaptchaSaveFailed =>
+      'Could not save the verification result, please retry';
+
+  @override
+  String get coolapkCaptchaCopyError => 'Copy error message';
+
+  @override
+  String get coolapkCaptchaLoading => 'Loading the verification widget…';
+
+  @override
+  String get coolapkCaptchaErrorCopied => 'Error message copied';
+
+  @override
+  String get coolapkCaptchaDesktopUnsupported =>
+      'The captcha has to be cleared on an Android device.';
+
+  @override
+  String get coolapkLoginCaptureFailed =>
+      'No login token found. Make sure you are signed in and retry.';
+
+  @override
+  String get coolapkLoginDesktopUnsupported =>
+      'Coolapk sign in currently works on Android only; other platforms cannot capture the session';
 
   @override
   String get chatToolOpenInBrowser => 'Open page in browser';
@@ -859,6 +996,22 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get chatToolDesc_coolapk_search =>
       'Search Coolapk posts, users and topics for real-device and rooting experience';
+
+  @override
+  String get chatToolDesc_coolapk_login =>
+      'Check the Coolapk sign-in state; post bodies and full comments need an account, and the user is prompted to sign in when missing';
+
+  @override
+  String get chatToolDesc_coolapk_feed_detail =>
+      'Read the full body of one Coolapk post; needs an account, and the body often contains the download links directly';
+
+  @override
+  String get chatToolDesc_coolapk_feed_all_replies =>
+      'Read every comment and nested reply of one Coolapk post; needs an account, and covers posts whose hot-comment list is empty';
+
+  @override
+  String get chatToolDesc_coolapk_offer_download =>
+      'Hand the user download links found in a post or its comments, and render a card with a jump to the original post';
 
   @override
   String get chatToolDesc_fetch_web_page =>

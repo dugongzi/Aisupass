@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:convert';
+import 'dart:developer' show log;
 
 import 'package:Aisupass/features/ai/domain/models/ai_config.dart';
 import 'package:Aisupass/features/chat/domain/enums/chat_notice.dart';
@@ -149,11 +149,28 @@ class ChatStreamSession {
       }
 
       _updateTurn(turnId, (ChatTurn item) => item.copyWith(streaming: false));
-      await _executeTools(turnId, tools);
+      final bool awaitsUser = await _executeTools(turnId, tools);
+      // 只在 debug 打：定位「工具已声明 awaitsUser 却没挂起」到底是哪一环丢了。
+      assert(() {
+        final ChatTurn? t = _turnById(turnId);
+        final String calls =
+            (t?.toolCalls ?? const <ChatToolCall>[])
+                .map(
+                  (ChatToolCall c) =>
+                      '${c.name}[${c.status.name}]='
+                      '${c.result.length > 90 ? c.result.substring(0, 90) : c.result}',
+                )
+                .join(' | ');
+        log(
+          'chat.pause: turn=$turnId awaitsUser=$awaitsUser calls=$calls',
+          name: 'chat.pause',
+        );
+        return true;
+      }());
       if (cancelled) return;
 
       // 本轮渲染了需要用户操作的组件：原地挂起，等用户完成后再继续。
-      if (_awaitsUser(turnId)) {
+      if (awaitsUser) {
         awaitTurnId = turnId;
         _updateTurn(
           turnId,
@@ -173,25 +190,6 @@ class ChatStreamSession {
         continue;
       }
     }
-  }
-
-  /// 本轮是否有工具声明了必须等用户操作。
-  ///
-  /// 约定在工具结果里带 `awaitsUser: true`，由工具自己声明，
-  /// 控制器只认这个键，不按工具名下判断。
-  bool _awaitsUser(String turnId) {
-    final ChatTurn? turn = _turnById(turnId);
-    if (turn == null) return false;
-    for (final ChatToolCall call in turn.toolCalls) {
-      if (call.status != ChatToolStatus.succeeded) continue;
-      try {
-        final Object? decoded = jsonDecode(call.result);
-        if (decoded is Map && decoded['awaitsUser'] == true) return true;
-      } on FormatException {
-        continue;
-      }
-    }
-    return false;
   }
 
   /// 订阅一轮流式响应，直到收到终止事件或失败。
@@ -332,14 +330,17 @@ class ChatStreamSession {
   }
 
   /// 顺序执行本轮的全部工具调用，并把结果回填到同一轮次上。
-  Future<void> _executeTools(
+  ///
+  /// 返回值是「本轮是否有工具声明了必须等用户操作」：由 [ChatToolSession]
+  /// 在拿到结果串时当场判定，不依赖回填后的轮次副本。
+  Future<bool> _executeTools(
     String turnId,
     List<ChatToolDefinition> tools,
   ) async {
     final ChatTurn? turn = _turnById(turnId);
-    if (turn == null) return;
+    if (turn == null) return false;
 
-    await const ChatToolSession().execute(
+    return const ChatToolSession().execute(
       calls: turn.toolCalls,
       tools: tools,
       isCancelled: () => cancelled,

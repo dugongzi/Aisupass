@@ -142,12 +142,7 @@ class _ChatPromptSheet extends HookConsumerWidget {
                 Flexible(
                   child: state.prompts.isEmpty
                       ? Padding(
-                          padding: EdgeInsets.fromLTRB(
-                            24.w,
-                            20.h,
-                            24.w,
-                            40.h,
-                          ),
+                          padding: EdgeInsets.fromLTRB(24.w, 20.h, 24.w, 40.h),
                           child: Text(
                             state.loaded
                                 ? l10n.chatPromptEmpty
@@ -260,17 +255,16 @@ class _PromptTile extends HookWidget {
                 ),
                 onSelected: (String value) =>
                     value == 'edit' ? onEdit() : onDelete(),
-                itemBuilder: (BuildContext context) =>
-                    <PopupMenuEntry<String>>[
-                      PopupMenuItem<String>(
-                        value: 'edit',
-                        child: Text(context.l10n.chatPromptEdit),
-                      ),
-                      PopupMenuItem<String>(
-                        value: 'delete',
-                        child: Text(context.l10n.chatPromptDelete),
-                      ),
-                    ],
+                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                  PopupMenuItem<String>(
+                    value: 'edit',
+                    child: Text(context.l10n.chatPromptEdit),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'delete',
+                    child: Text(context.l10n.chatPromptDelete),
+                  ),
+                ],
               ),
             ],
           ),
@@ -310,16 +304,13 @@ class _PromptEditorDialog extends HookWidget {
         error.value = l10n.chatPromptContentRequired;
         return;
       }
-      Navigator.of(context).pop(
-        _PromptDraft(title: titleController.text, content: content),
-      );
+      Navigator.of(context)
+          .pop(_PromptDraft(title: titleController.text, content: content));
     }
 
     return AlertDialog(
       scrollable: true,
-      title: Text(
-        prompt == null ? l10n.chatPromptAdd : l10n.chatPromptEdit,
-      ),
+      title: Text(prompt == null ? l10n.chatPromptAdd : l10n.chatPromptEdit),
       content: SizedBox(
         width: 420,
         child: Column(

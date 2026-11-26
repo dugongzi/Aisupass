@@ -82,10 +82,7 @@ EscalationLines handoffResultLines(
     }
   }
   if (outcome.ksudPath.isNotEmpty) {
-    head.add((
-      text: 'ksud: ${outcome.ksudPath}',
-      tone: EscalationTone.dim,
-    ));
+    head.add((text: 'ksud: ${outcome.ksudPath}', tone: EscalationTone.dim));
   }
   return (
     head: head,

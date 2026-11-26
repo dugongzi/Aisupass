@@ -47,8 +47,7 @@ class ChatUserActionGate extends HookConsumerWidget {
       chatControllerProvider.select((ChatState state) => state.awaitingTurnId),
     );
     // 按轮次精确匹配：历史轮次里的同名组件不应被当前挂起拉起来。
-    final bool awaiting =
-        awaitingTurnId.isNotEmpty && awaitingTurnId == turnId;
+    final bool awaiting = awaitingTurnId.isNotEmpty && awaitingTurnId == turnId;
 
     // 回调每次 build 都是新闭包，用 ref 存最新的，避免 effect 反复重建。
     final ObjectRef<VoidCallback> latestPoll = useRef<VoidCallback>(onPoll);

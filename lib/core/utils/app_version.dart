@@ -11,5 +11,6 @@ class AppVersion {
       _cached ??= await PackageInfo.fromPlatform();
 
   /// 设置页与更新入口统一的展示格式：`1.0.0+1`。
-  static String display(PackageInfo info) => '${info.version}+${info.buildNumber}';
+  static String display(PackageInfo info) =>
+      '${info.version}+${info.buildNumber}';
 }

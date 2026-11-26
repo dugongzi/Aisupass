@@ -16,11 +16,7 @@ import 'package:url_launcher/url_launcher.dart';
 /// 过完之后用户能把当前页、源码或下好的文件直接交回对话。
 /// 桌面端没有 WebView，退回系统浏览器。
 class BrowserOpenPanel extends HookWidget {
-  const BrowserOpenPanel({
-    super.key,
-    required this.url,
-    required this.reason,
-  });
+  const BrowserOpenPanel({super.key, required this.url, required this.reason});
 
   /// 待打开的绝对 URL，已在工具侧校验过协议。
   final String url;
@@ -160,10 +156,7 @@ class BrowserOpenPanel extends HookWidget {
                 height: isDesktop ? 36 : 36.h,
                 child: OutlinedButton.icon(
                   onPressed: copy,
-                  icon: Icon(
-                    Icons.copy_rounded,
-                    size: isDesktop ? 14 : 14.sp,
-                  ),
+                  icon: Icon(Icons.copy_rounded, size: isDesktop ? 14 : 14.sp),
                   label: Text(
                     l10n.chatBrowserCopyLink,
                     maxLines: 1,

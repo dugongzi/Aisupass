@@ -13,15 +13,19 @@ class ChatToolSession {
 
   /// 依次执行 [calls]；每条结果通过 [onUpdated] 按位置回填。
   ///
+  /// 返回是否有工具声明了「必须等用户操作」：判定直接用刚算出来的结果串，
+  /// 不再回头翻轮次里的副本，避免回填与判定的时序差导致漏判。
+  ///
   /// [isCancelled] 返回 true 时立即停止后续调用。
-  Future<void> execute({
+  Future<bool> execute({
     required List<ChatToolCall> calls,
     required List<ChatToolDefinition> tools,
     required bool Function() isCancelled,
     required void Function(int position, ChatToolCall call) onUpdated,
   }) async {
+    bool awaitsUser = false;
     for (int i = 0; i < calls.length; i += 1) {
-      if (isCancelled()) return;
+      if (isCancelled()) return awaitsUser;
       final ChatToolCall call = calls[i];
       final Stopwatch watch = Stopwatch()..start();
 
@@ -52,6 +56,7 @@ class ChatToolSession {
             result: result,
             duration: watch.elapsed,
           );
+          if (_declaresAwaitsUser(result)) awaitsUser = true;
         } catch (error) {
           watch.stop();
           updated = call.copyWith(
@@ -63,6 +68,19 @@ class ChatToolSession {
       }
 
       onUpdated(i, updated);
+    }
+    return awaitsUser;
+  }
+
+  /// 结果里是否带 `awaitsUser: true`。
+  bool _declaresAwaitsUser(String result) {
+    final String text = result.trim();
+    if (!text.startsWith('{')) return false;
+    try {
+      final Object? decoded = jsonDecode(text);
+      return decoded is Map && decoded['awaitsUser'] == true;
+    } on FormatException {
+      return false;
     }
   }
 

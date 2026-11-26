@@ -28,7 +28,8 @@ class ChatMessageActions extends HookConsumerWidget {
     final List<String> info = <String>[
       if (!turn.usage.isEmpty)
         context.l10n.chatUsageTokens(turn.usage.totalTokens),
-      if (turn.hasDuration) context.l10n.chatElapsed(_formatSeconds(turn.duration)),
+      if (turn.hasDuration)
+        context.l10n.chatElapsed(_formatSeconds(turn.duration)),
       if (turn.hasCreatedAt) _formatClock(turn.createdAt),
     ];
 
@@ -80,9 +81,8 @@ class ChatMessageActions extends HookConsumerWidget {
             icon: Icons.refresh_rounded,
             label: context.l10n.chatActionRegenerate,
             color: muted,
-            onTap: () => ref
-                .read(chatControllerProvider.notifier)
-                .regenerate(turn.id),
+            onTap: () =>
+                ref.read(chatControllerProvider.notifier).regenerate(turn.id),
           ),
         ],
       ),

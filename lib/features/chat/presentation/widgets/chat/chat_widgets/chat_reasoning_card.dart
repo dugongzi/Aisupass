@@ -48,9 +48,7 @@ class ChatReasoningCard extends HookWidget {
         ? context.l10n.chatThinking
         : (elapsed.value == null
               ? context.l10n.chatThought
-              : context.l10n.chatThoughtFor(
-                  _formatSeconds(elapsed.value!),
-                ));
+              : context.l10n.chatThoughtFor(_formatSeconds(elapsed.value!)));
     final String text = active ? '$reasoning▌' : reasoning;
 
     return Padding(

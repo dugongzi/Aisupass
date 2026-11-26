@@ -418,9 +418,174 @@
   "@chatToolWebSearch": {
     "description": "工具动作名-web_search"
   },
+  "chatToolCoolapkLogin": "Check Coolapk sign-in",
+  "@chatToolCoolapkLogin": {
+    "description": "工具动作名-coolapk_login"
+  },
   "chatToolCoolapkSearch": "Search Coolapk",
   "@chatToolCoolapkSearch": {
     "description": "工具动作名-coolapk_search"
+  },
+  "chatToolCoolapkFeedDetail": "Read Coolapk post body",
+  "@chatToolCoolapkFeedDetail": {
+    "description": "工具动作名-coolapk_feed_detail"
+  },
+  "chatToolCoolapkFeedAllReplies": "Read all Coolapk comments",
+  "@chatToolCoolapkFeedAllReplies": {
+    "description": "工具动作名-coolapk_feed_all_replies"
+  },
+  "chatToolCoolapkOfferDownload": "Offer Coolapk download links",
+  "@chatToolCoolapkOfferDownload": {
+    "description": "工具动作名-coolapk_offer_download"
+  },
+  "chatCoolapkNoReplies": "No comments on this post",
+  "@chatCoolapkNoReplies": {
+    "description": "酷安评论卡片-评论列表为空时的标题"
+  },
+  "chatCoolapkNoRepliesHint": "The comment list came back empty. Open the original post to check for new replies.",
+  "@chatCoolapkNoRepliesHint": {
+    "description": "酷安评论卡片-评论列表为空时的说明"
+  },
+  "chatCoolapkOpenPost": "Open in Coolapk",
+  "@chatCoolapkOpenPost": {
+    "description": "酷安帖子卡片-跳转按钮"
+  },
+  "chatCoolapkOpenFailed": "Coolapk not installed or failed to open, link copied",
+  "@chatCoolapkOpenFailed": {
+    "description": "酷安卡片-跳转失败提示"
+  },
+  "chatCoolapkCaptchaTitle": "Coolapk wants a captcha",
+  "@chatCoolapkCaptchaTitle": {
+    "description": "酷安风控卡片-标题"
+  },
+  "chatCoolapkCaptchaHint": "Coolapk put a captcha wall on its post detail endpoint. Clear it once and post bodies plus comments read normally.",
+  "@chatCoolapkCaptchaHint": {
+    "description": "酷安风控卡片-说明"
+  },
+  "chatCoolapkCaptchaAction": "Verify",
+  "@chatCoolapkCaptchaAction": {
+    "description": "酷安风控卡片-按钮"
+  },
+  "chatCoolapkCaptchaPassedTitle": "Verification passed",
+  "@chatCoolapkCaptchaPassedTitle": {
+    "description": "酷安风控卡片-验证通过后的标题"
+  },
+  "chatCoolapkCaptchaPassedHint": "Continuing to read the post, no further action needed.",
+  "@chatCoolapkCaptchaPassedHint": {
+    "description": "酷安风控卡片-验证通过后的说明"
+  },
+  "chatCoolapkCaptchaPassedAction": "Passed",
+  "@chatCoolapkCaptchaPassedAction": {
+    "description": "酷安风控卡片-验证通过后的按钮文案"
+  },
+  "chatCoolapkRomFound": "Found {count} download links",
+  "@chatCoolapkRomFound": {
+    "description": "酷安下载卡片-标题，带地址数量",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatCoolapkDownloadFailed": "Cannot open directly, link copied",
+  "@chatCoolapkDownloadFailed": {
+    "description": "酷安下载卡片-打开失败提示"
+  },
+  "chatCoolapkLoginRequiredTitle": "Coolapk login required",
+  "@chatCoolapkLoginRequiredTitle": {
+    "description": "酷安登录提示卡片-标题"
+  },
+  "chatCoolapkLoginRequiredHint": "This content needs a Coolapk account. Sign in, then ask me to retry.",
+  "@chatCoolapkLoginRequiredHint": {
+    "description": "酷安登录提示卡片-说明"
+  },
+  "chatCoolapkLoginAction": "Sign in to Coolapk",
+  "@chatCoolapkLoginAction": {
+    "description": "酷安登录提示卡片-登录按钮"
+  },
+  "coolapkLoginTitle": "Coolapk sign in",
+  "@coolapkLoginTitle": {
+    "description": "酷安登录页-标题"
+  },
+  "coolapkLoginHint": "The token is read automatically once you sign in. If nothing happens, tap the button below.",
+  "@coolapkLoginHint": {
+    "description": "酷安登录页-底部说明"
+  },
+  "coolapkLoginThirdPartyHint": "WeChat and Weibo sign-in hand off to their own apps; come back here after authorising. If nothing opens, use your phone number or password instead.",
+  "@coolapkLoginThirdPartyHint": {
+    "description": "酷安登录页-第三方登录说明"
+  },
+  "coolapkLoginNotDetected": "No valid sign-in detected. Finish signing in and try again.",
+  "@coolapkLoginNotDetected": {
+    "description": "酷安登录页-服务端未认可该会话时的提示"
+  },
+  "coolapkLoginCaptureAction": "I have signed in, read the token",
+  "@coolapkLoginCaptureAction": {
+    "description": "酷安登录页-手动读取令牌按钮"
+  },
+  "coolapkLoginClearCookie": "Clear login cookie",
+  "@coolapkLoginClearCookie": {
+    "description": "酷安登录页-右上角清除 Cookie 按钮与确认弹窗标题"
+  },
+  "coolapkLoginClearCookieConfirm": "You will need to sign in to Coolapk again.",
+  "@coolapkLoginClearCookieConfirm": {
+    "description": "酷安登录页-清除 Cookie 确认说明"
+  },
+  "coolapkLoginCookieCleared": "Login cookie cleared",
+  "@coolapkLoginCookieCleared": {
+    "description": "酷安登录页-清除 Cookie 成功提示"
+  },
+  "coolapkLoginSucceeded": "Signed in to Coolapk",
+  "@coolapkLoginSucceeded": {
+    "description": "酷安登录页-成功提示"
+  },
+  "coolapkCaptchaTitle": "Coolapk captcha",
+  "@coolapkCaptchaTitle": {
+    "description": "酷安人机验证页-标题"
+  },
+  "coolapkCaptchaHint": "Slide to finish the check. The page closes itself once it passes.",
+  "@coolapkCaptchaHint": {
+    "description": "酷安人机验证页-底部说明"
+  },
+  "coolapkCaptchaRetry": "Reload",
+  "@coolapkCaptchaRetry": {
+    "description": "酷安人机验证页-重新加载按钮"
+  },
+  "coolapkCaptchaSucceeded": "Verification passed, send your message again",
+  "@coolapkCaptchaSucceeded": {
+    "description": "酷安人机验证页-验证通过提示"
+  },
+  "coolapkCaptchaFailed": "Verification failed, please retry",
+  "@coolapkCaptchaFailed": {
+    "description": "酷安人机验证页-验证失败提示"
+  },
+  "coolapkCaptchaSaveFailed": "Could not save the verification result, please retry",
+  "@coolapkCaptchaSaveFailed": {
+    "description": "酷安人机验证页-票据落盘失败提示"
+  },
+  "coolapkCaptchaCopyError": "Copy error message",
+  "@coolapkCaptchaCopyError": {
+    "description": "酷安人机验证页-复制错误信息按钮"
+  },
+  "coolapkCaptchaLoading": "Loading the verification widget…",
+  "@coolapkCaptchaLoading": {
+    "description": "酷安人机验证页-组件加载中提示"
+  },
+  "coolapkCaptchaErrorCopied": "Error message copied",
+  "@coolapkCaptchaErrorCopied": {
+    "description": "酷安人机验证页-错误信息复制成功提示"
+  },
+  "coolapkCaptchaDesktopUnsupported": "The captcha has to be cleared on an Android device.",
+  "@coolapkCaptchaDesktopUnsupported": {
+    "description": "酷安人机验证页-桌面端提示"
+  },
+  "coolapkLoginCaptureFailed": "No login token found. Make sure you are signed in and retry.",
+  "@coolapkLoginCaptureFailed": {
+    "description": "酷安登录页-读取失败提示"
+  },
+  "coolapkLoginDesktopUnsupported": "Coolapk sign in currently works on Android only; other platforms cannot capture the session",
+  "@coolapkLoginDesktopUnsupported": {
+    "description": "酷安登录页-桌面端不支持"
   },
   "chatToolOpenInBrowser": "Open page in browser",
   "@chatToolOpenInBrowser": {
@@ -615,6 +780,10 @@
   "chatToolDesc_stellar_service_status": "Read whether the Stellar privileged service is available and which uid it runs as",
   "chatToolDesc_web_search": "Search the public web with Bing and return titles, links and snippets",
   "chatToolDesc_coolapk_search": "Search Coolapk posts, users and topics for real-device and rooting experience",
+  "chatToolDesc_coolapk_login": "Check the Coolapk sign-in state; post bodies and full comments need an account, and the user is prompted to sign in when missing",
+  "chatToolDesc_coolapk_feed_detail": "Read the full body of one Coolapk post; needs an account, and the body often contains the download links directly",
+  "chatToolDesc_coolapk_feed_all_replies": "Read every comment and nested reply of one Coolapk post; needs an account, and covers posts whose hot-comment list is empty",
+  "chatToolDesc_coolapk_offer_download": "Hand the user download links found in a post or its comments, and render a card with a jump to the original post",
   "chatToolDesc_fetch_web_page": "Download the raw source of a page together with its status code and content type",
   "chatToolDesc_open_in_browser": "Open a page in the in-app browser and hand back the URL or page source",
   "chatToolDesc_escalation_get_device_identity": "Read the device and kernel identity required for escalation",

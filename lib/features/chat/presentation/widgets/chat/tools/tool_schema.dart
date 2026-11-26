@@ -63,6 +63,19 @@ Map<String, dynamic> stringMapProperty({String description = ''}) =>
       if (description.isNotEmpty) 'description': description,
     };
 
+/// 构造「字符串数组」属性。
+Map<String, dynamic> stringListProperty({
+  String description = '',
+  int? minItems,
+  int? maxItems,
+}) => <String, dynamic>{
+  'type': 'array',
+  'items': <String, dynamic>{'type': 'string'},
+  if (description.isNotEmpty) 'description': description,
+  'minItems': ?minItems,
+  'maxItems': ?maxItems,
+};
+
 /// 必填字符串；缺失或非字符串直接抛错，让工具卡片显示失败原因。
 String requireString(Map<String, dynamic> arguments, String key) {
   final Object? value = arguments[key];
@@ -105,6 +118,22 @@ int requireInt(Map<String, dynamic> arguments, String key) {
   throw ArgumentError('Missing required integer argument: $key');
 }
 
+/// 必填字符串数组；缺失、类型不符或过滤后为空时抛错。
+List<String> requireStringList(Map<String, dynamic> arguments, String key) {
+  final Object? value = arguments[key];
+  if (value is! List) {
+    throw ArgumentError('Missing required string list argument: $key');
+  }
+  final List<String> items = <String>[
+    for (final Object? item in value)
+      if (item is String && item.trim().isNotEmpty) item.trim(),
+  ];
+  if (items.isEmpty) {
+    throw ArgumentError('Empty required string list argument: $key');
+  }
+  return items;
+}
+
 /// 整数映射（点分路径 -> 值）。
 Map<String, int> intMapArg(Map<String, dynamic> arguments, String key) {
   final Object? value = arguments[key];
@@ -113,8 +142,7 @@ Map<String, int> intMapArg(Map<String, dynamic> arguments, String key) {
   }
   return <String, int>{
     for (final MapEntry<dynamic, dynamic> entry in value.entries)
-      if (entry.value is num)
-        '${entry.key}': (entry.value as num).toInt(),
+      if (entry.value is num) '${entry.key}': (entry.value as num).toInt(),
   };
 }
 

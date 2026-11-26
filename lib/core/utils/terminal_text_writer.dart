@@ -43,13 +43,7 @@ class TerminalTextWriter {
     ],
     'I': <String>['  ___ ', ' |_ _|', '  | | ', ' |___|', '      '],
     'S': <String>['  ___ ', ' / __|', ' \\__ \\', ' |___/', '      '],
-    'U': <String>[
-      '  _   _ ',
-      ' | | | |',
-      ' | |_| |',
-      '  \\___/ ',
-      '        ',
-    ],
+    'U': <String>['  _   _ ', ' | | | |', ' | |_| |', '  \\___/ ', '        '],
     'P': <String>['  ___ ', ' | _ \\', '  |  _/', ' |_|  ', '      '],
   };
 
@@ -108,10 +102,12 @@ class TerminalTextWriter {
   }
 
   /// 一段字母的列宽。
-  int _segmentWidth(String segment) => segment.split('').fold(
-    0,
-    (int sum, String letter) => sum + _bannerGlyphs[letter]!.first.length,
-  );
+  int _segmentWidth(String segment) => segment
+      .split('')
+      .fold(
+        0,
+        (int sum, String letter) => sum + _bannerGlyphs[letter]!.first.length,
+      );
 
   /// 画一段字母，行尾按实际画到的列裁掉空格：写满末列会多折一行，把字拆散。
   void _writeBannerSegment(String segment) {

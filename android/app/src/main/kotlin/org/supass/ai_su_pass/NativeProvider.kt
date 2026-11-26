@@ -4,6 +4,8 @@ import android.content.Context
 import io.flutter.plugin.common.BinaryMessenger
 import org.supass.ai_su_pass.core.bridge.adb_shell_native.AdbShellNative
 import org.supass.ai_su_pass.core.bridge.adb_shell_native.AdbShellNativeImpl
+import org.supass.ai_su_pass.core.bridge.coolapk_auth_native.CoolapkAuthNative
+import org.supass.ai_su_pass.core.bridge.coolapk_auth_native.CoolapkAuthNativeImpl
 import org.supass.ai_su_pass.core.bridge.cve98260_native.Cve98260Native
 import org.supass.ai_su_pass.core.bridge.cve98260_native.Cve98260NativeImpl
 import org.supass.ai_su_pass.core.bridge.cve98260_native.Cve98260ProfileNative
@@ -46,6 +48,9 @@ object NativeProvider {
     private var runLogImpl: Cve98260RunLogNativeImpl? = null
 
     fun registerAll(context: Context, messenger: BinaryMessenger) {
+        // 无状态，不持有 Context；读 WebView 的 Cookie 用。
+        CoolapkAuthNative.setUp(messenger, CoolapkAuthNativeImpl())
+
         systemStatusImpl?.dispose()
         val statusImpl = SystemStatusNativeImpl(context)
         systemStatusImpl = statusImpl

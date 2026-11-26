@@ -127,7 +127,10 @@ class _AssistantMessage extends HookWidget {
     final bool hasText = text.isNotEmpty;
     // 正文尚未出现时才算「正在思考」，正文一开始流式就结束思考态。
     final bool thinking = turn.streaming && !hasText;
-    final String shownText = _useThrottledText(turn.text, streaming: turn.streaming);
+    final String shownText = _useThrottledText(
+      turn.text,
+      streaming: turn.streaming,
+    );
     final bool showHeader = modelName.trim().isNotEmpty;
 
     return Column(
@@ -163,12 +166,7 @@ class _AssistantMessage extends HookWidget {
         if (turn.toolCalls.isNotEmpty) ChatToolGroup(calls: turn.toolCalls),
         // 需要用户在对话里直接操作的工具，按注册表在卡片下方挂出常驻组件。
         for (final ChatToolCall call in turn.toolCalls)
-          ?chatToolPanels[call.name]?.call(
-            context,
-            turn.id,
-            isLastTurn,
-            call,
-          ),
+          ?chatToolPanels[call.name]?.call(context, turn.id, isLastTurn, call),
         if (hasText) ChatMarkdown(data: shownText, streaming: turn.streaming),
         if (thinking && turn.toolCalls.isEmpty) const _TypingDots(),
         if (turn.hasError) ChatInlineNotice(text: turn.error, isError: true),
@@ -280,7 +278,11 @@ String _useThrottledText(String source, {required bool streaming}) {
     return null;
   }, <Object?>[source, streaming]);
 
-  useEffect(() => () => timer.value?.cancel(), const <Object?>[]);
+  useEffect(
+    () =>
+        () => timer.value?.cancel(),
+    const <Object?>[],
+  );
 
   return streaming ? shown.value : source;
 }

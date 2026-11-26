@@ -155,8 +155,10 @@ class _CodeBlockBuilder extends MarkdownElementBuilder {
     TextStyle? parentStyle,
   ) {
     final String code = element.textContent.trimRight();
-    final String language =
-        (element.attributes['class'] ?? '').replaceFirst('language-', '');
+    final String language = (element.attributes['class'] ?? '').replaceFirst(
+      'language-',
+      '',
+    );
     if (language.isEmpty && !code.contains('\n')) {
       // 行内 code 交给默认样式。
       return null;

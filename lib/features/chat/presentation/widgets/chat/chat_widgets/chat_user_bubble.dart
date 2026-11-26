@@ -93,10 +93,7 @@ class ChatUserBubble extends HookWidget {
                         if (segment.isCode)
                           _CodeSegment(segment: segment)
                         else if (segment.text.trim().isNotEmpty)
-                          SelectableText(
-                            segment.text.trim(),
-                            style: bodyStyle,
-                          ),
+                          SelectableText(segment.text.trim(), style: bodyStyle),
                     ],
                   )
                 else
@@ -186,13 +183,9 @@ class _FileChip extends HookWidget {
         vertical: isDesktop ? 6 : 6.h,
       ),
       decoration: BoxDecoration(
-        color: colors.surface.withValues(
-          alpha: context.isDark ? 0.45 : 0.7,
-        ),
+        color: colors.surface.withValues(alpha: context.isDark ? 0.45 : 0.7),
         borderRadius: BorderRadius.circular(isDesktop ? 10 : 10.r),
-        border: Border.all(
-          color: colors.primary.withValues(alpha: 0.18),
-        ),
+        border: Border.all(color: colors.primary.withValues(alpha: 0.18)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

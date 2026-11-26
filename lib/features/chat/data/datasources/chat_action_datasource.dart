@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer' show log;
 import 'dart:io';
 
 import 'package:Aisupass/features/ai/data/datasources/ai_model_query_datasource.dart';
@@ -50,12 +51,35 @@ class ChatActionDatasource {
     required List<ChatTurn> history,
     required List<ChatToolDefinition> tools,
   }) async* {
+    final _ResponseLog responseLog = _ResponseLog(_debugEnabled);
+    try {
+      yield* _streamChat(
+        config: config,
+        history: history,
+        tools: tools,
+        responseLog: responseLog,
+      );
+    } finally {
+      // 正常结束、异常退出、消费端取消都会走到这里，保证日志不丢。
+      responseLog.flush();
+    }
+  }
+
+  Stream<ChatStreamEvent> _streamChat({
+    required AiConfigDto config,
+    required List<ChatTurn> history,
+    required List<ChatToolDefinition> tools,
+    required _ResponseLog responseLog,
+  }) async* {
     final String url = AiModelQueryDatasource.resolveChatUrl(
       config.apiUrl,
       config.apiType,
     );
     if (url.isEmpty) {
-      yield const ChatStreamFailed(message: 'API URL is empty');
+      yield _track(
+        responseLog,
+        const ChatStreamFailed(message: 'API URL is empty'),
+      );
       return;
     }
 
@@ -65,6 +89,7 @@ class ChatActionDatasource {
       tools: tools,
       payloads: await _loadPayloads(history),
     );
+    _logRequest(requestBody);
 
     final Response<ResponseBody> response;
     try {
@@ -79,9 +104,12 @@ class ChatActionDatasource {
         ),
       );
     } on DioException catch (error) {
-      yield ChatStreamFailed(
-        message: error.message ?? error.type.name,
-        statusCode: error.response?.statusCode,
+      yield _track(
+        responseLog,
+        ChatStreamFailed(
+          message: error.message ?? error.type.name,
+          statusCode: error.response?.statusCode,
+        ),
       );
       return;
     }
@@ -92,15 +120,21 @@ class ChatActionDatasource {
     // 非 2xx：整段读出正文当错误信息。
     if (status == null || status < 200 || status >= 300) {
       final String raw = _pretty(await _readAll(body));
-      yield ChatStreamFailed(
-        message: _errorDetail(_tryDecode(raw)) ?? 'HTTP $status',
-        rawBody: raw,
-        statusCode: status,
+      yield _track(
+        responseLog,
+        ChatStreamFailed(
+          message: _errorDetail(_tryDecode(raw)) ?? 'HTTP $status',
+          rawBody: raw,
+          statusCode: status,
+        ),
       );
       return;
     }
 
-    yield ChatStreamStarted(requestUrl: url, statusCode: status);
+    yield _track(
+      responseLog,
+      ChatStreamStarted(requestUrl: url, statusCode: status),
+    );
 
     // 服务端若忽略 stream 参数，会直接返回整段 JSON，这里收集起来兜底。
     final StringBuffer plain = StringBuffer();
@@ -130,25 +164,31 @@ class ChatActionDatasource {
 
         // 流内报错（额度不足、模型不存在、网关业务错误信封）立即中断。
         if (_payloadIsError(payload, event.event)) {
-          yield ChatStreamFailed(
-            message: _errorDetail(payload) ?? 'Stream error',
-            rawBody: _pretty(rawSse.toString()),
-            statusCode: status,
+          yield _track(
+            responseLog,
+            ChatStreamFailed(
+              message: _errorDetail(payload) ?? 'Stream error',
+              rawBody: _pretty(rawSse.toString()),
+              statusCode: status,
+            ),
           );
           return;
         }
 
         final _Frame frame = parser.parse(payload, event.event);
         for (final ChatStreamEvent item in frame.events) {
-          yield item;
+          yield _track(responseLog, item);
         }
       }
     } on FormatException catch (error) {
       // 事件结构损坏或单事件超出上限，按协议错误处理。
-      yield ChatStreamFailed(
-        message: 'Protocol malformed: ${error.message}',
-        rawBody: _pretty(rawSse.toString()),
-        statusCode: status,
+      yield _track(
+        responseLog,
+        ChatStreamFailed(
+          message: 'Protocol malformed: ${error.message}',
+          rawBody: _pretty(rawSse.toString()),
+          statusCode: status,
+        ),
       );
       return;
     }
@@ -160,18 +200,209 @@ class ChatActionDatasource {
         decoded is Map ? Map<String, Object?>.from(decoded) : null,
         null,
       )) {
-        yield ChatStreamFailed(
-          message: _errorDetail(decoded) ?? 'Request failed',
-          rawBody: _pretty(plain.toString()),
-          statusCode: status,
+        yield _track(
+          responseLog,
+          ChatStreamFailed(
+            message: _errorDetail(decoded) ?? 'Request failed',
+            rawBody: _pretty(plain.toString()),
+            statusCode: status,
+          ),
         );
         return;
       }
       final String reply = _parsePlainReply(decoded, config.apiType);
-      if (reply.isNotEmpty) yield ChatTextDelta(reply);
+      if (reply.isNotEmpty) yield _track(responseLog, ChatTextDelta(reply));
     }
 
-    yield const ChatStreamFinished();
+    yield _track(responseLog, const ChatStreamFinished());
+  }
+
+  /// 记录事件后原样返回，保证日志与实际下发的事件完全一致。
+  ChatStreamEvent _track(_ResponseLog log, ChatStreamEvent event) {
+    log.record(event);
+    return event;
+  }
+
+  /// 是否处于 debug 运行；release 下恒为 false。
+  ///
+  /// 用 assert 探测而不引入 flutter/foundation，保持数据层不依赖 UI 框架。
+  static final bool _debugEnabled = () {
+    bool enabled = false;
+    assert(() {
+      enabled = true;
+      return true;
+    }());
+    return enabled;
+  }();
+
+  /// 把即将发送的提示词、工具清单与历史消息打到日志。
+  ///
+  /// 只在 debug 构建输出；附件图片与 base64 一律折叠成占位符，避免日志被撑爆。
+  void _logRequest(Map<String, dynamic> body) {
+    if (!_debugEnabled) return;
+
+    final List<Map<String, dynamic>> toolBriefs = _toolBriefs(body);
+    final StringBuffer buffer = StringBuffer()
+      ..writeln('model: ${body['model']}')
+      ..writeln('tools: ${toolBriefs.length}')
+      ..writeln('--- system prompt ---')
+      ..writeln(_systemText(body));
+
+    for (final Map<String, dynamic> tool in toolBriefs) {
+      buffer
+        ..writeln('--- tool: ${tool['name']} ---')
+        ..writeln(tool['description']);
+    }
+
+    log(buffer.toString(), name: 'chat.request');
+
+    final List<String> history = _historyBriefs(body);
+    if (history.isEmpty) return;
+    log(
+      <String>[
+        'messages: ${history.length}',
+        for (final String line in history) '---\n$line',
+      ].join('\n'),
+      name: 'chat.history',
+    );
+  }
+
+  /// 历史消息的可读摘要：role + 正文 + 工具调用 + 工具结果。
+  List<String> _historyBriefs(Map<String, dynamic> body) {
+    final Object? messages = body['messages'] ?? body['input'];
+    if (messages is! List) return const <String>[];
+    return <String>[
+      for (final Object? item in messages)
+        if (item is Map && item['role'] != 'system') _messageBrief(item),
+    ];
+  }
+
+  /// 单条消息摘要；图片块只留占位符。
+  String _messageBrief(Map<dynamic, dynamic> item) {
+    final String role = (item['role'] ?? item['type'] ?? '?').toString();
+    final StringBuffer out = StringBuffer(role);
+
+    for (final String part in _contentParts(item['content'])) {
+      out.write('\n  $part');
+    }
+    for (final String part in _contentParts(item['output'])) {
+      out.write('\n  $part');
+    }
+
+    // OpenAI assistant 的工具调用单独列出参数，便于核对模型到底传了什么。
+    final Object? calls = item['tool_calls'];
+    if (calls is List) {
+      for (final Object? call in calls) {
+        if (call is! Map) continue;
+        final Object? function = call['function'];
+        if (function is! Map) continue;
+        out.write(
+          '\n  -> ${function['name']}(${_clamp('${function['arguments']}', 800)})',
+        );
+      }
+    }
+
+    // Responses 协议的 function_call 项把 name/arguments 放在顶层。
+    if (item['type'] == 'function_call') {
+      out.write(
+        '\n  -> ${item['name']}(${_clamp('${item['arguments']}', 800)})',
+      );
+    }
+
+    return _clamp(out.toString(), 4000);
+  }
+
+  /// 把 content 块拆成可读文本；图片与未知块折成占位符。
+  List<String> _contentParts(Object? content) {
+    if (content == null) return const <String>[];
+    if (content is String) return <String>[content];
+    if (content is! List) return <String>[content.toString()];
+
+    final List<String> parts = <String>[];
+    for (final Object? block in content) {
+      if (block is String) {
+        parts.add(block);
+        continue;
+      }
+      if (block is! Map) continue;
+
+      final String type = (block['type'] ?? '').toString();
+      if (type.contains('image')) {
+        parts.add('[image]');
+        continue;
+      }
+      if (type == 'tool_use') {
+        parts.add(
+          'tool_use ${block['name']}(${_clamp('${block['input']}', 800)})',
+        );
+        continue;
+      }
+      if (type == 'tool_result') {
+        parts.add('tool_result: ${_clamp(_flatten(block['content']), 4000)}');
+        continue;
+      }
+      if (type == 'function_call_output') {
+        parts.add('tool_result: ${_clamp('${block['output']}', 4000)}');
+        continue;
+      }
+      final Object? text = block['text'];
+      if (text != null) parts.add(text.toString());
+    }
+    return parts;
+  }
+
+  /// tool_result 的 content 可能是字符串，也可能是文本块数组。
+  String _flatten(Object? content) {
+    if (content == null) return '';
+    if (content is String) return content;
+    if (content is List) {
+      final List<String> parts = <String>[];
+      for (final Object? block in content) {
+        if (block is String) {
+          parts.add(block);
+        } else if (block is Map && block['text'] != null) {
+          parts.add(block['text'].toString());
+        }
+      }
+      return parts.join('\n');
+    }
+    return content.toString();
+  }
+
+  /// 超长文本截断并标注原始长度，避免日志刷屏。
+  String _clamp(String text, int limit) {
+    if (text.length <= limit) return text;
+    return '${text.substring(0, limit)}…(+${text.length - limit} chars)';
+  }
+
+  /// 取系统提示词：OpenAI 在 messages[0]，Responses 在 instructions，
+  /// Anthropic 在顶层 system。
+  String _systemText(Map<String, dynamic> body) {
+    final Object? direct = body['system'] ?? body['instructions'];
+    if (direct is String && direct.isNotEmpty) return direct;
+
+    final Object? messages = body['messages'];
+    if (messages is List && messages.isNotEmpty) {
+      final Object? first = messages.first;
+      if (first is Map && first['role'] == 'system') {
+        return first['content']?.toString() ?? '';
+      }
+    }
+    return '';
+  }
+
+  /// 工具清单统一成 `{name, description, ...}`；OpenAI 多包一层 function。
+  List<Map<String, dynamic>> _toolBriefs(Map<String, dynamic> body) {
+    final Object? tools = body['tools'];
+    if (tools is! List) return const <Map<String, dynamic>>[];
+    return <Map<String, dynamic>>[
+      for (final Object? item in tools)
+        if (item is Map)
+          if (item['function'] is Map)
+            Map<String, dynamic>.from(item['function'] as Map)
+          else
+            Map<String, dynamic>.from(item),
+    ];
   }
 
   /// 组装请求体，各协议的字段与消息结构差异较大。
@@ -263,13 +494,11 @@ class ChatActionDatasource {
           messages.add(<String, dynamic>{'role': 'user', 'content': text});
           continue;
         }
-        final List<Map<String, dynamic>> content =
-            <Map<String, dynamic>>[
-              if (text.isNotEmpty)
-                <String, dynamic>{'type': 'text', 'text': text},
-              for (final ChatAttachment attachment in turn.attachments)
-                ?_openAiAttachmentBlock(attachment, payloads[attachment.id]),
-            ];
+        final List<Map<String, dynamic>> content = <Map<String, dynamic>>[
+          if (text.isNotEmpty) <String, dynamic>{'type': 'text', 'text': text},
+          for (final ChatAttachment attachment in turn.attachments)
+            ?_openAiAttachmentBlock(attachment, payloads[attachment.id]),
+        ];
         if (content.isEmpty) continue;
         messages.add(<String, dynamic>{'role': 'user', 'content': content});
         continue;
@@ -320,10 +549,7 @@ class ChatActionDatasource {
             if (text.isNotEmpty)
               <String, dynamic>{'type': 'input_text', 'text': text},
             for (final ChatAttachment attachment in turn.attachments)
-              ?_responsesAttachmentBlock(
-                attachment,
-                payloads[attachment.id],
-              ),
+              ?_responsesAttachmentBlock(attachment, payloads[attachment.id]),
           ],
         });
         continue;
@@ -378,13 +604,9 @@ class ChatActionDatasource {
       if (turn.isUser) {
         if (text.isEmpty && turn.attachments.isEmpty) continue;
         addBlocks('user', <Map<String, dynamic>>[
-          if (text.isNotEmpty)
-            <String, dynamic>{'type': 'text', 'text': text},
+          if (text.isNotEmpty) <String, dynamic>{'type': 'text', 'text': text},
           for (final ChatAttachment attachment in turn.attachments)
-            ?_anthropicAttachmentBlock(
-              attachment,
-              payloads[attachment.id],
-            ),
+            ?_anthropicAttachmentBlock(attachment, payloads[attachment.id]),
         ]);
         continue;
       }
@@ -456,10 +678,7 @@ class ChatActionDatasource {
         } else {
           if (length > maxChatTextBytes) continue;
           payloads[attachment.id] = _AttachmentPayload(
-            text: utf8.decode(
-              await file.readAsBytes(),
-              allowMalformed: true,
-            ),
+            text: utf8.decode(await file.readAsBytes(), allowMalformed: true),
           );
         }
       }
@@ -825,18 +1044,17 @@ class ChatActionDatasource {
     return '';
   }
 
-  Map<String, String> _headers(AiConfigDto config) =>
-      switch (config.apiType) {
-        AiApiType.openai || AiApiType.openaiResponses => <String, String>{
-          'Authorization': 'Bearer ${config.apiKey.trim()}',
-          'Content-Type': 'application/json',
-        },
-        AiApiType.anthropic => <String, String>{
-          'x-api-key': config.apiKey.trim(),
-          'anthropic-version': '2023-06-01',
-          'Content-Type': 'application/json',
-        },
-      };
+  Map<String, String> _headers(AiConfigDto config) => switch (config.apiType) {
+    AiApiType.openai || AiApiType.openaiResponses => <String, String>{
+      'Authorization': 'Bearer ${config.apiKey.trim()}',
+      'Content-Type': 'application/json',
+    },
+    AiApiType.anthropic => <String, String>{
+      'x-api-key': config.apiKey.trim(),
+      'anthropic-version': '2023-06-01',
+      'Content-Type': 'application/json',
+    },
+  };
 
   /// 流式请求头：显式声明 SSE，并禁用压缩与缓存。
   Map<String, String> _streamHeaders(AiConfigDto config) => <String, String>{
@@ -845,6 +1063,104 @@ class ChatActionDatasource {
     'Accept-Encoding': 'identity',
     ..._headers(config),
   };
+}
+
+/// 本轮响应的日志累积器：文本、思考过程、工具调用、用量与失败原因。
+///
+/// 流式增量太碎，逐条打日志既刷屏又难读，因此在流结束时汇总成一条输出。
+class _ResponseLog {
+  _ResponseLog(this.enabled);
+
+  /// release 构建下为 false，此时不累积任何内容。
+  final bool enabled;
+
+  /// 正文与思考过程各自的最大保留长度。
+  static const int _maxChars = 20000;
+
+  final StringBuffer _text = StringBuffer();
+  final StringBuffer _reasoning = StringBuffer();
+  final Map<int, String> _names = <int, String>{};
+  final Map<int, StringBuffer> _args = <int, StringBuffer>{};
+
+  int _promptTokens = 0;
+  int _completionTokens = 0;
+  String? _finishReason;
+  String? _failure;
+  String _rawBody = '';
+
+  /// 累积一个事件；非 debug 构建直接返回。
+  void record(ChatStreamEvent event) {
+    if (!enabled) return;
+    switch (event) {
+      case ChatStreamStarted():
+        break;
+      case ChatTextDelta(:final String text):
+        if (_text.length < _maxChars) _text.write(text);
+      case ChatReasoningDelta(:final String text):
+        if (_reasoning.length < _maxChars) _reasoning.write(text);
+      case ChatToolCallStarted(:final int index, :final String name):
+        _names[index] = name;
+      case ChatToolCallArgumentsDelta(:final int index, :final String fragment):
+        (_args[index] ??= StringBuffer()).write(fragment);
+      case ChatStreamUsage(
+        :final int promptTokens,
+        :final int completionTokens,
+      ):
+        _promptTokens += promptTokens;
+        _completionTokens += completionTokens;
+      case ChatStreamFinished(:final String? finishReason):
+        _finishReason = finishReason ?? '';
+      case ChatStreamFailed(:final String message, :final String rawBody):
+        _failure = message;
+        _rawBody = rawBody;
+    }
+  }
+
+  /// 输出汇总日志；本轮什么都没有时保持安静。
+  void flush() {
+    if (!enabled) return;
+    if (_text.isEmpty &&
+        _reasoning.isEmpty &&
+        _names.isEmpty &&
+        _failure == null &&
+        _finishReason == null) {
+      return;
+    }
+
+    final StringBuffer out = StringBuffer();
+    if (_finishReason != null) out.writeln('finished: $_finishReason');
+    if (_failure != null) {
+      out.writeln('FAILED: $_failure');
+      if (_rawBody.isNotEmpty) out.writeln('raw body:\n${_clamp(_rawBody)}');
+    }
+    if (_promptTokens > 0 || _completionTokens > 0) {
+      out.writeln('usage: prompt=$_promptTokens completion=$_completionTokens');
+    }
+
+    if (_names.isNotEmpty) {
+      out.writeln('--- tool calls ---');
+      final List<int> indexes = _names.keys.toList()..sort();
+      for (final int index in indexes) {
+        final String args = _args[index]?.toString() ?? '';
+        out.writeln('${_names[index]}(${_clamp(args, 1500)})');
+      }
+    }
+
+    if (_reasoning.isNotEmpty) {
+      out
+        ..writeln('--- reasoning ---')
+        ..writeln(_reasoning);
+    }
+
+    out
+      ..writeln('--- reply ---')
+      ..writeln(_text.isEmpty ? '(empty)' : _text);
+
+    log(out.toString(), name: 'chat.response');
+  }
+
+  String _clamp(String text, [int limit = 4000]) =>
+      text.length <= limit ? text : '${text.substring(0, limit)}…(truncated)';
 }
 
 /// 已读取的附件内容：图片带 base64，文本带正文，路径引用带说明文本。
@@ -868,7 +1184,10 @@ class _SseEvent {
 
 /// 单个事件解析结果：需要抛给控制器的增量事件与是否已到终止态。
 class _Frame {
-  const _Frame({this.events = const <ChatStreamEvent>[], this.terminal = false});
+  const _Frame({
+    this.events = const <ChatStreamEvent>[],
+    this.terminal = false,
+  });
 
   final List<ChatStreamEvent> events;
   final bool terminal;
@@ -924,7 +1243,8 @@ class _FrameParser {
       if (text.isNotEmpty) events.add(ChatTextDelta(text));
 
       // DeepSeek 等实现把思考过程放在 reasoning_content，部分网关用 reasoning。
-      final Object? reasoning = delta['reasoning_content'] ?? delta['reasoning'];
+      final Object? reasoning =
+          delta['reasoning_content'] ?? delta['reasoning'];
       final String reasoningText = reasoning is String ? reasoning : '';
       if (reasoningText.isNotEmpty) {
         events.add(ChatReasoningDelta(reasoningText));
@@ -1077,7 +1397,10 @@ class _FrameParser {
         // input_tokens 只在起始帧下发，output_tokens 在结束帧下发。
         final Object? message = payload['message'];
         final Object? usage = message is Map ? message['usage'] : null;
-        final ChatStreamEvent? usageEvent = _anthropicUsage(usage, prompt: true);
+        final ChatStreamEvent? usageEvent = _anthropicUsage(
+          usage,
+          prompt: true,
+        );
         return _Frame(
           events: usageEvent == null
               ? const <ChatStreamEvent>[]
@@ -1087,7 +1410,10 @@ class _FrameParser {
       case 'message_delta':
         final Object? delta = payload['delta'];
         final Object? usage = payload['usage'];
-        final ChatStreamEvent? usageEvent = _anthropicUsage(usage, prompt: false);
+        final ChatStreamEvent? usageEvent = _anthropicUsage(
+          usage,
+          prompt: false,
+        );
         return _Frame(
           events: usageEvent == null
               ? const <ChatStreamEvent>[]
@@ -1124,7 +1450,9 @@ class _FrameParser {
   /// Anthropic 的用量分两帧：起始帧给输入，结束帧给输出。
   ChatStreamEvent? _anthropicUsage(Object? usage, {required bool prompt}) {
     if (usage is! Map) return null;
-    final int value = _intOf(prompt ? usage['input_tokens'] : usage['output_tokens']);
+    final int value = _intOf(
+      prompt ? usage['input_tokens'] : usage['output_tokens'],
+    );
     if (value <= 0) return null;
     return ChatStreamUsage(
       promptTokens: prompt ? value : 0,

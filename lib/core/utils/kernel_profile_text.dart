@@ -61,9 +61,7 @@ String kernelProfileErrorText(
   };
   final List<String> lines = <String>[mapped];
   if (state.result.missing.isNotEmpty) {
-    lines.add(
-      l10n.kernelProfileMissingFields(state.result.missing.join(', ')),
-    );
+    lines.add(l10n.kernelProfileMissingFields(state.result.missing.join(', ')));
   }
   final String detail = state.result.error.trim();
   if (detail.isNotEmpty) {
@@ -86,9 +84,7 @@ String kernelProfileEditErrorText(
   };
   final List<String> lines = <String>[mapped];
   if (result.missing.isNotEmpty) {
-    lines.add(
-      l10n.kernelProfileMissingFields(result.missing.join(', ')),
-    );
+    lines.add(l10n.kernelProfileMissingFields(result.missing.join(', ')));
   }
   final String detail = result.error.trim();
   if (detail.isNotEmpty) {
@@ -121,4 +117,3 @@ String kernelProfileHex(String? value) {
       : BigInt.from(parsed);
   return '0x${big.toRadixString(16).toUpperCase()}';
 }
-

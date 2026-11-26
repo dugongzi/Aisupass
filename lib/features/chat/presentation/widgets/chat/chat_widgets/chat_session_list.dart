@@ -62,8 +62,7 @@ class ChatSessionList extends HookConsumerWidget {
                 child: Text(dialogContext.l10n.aiCancel),
               ),
               TextButton(
-                onPressed: () =>
-                    Navigator.of(dialogContext).pop(editing.text),
+                onPressed: () => Navigator.of(dialogContext).pop(editing.text),
                 child: Text(dialogContext.l10n.aiSave),
               ),
             ],
@@ -169,9 +168,7 @@ class ChatSessionList extends HookConsumerWidget {
           child: sessions.sessions.isEmpty
               ? Center(
                   child: Text(
-                    sessions.loaded
-                        ? context.l10n.chatSessionEmpty
-                        : '',
+                    sessions.loaded ? context.l10n.chatSessionEmpty : '',
                     style: TextStyle(
                       fontSize: isDesktop ? 12.5 : 12.5.sp,
                       color: colors.onSurfaceVariant,

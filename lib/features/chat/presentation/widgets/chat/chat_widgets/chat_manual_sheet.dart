@@ -51,8 +51,8 @@ ChatManualGroup resolveChatManualGroup(String name) {
   if (name.startsWith('stellar_')) return ChatManualGroup.stellar;
   if (name == 'open_in_browser' ||
       name == 'web_search' ||
-      name == 'coolapk_search' ||
-      name == 'fetch_web_page') {
+      name == 'fetch_web_page' ||
+      name.startsWith('coolapk_')) {
     return ChatManualGroup.web;
   }
   return ChatManualGroup.device;
@@ -158,10 +158,7 @@ class _ChatManualSheet extends HookConsumerWidget {
                     ),
                     SizedBox(height: 12.h),
                     for (final ChatManualGroup group in groups) ...<Widget>[
-                      _GroupCard(
-                        group: group,
-                        tools: grouped[group]!,
-                      ),
+                      _GroupCard(group: group, tools: grouped[group]!),
                       SizedBox(height: 10.h),
                     ],
                     SizedBox(height: 2.h),
@@ -406,9 +403,7 @@ class _ToolRow extends HookWidget {
     final bool isDesktop = isDesktopPlatform;
     final ValueNotifier<bool> expanded = useState<bool>(false);
     final String localized = localizedChatToolDescription(l10n, tool.name);
-    final String description = localized.isEmpty
-        ? tool.description
-        : localized;
+    final String description = localized.isEmpty ? tool.description : localized;
 
     return InkWell(
       onTap: () => expanded.value = !expanded.value,

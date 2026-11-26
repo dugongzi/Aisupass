@@ -7,6 +7,12 @@ class AppColors {
   /// 默认主题色。
   static const Color seed = Color(0xFF673AB7);
 
+  /// 酷安品牌绿，社区相关卡片用它做点缀色。
+  static const Color coolapk = Color(0xFF11B36E);
+
+  /// 酷安品牌绿上的前景色，用于该绿底按钮的文字与图标。
+  static const Color onCoolapk = Color(0xFFFFFFFF);
+
   /// 主题色候选，设置页调色盘按此顺序展示。
   static const List<Color> themeSeeds = <Color>[
     seed,

@@ -3,8 +3,10 @@ import 'package:Aisupass/generated/adb_shell.g.dart' as pigeon;
 /// 一条命令的执行出口：`(命令, 超时毫秒) → 原始结果`。
 ///
 /// 抽掉 `stdin`：提权命令不读标准输入，固定传 `null` 立即 EOF 比挂到超时好。
-typedef ShellExec =
-    Future<pigeon.ShellExecResult> Function(String command, int timeoutMs);
+typedef ShellExec = Future<pigeon.ShellExecResult> Function(
+  String command,
+  int timeoutMs,
+);
 
 /// 以 root 身份执行脚本的薄壳：按固定候选解析 `su` 路径后包一层。
 class SuShell {
@@ -28,10 +30,8 @@ class SuShell {
   static const int handoffTimeoutMs = 120000;
 
   /// 把 [script] 包成 root 身份执行。
-  Future<pigeon.ShellExecResult> run(
-    String script, {
-    required int timeoutMs,
-  }) => exec(wrap(script), timeoutMs);
+  Future<pigeon.ShellExecResult> run(String script, {required int timeoutMs}) =>
+      exec(wrap(script), timeoutMs);
 
   /// 把一段脚本包成「以 root 身份执行」的一条命令。
   ///

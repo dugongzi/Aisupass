@@ -47,28 +47,49 @@ String coolapkGuestDeviceCode() => _encodeDeviceCode(
 /// 组装酷安请求头，含设备码与现算的 `X-App-Token` 签名。
 ///
 /// 签名与时间戳绑定，必须在每次请求前重新生成，不能复用。
-Map<String, String> coolapkHeaders({required String deviceCode}) =>
-    <String, String>{
-      'User-Agent': _userAgent,
-      'X-Requested-With': 'XMLHttpRequest',
-      'X-App-Id': _appId,
-      'X-App-Version': _appVersion,
-      'X-App-Code': '$_appCode',
-      'X-App-Supported': '$_appCode',
-      'X-App-Channel': _appChannel,
-      'X-App-Mode': 'universal',
-      'X-App-Device': deviceCode,
-      'X-App-Token': _token(deviceCode),
-      'X-Api-Version': '16',
-      'X-Sdk-Int': '36',
-      'X-Sdk-Locale': 'zh-CN',
-      'X-Dark-Mode': '0',
-      'Accept': 'application/json',
-    };
+/// [cookie] 非空时附带登录态；游客态传空串即可。
+/// [captchaValidate] 是过完易盾验证拿到的票据，按 `validate` Cookie 发出。
+Map<String, String> coolapkHeaders({
+  required String deviceCode,
+  String cookie = '',
+  String captchaValidate = '',
+}) => <String, String>{
+  'User-Agent': _userAgent,
+  'X-Requested-With': 'XMLHttpRequest',
+  'X-App-Id': _appId,
+  'X-App-Version': _appVersion,
+  'X-App-Code': '$_appCode',
+  'X-App-Supported': '$_appCode',
+  'X-App-Channel': _appChannel,
+  'X-App-Mode': 'universal',
+  'X-App-Device': deviceCode,
+  'X-App-Token': _token(deviceCode),
+  'X-Api-Version': '16',
+  'X-Sdk-Int': '36',
+  'X-Sdk-Locale': 'zh-CN',
+  'X-Dark-Mode': '0',
+  'Accept': 'application/json',
+  if (_composeCookie(cookie, captchaValidate).isNotEmpty)
+    'Cookie': _composeCookie(cookie, captchaValidate),
+};
 
-String _encodeDeviceCode(String raw) => base64Encode(
-  utf8.encode(raw),
-).split('').reversed.join().replaceAll('=', '');
+/// 拼 Cookie 头：登录 Cookie 在前，验证码票据以 `validate` 追加。
+///
+/// 票据里可能含 `+` `/` `=` 等字符，按 Cookie 规范做 URL 编码。
+String _composeCookie(String cookie, String captchaValidate) {
+  final String base = cookie.trim();
+  final String token = captchaValidate.trim();
+  if (token.isEmpty) return base;
+  final String pair = 'validate=${Uri.encodeComponent(token)}';
+  return base.isEmpty ? pair : '$base; $pair';
+}
+
+String _encodeDeviceCode(String raw) =>
+    base64Encode(utf8.encode(raw))
+        .split('')
+        .reversed
+        .join()
+        .replaceAll('=', '');
 
 /// 生成当前时间可用的 Token；遇到非法盐最多向前探测 15 秒。
 String _token(String deviceCode) {

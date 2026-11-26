@@ -1238,11 +1238,251 @@ abstract class AppLocalizations {
   /// **'联网搜索'**
   String get chatToolWebSearch;
 
+  /// 工具动作名-coolapk_login
+  ///
+  /// In zh, this message translates to:
+  /// **'检查酷安登录'**
+  String get chatToolCoolapkLogin;
+
   /// 工具动作名-coolapk_search
   ///
   /// In zh, this message translates to:
   /// **'搜索酷安'**
   String get chatToolCoolapkSearch;
+
+  /// 工具动作名-coolapk_feed_detail
+  ///
+  /// In zh, this message translates to:
+  /// **'读取酷安帖子正文'**
+  String get chatToolCoolapkFeedDetail;
+
+  /// 工具动作名-coolapk_feed_all_replies
+  ///
+  /// In zh, this message translates to:
+  /// **'读取酷安全部评论'**
+  String get chatToolCoolapkFeedAllReplies;
+
+  /// 工具动作名-coolapk_offer_download
+  ///
+  /// In zh, this message translates to:
+  /// **'给出酷安下载地址'**
+  String get chatToolCoolapkOfferDownload;
+
+  /// 酷安评论卡片-评论列表为空时的标题
+  ///
+  /// In zh, this message translates to:
+  /// **'这条帖子暂无评论'**
+  String get chatCoolapkNoReplies;
+
+  /// 酷安评论卡片-评论列表为空时的说明
+  ///
+  /// In zh, this message translates to:
+  /// **'评论接口没有返回内容，可以打开原帖看看有没有新的回复。'**
+  String get chatCoolapkNoRepliesHint;
+
+  /// 酷安帖子卡片-跳转按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'打开酷安查看'**
+  String get chatCoolapkOpenPost;
+
+  /// 酷安卡片-跳转失败提示
+  ///
+  /// In zh, this message translates to:
+  /// **'未安装酷安或打开失败，链接已复制'**
+  String get chatCoolapkOpenFailed;
+
+  /// 酷安风控卡片-标题
+  ///
+  /// In zh, this message translates to:
+  /// **'酷安要求人机验证'**
+  String get chatCoolapkCaptchaTitle;
+
+  /// 酷安风控卡片-说明
+  ///
+  /// In zh, this message translates to:
+  /// **'酷安给帖子正文接口加了人机验证，通过一次后就能正常读取正文和评论。'**
+  String get chatCoolapkCaptchaHint;
+
+  /// 酷安风控卡片-按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'去验证'**
+  String get chatCoolapkCaptchaAction;
+
+  /// 酷安风控卡片-验证通过后的标题
+  ///
+  /// In zh, this message translates to:
+  /// **'人机验证已通过'**
+  String get chatCoolapkCaptchaPassedTitle;
+
+  /// 酷安风控卡片-验证通过后的说明
+  ///
+  /// In zh, this message translates to:
+  /// **'正在继续读取帖子内容，无需再操作。'**
+  String get chatCoolapkCaptchaPassedHint;
+
+  /// 酷安风控卡片-验证通过后的按钮文案
+  ///
+  /// In zh, this message translates to:
+  /// **'已通过'**
+  String get chatCoolapkCaptchaPassedAction;
+
+  /// 酷安下载卡片-标题，带地址数量
+  ///
+  /// In zh, this message translates to:
+  /// **'找到 {count} 个下载地址'**
+  String chatCoolapkRomFound(int count);
+
+  /// 酷安下载卡片-打开失败提示
+  ///
+  /// In zh, this message translates to:
+  /// **'无法直接打开，链接已复制'**
+  String get chatCoolapkDownloadFailed;
+
+  /// 酷安登录提示卡片-标题
+  ///
+  /// In zh, this message translates to:
+  /// **'需要登录酷安'**
+  String get chatCoolapkLoginRequiredTitle;
+
+  /// 酷安登录提示卡片-说明
+  ///
+  /// In zh, this message translates to:
+  /// **'这个内容要登录后才能读取，登录完可以直接让我重试。'**
+  String get chatCoolapkLoginRequiredHint;
+
+  /// 酷安登录提示卡片-登录按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'登录酷安'**
+  String get chatCoolapkLoginAction;
+
+  /// 酷安登录页-标题
+  ///
+  /// In zh, this message translates to:
+  /// **'酷安登录'**
+  String get coolapkLoginTitle;
+
+  /// 酷安登录页-底部说明
+  ///
+  /// In zh, this message translates to:
+  /// **'登录成功后会自动读取令牌；若没有反应，点下面的按钮手动读取。'**
+  String get coolapkLoginHint;
+
+  /// 酷安登录页-第三方登录说明
+  ///
+  /// In zh, this message translates to:
+  /// **'微信、微博登录会跳转到对应 App 授权，跳出后请回到这里；若一直无法跳转，请改用手机号或密码登录。'**
+  String get coolapkLoginThirdPartyHint;
+
+  /// 酷安登录页-服务端未认可该会话时的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'没检测到有效的登录状态，请完成登录后再试'**
+  String get coolapkLoginNotDetected;
+
+  /// 酷安登录页-手动读取令牌按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'我已登录，读取令牌'**
+  String get coolapkLoginCaptureAction;
+
+  /// 酷安登录页-右上角清除 Cookie 按钮与确认弹窗标题
+  ///
+  /// In zh, this message translates to:
+  /// **'清除登录 Cookie'**
+  String get coolapkLoginClearCookie;
+
+  /// 酷安登录页-清除 Cookie 确认说明
+  ///
+  /// In zh, this message translates to:
+  /// **'清除后需要重新登录酷安。'**
+  String get coolapkLoginClearCookieConfirm;
+
+  /// 酷安登录页-清除 Cookie 成功提示
+  ///
+  /// In zh, this message translates to:
+  /// **'已清除登录 Cookie'**
+  String get coolapkLoginCookieCleared;
+
+  /// 酷安登录页-成功提示
+  ///
+  /// In zh, this message translates to:
+  /// **'酷安登录成功'**
+  String get coolapkLoginSucceeded;
+
+  /// 酷安人机验证页-标题
+  ///
+  /// In zh, this message translates to:
+  /// **'酷安人机验证'**
+  String get coolapkCaptchaTitle;
+
+  /// 酷安人机验证页-底部说明
+  ///
+  /// In zh, this message translates to:
+  /// **'拖动滑块完成验证，通过后会自动返回。'**
+  String get coolapkCaptchaHint;
+
+  /// 酷安人机验证页-重新加载按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'重新加载'**
+  String get coolapkCaptchaRetry;
+
+  /// 酷安人机验证页-验证通过提示
+  ///
+  /// In zh, this message translates to:
+  /// **'验证通过，请重新发送消息'**
+  String get coolapkCaptchaSucceeded;
+
+  /// 酷安人机验证页-验证失败提示
+  ///
+  /// In zh, this message translates to:
+  /// **'验证失败，请重试'**
+  String get coolapkCaptchaFailed;
+
+  /// 酷安人机验证页-票据落盘失败提示
+  ///
+  /// In zh, this message translates to:
+  /// **'验证结果保存失败，请重试'**
+  String get coolapkCaptchaSaveFailed;
+
+  /// 酷安人机验证页-复制错误信息按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'复制错误信息'**
+  String get coolapkCaptchaCopyError;
+
+  /// 酷安人机验证页-组件加载中提示
+  ///
+  /// In zh, this message translates to:
+  /// **'正在加载验证组件…'**
+  String get coolapkCaptchaLoading;
+
+  /// 酷安人机验证页-错误信息复制成功提示
+  ///
+  /// In zh, this message translates to:
+  /// **'错误信息已复制'**
+  String get coolapkCaptchaErrorCopied;
+
+  /// 酷安人机验证页-桌面端提示
+  ///
+  /// In zh, this message translates to:
+  /// **'人机验证需要在 Android 设备上完成。'**
+  String get coolapkCaptchaDesktopUnsupported;
+
+  /// 酷安登录页-读取失败提示
+  ///
+  /// In zh, this message translates to:
+  /// **'没读到登录令牌，请确认已登录后再试'**
+  String get coolapkLoginCaptureFailed;
+
+  /// 酷安登录页-桌面端不支持
+  ///
+  /// In zh, this message translates to:
+  /// **'酷安登录目前只能在 Android 上完成，拿不到其他平台的登录会话'**
+  String get coolapkLoginDesktopUnsupported;
 
   /// 工具动作名-open_in_browser
   ///
@@ -1639,6 +1879,30 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'在酷安社区搜索帖子、用户与话题，游客态可读，用于真实机型与刷机经验'**
   String get chatToolDesc_coolapk_search;
+
+  /// No description provided for @chatToolDesc_coolapk_login.
+  ///
+  /// In zh, this message translates to:
+  /// **'检查酷安登录状态；帖子正文与完整评论需要账号，未登录时提示用户登录'**
+  String get chatToolDesc_coolapk_login;
+
+  /// No description provided for @chatToolDesc_coolapk_feed_detail.
+  ///
+  /// In zh, this message translates to:
+  /// **'读取某条酷安帖子的完整正文，需要登录；正文里常直接写着下载地址'**
+  String get chatToolDesc_coolapk_feed_detail;
+
+  /// No description provided for @chatToolDesc_coolapk_feed_all_replies.
+  ///
+  /// In zh, this message translates to:
+  /// **'读取某条酷安帖子的全部评论与楼中楼，需要登录；冷门帖的热门评论为空时用它'**
+  String get chatToolDesc_coolapk_feed_all_replies;
+
+  /// No description provided for @chatToolDesc_coolapk_offer_download.
+  ///
+  /// In zh, this message translates to:
+  /// **'把在帖子或评论里找到的下载地址交给用户，并生成带下载按钮和原帖跳转的卡片'**
+  String get chatToolDesc_coolapk_offer_download;
 
   /// No description provided for @chatToolDesc_fetch_web_page.
   ///
