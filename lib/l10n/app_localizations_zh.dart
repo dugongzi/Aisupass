@@ -157,6 +157,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get adbTypeUsb => '有线';
 
   @override
+  String get adbWifiOff => '无线调试未开启';
+
+  @override
+  String get adbGoEnableWifi => '去开启无线调试';
+
+  @override
+  String get adbWifiOffHintFirst => '打开后回到这里输入配对码';
+
+  @override
+  String get adbWifiOffHintPaired => '打开后会自动重新连接，无需重新配对';
+
+  @override
+  String get adbReconnecting => '正在重新连接…';
+
+  @override
+  String get adbWifiDetectedConnected => '已检测到无线调试开启，已自动连接';
+
+  @override
   String get listSeparator => '、';
 
   @override
@@ -236,6 +254,184 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiConfigGetKey => '获取 Key';
+
+  @override
+  String get aiBuiltinGetKey => '网页一键获取';
+
+  @override
+  String get aiBuiltinGroupUnbound => '分组：未绑定';
+
+  @override
+  String aiBuiltinCurrentGroup(String name) {
+    return '分组：$name';
+  }
+
+  @override
+  String get aiBuiltinLoginTitle => '登录沐雪';
+
+  @override
+  String get aiBuiltinLoginDesktopUnsupported =>
+      '内置浏览器仅在 Android 上可用。请用系统浏览器登录后，回到这里手动填写 API Key。';
+
+  @override
+  String get aiBuiltinOpenSite => '打开登录页';
+
+  @override
+  String get aiBuiltinLoginGuideTitle => '在这里完成注册或登录';
+
+  @override
+  String get aiBuiltinLoginGuideBody =>
+      '邮箱仅支持 QQ / Gmail / 163；需要保证账号内有额度；已有账号可直接登录。';
+
+  @override
+  String get aiBuiltinLoginDetected => '已获取登录状态，正在读取分组';
+
+  @override
+  String get aiBuiltinCreating => '正在创建密钥';
+
+  @override
+  String get aiBuiltinLoginDoneTitle => '密钥已写入内置配置';
+
+  @override
+  String get aiBuiltinLoginFailedTitle => '操作未完成';
+
+  @override
+  String get aiBuiltinLoginLoadFailed => '页面加载失败';
+
+  @override
+  String get aiBuiltinLoginLoadTimeout => '页面加载超时，请检查网络后重试';
+
+  @override
+  String get aiBuiltinRetry => '重试';
+
+  @override
+  String get aiBuiltinReload => '刷新页面';
+
+  @override
+  String get aiBuiltinCancel => '取消';
+
+  @override
+  String get aiBuiltinContinue => '继续';
+
+  @override
+  String get aiBuiltinPlatformTitle => '选择模型厂商';
+
+  @override
+  String get aiBuiltinPlatformSearchHint => '搜索厂商';
+
+  @override
+  String get aiBuiltinPlatformEmpty => '暂无可选厂商，可手动填写 Key';
+
+  @override
+  String aiBuiltinPlatformMeta(int groups, int models) {
+    return '$groups 个分组 · $models 个模型';
+  }
+
+  @override
+  String get aiBuiltinGroupTitle => '选择分组';
+
+  @override
+  String get aiBuiltinGroupSearchHint => '搜索分组';
+
+  @override
+  String get aiBuiltinGroupEmpty => '暂无可选分组，可返回换一个厂商';
+
+  @override
+  String get aiBuiltinMonitorHint => '分组稳定性差别很大，建议先看渠道状态，选绿色（在线）节点最多的分组。';
+
+  @override
+  String get aiBuiltinMonitorOpen => '查看渠道状态';
+
+  @override
+  String get aiBuiltinGroupExclusive => '专属';
+
+  @override
+  String aiBuiltinGroupMeta(String rate, int count) {
+    return '倍率 x$rate · $count 个模型';
+  }
+
+  @override
+  String get aiBuiltinModelTitle => '选择模型';
+
+  @override
+  String get aiBuiltinModelSearchHint => '搜索模型';
+
+  @override
+  String get aiBuiltinModelEmpty => '该分组下没有可选模型，可返回换一个分组';
+
+  @override
+  String get aiBuiltinCopyKey => '复制密钥';
+
+  @override
+  String get aiBuiltinKeyCopied => '密钥已复制';
+
+  @override
+  String get aiBuiltinFinish => '完成';
+
+  @override
+  String get aiBuiltinCreateInWeb => '在网页中手动创建';
+
+  @override
+  String get aiBuiltinWalletTitle => '账户额度';
+
+  @override
+  String get aiBuiltinWalletBalance => '当前额度';
+
+  @override
+  String get aiBuiltinWalletLow => '额度偏低，建议先充值，否则调用会很快失败。';
+
+  @override
+  String get aiBuiltinWalletGetCredit => '获取额度';
+
+  @override
+  String get aiBuiltinWalletRedeem => '兑换码兑换';
+
+  @override
+  String get aiBuiltinWalletRefresh => '刷新额度';
+
+  @override
+  String get aiBuiltinWalletFailed => '额度获取失败';
+
+  @override
+  String get aiBuiltinWalletRelogin => '重新登录';
+
+  @override
+  String get aiBuiltinWalletRedeemTitle => '兑换码兑换';
+
+  @override
+  String get aiBuiltinWalletRedeemHint => '请输入兑换码';
+
+  @override
+  String get aiBuiltinWalletRedeemConfirm => '兑换';
+
+  @override
+  String get aiBuiltinWalletRedeemSuccess => '兑换成功，额度已刷新';
+
+  @override
+  String aiBuiltinWalletRedeemFailed(String message) {
+    return '兑换失败：$message';
+  }
+
+  @override
+  String get aiBuiltinChangeGroup => '更换分组';
+
+  @override
+  String get aiBuiltinChangeGroupNoKey => '请先获取 Key 后再更换分组';
+
+  @override
+  String aiBuiltinChangeGroupSuccess(String name) {
+    return '已切换到 $name';
+  }
+
+  @override
+  String aiBuiltinChangeGroupNeedModel(String name) {
+    return '已切换到 $name，请重新选择模型';
+  }
+
+  @override
+  String aiBuiltinChangeGroupFailed(String message) {
+    return '更换分组失败：$message';
+  }
 
   @override
   String get aiConfigUse => '切换';
@@ -2337,6 +2533,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get shellReasonHostAuthFailed => '配对鉴权失败，请重试';
+
+  @override
+  String get shellReasonAuthRevoked => '设备已撤销授权，需重新配对';
 
   @override
   String get shellReasonHostDisconnected => '连接已断开';

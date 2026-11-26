@@ -49,8 +49,11 @@ class AdbShellNativeImpl(private val context: Context) : AdbShellNative {
      */
     private val execExecutor = Executors.newSingleThreadExecutor()
 
+    /** 连接管理器；配对历史与 shell 通道共用同一实例。 */
+    private val connectionManager = AdbConnectionManager(context)
+
     /** 唯一的身份来源：应用内无线调试自配对，不需要用户安装任何外部 App。 */
-    private val adb = AdbShellChannel(AdbConnectionManager(context))
+    private val adb = AdbShellChannel(connectionManager, connectionManager.pairingHistory)
 
     /** 供同模块的提权会话复用同一条 ADB 连接；不对外暴露给 Pigeon。 */
     internal val shellChannel: AdbShellChannel get() = adb
@@ -105,6 +108,8 @@ class AdbShellNativeImpl(private val context: Context) : AdbShellNative {
             val result = ShellConnection(
                 connected = connected,
                 uid = if (connected) adb.uid else UNKNOWN_UID,
+                // 纯查询：只读配对历史快照，不写、不重连。
+                everConnected = connectionManager.pairingHistory.everConnected,
             )
             mainHandler.post { callback(Result.success(result)) }
         }
@@ -702,7 +707,7 @@ class AdbShellNativeImpl(private val context: Context) : AdbShellNative {
 
     /** 连接阶段失败时区分「设备拒绝授权」与「网络 / 发现失败」。 */
     private fun connectFailureReason(): String =
-        if (adb.lastError == AUTH_FAILED_EXCEPTION) {
+        if (adb.lastError == AdbConnectionManager.AUTH_FAILED_EXCEPTION) {
             PairingReasons.HOST_AUTH_FAILED
         } else {
             PairingReasons.HOST_DISCONNECTED
@@ -900,9 +905,6 @@ class AdbShellNativeImpl(private val context: Context) : AdbShellNative {
          * 传 20 秒，不受影响。
          */
         const val MAX_EXEC_TIMEOUT_MS = 900_000L
-
-        /** libadb 在设备未授权时抛的异常类名，用来把失败归到 `hostAuthFailed`。 */
-        const val AUTH_FAILED_EXCEPTION = "AdbAuthenticationFailedException"
 
         /**
          * 「无线调试」页面的隐藏 action。

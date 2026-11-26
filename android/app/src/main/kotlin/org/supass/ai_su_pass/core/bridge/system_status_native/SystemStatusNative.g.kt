@@ -200,21 +200,31 @@ class FlutterError (
 data class AdbStatus (
   /** 有线（USB）调试。 */
   val usb: Boolean,
-  /** 无线调试。 */
-  val wifi: Boolean
+  /** 无线调试；读不到开关时按 `false` 上报，需要区分时用 [wifiState]。 */
+  val wifi: Boolean,
+  /**
+   * 无线调试开关三态：`unknown` / `on` / `off`。
+   *
+   * 与 [wifi] 的区别：[wifi] 是布尔快照（读不到即 `false`），本字段用于区分
+   * 「ROM 未暴露隐藏键」与「用户真的关了开关」。UI 只允许在 `off` 时断言
+   * 「用户没开无线调试」。
+   */
+  val wifiState: String
 )
  {
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): AdbStatus {
       val usb = pigeonVar_list[0] as Boolean
       val wifi = pigeonVar_list[1] as Boolean
-      return AdbStatus(usb, wifi)
+      val wifiState = pigeonVar_list[2] as String
+      return AdbStatus(usb, wifi, wifiState)
     }
   }
   fun toList(): List<Any?> {
     return listOf(
       usb,
       wifi,
+      wifiState,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -225,13 +235,14 @@ data class AdbStatus (
       return true
     }
     val other = other as AdbStatus
-    return SystemStatusNativePigeonUtils.deepEquals(this.usb, other.usb) && SystemStatusNativePigeonUtils.deepEquals(this.wifi, other.wifi)
+    return SystemStatusNativePigeonUtils.deepEquals(this.usb, other.usb) && SystemStatusNativePigeonUtils.deepEquals(this.wifi, other.wifi) && SystemStatusNativePigeonUtils.deepEquals(this.wifiState, other.wifiState)
   }
 
   override fun hashCode(): Int {
     var result = javaClass.hashCode()
     result = 31 * result + SystemStatusNativePigeonUtils.deepHash(this.usb)
     result = 31 * result + SystemStatusNativePigeonUtils.deepHash(this.wifi)
+    result = 31 * result + SystemStatusNativePigeonUtils.deepHash(this.wifiState)
     return result
   }
 }

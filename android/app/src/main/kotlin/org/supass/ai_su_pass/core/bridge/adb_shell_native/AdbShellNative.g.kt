@@ -213,7 +213,7 @@ enum class PairingStage(val raw: Int) {
 /**
  * 无线 ADB 的 shell 连接状态。
  *
- * 只描述「连上了没有、当前是什么身份」。
+ * 只描述「连上了没有、当前是什么身份，以及本机是否曾经连上过」。
  *
  * Generated class from Pigeon that represents data sent in messages.
  */
@@ -221,20 +221,30 @@ data class ShellConnection (
   /** ADB 连接是否活着。 */
   val connected: Boolean,
   /** 当前身份 uid：`2000` = shell，`-1` = 未知或不可用。 */
-  val uid: Long
+  val uid: Long,
+  /**
+   * 本机是否至少成功建立过一次 adb shell 连接。
+   *
+   * 与「密钥文件是否存在」不等价：配对失败也会留下密钥。设备撤销授权后
+   * 会复位为 false。无线调试关闭时该值仍可信，用于区分「从没配对过」与
+   * 「配对过但当前开关没开」。
+   */
+  val everConnected: Boolean
 )
  {
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): ShellConnection {
       val connected = pigeonVar_list[0] as Boolean
       val uid = pigeonVar_list[1] as Long
-      return ShellConnection(connected, uid)
+      val everConnected = pigeonVar_list[2] as Boolean
+      return ShellConnection(connected, uid, everConnected)
     }
   }
   fun toList(): List<Any?> {
     return listOf(
       connected,
       uid,
+      everConnected,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -245,13 +255,14 @@ data class ShellConnection (
       return true
     }
     val other = other as ShellConnection
-    return AdbShellNativePigeonUtils.deepEquals(this.connected, other.connected) && AdbShellNativePigeonUtils.deepEquals(this.uid, other.uid)
+    return AdbShellNativePigeonUtils.deepEquals(this.connected, other.connected) && AdbShellNativePigeonUtils.deepEquals(this.uid, other.uid) && AdbShellNativePigeonUtils.deepEquals(this.everConnected, other.everConnected)
   }
 
   override fun hashCode(): Int {
     var result = javaClass.hashCode()
     result = 31 * result + AdbShellNativePigeonUtils.deepHash(this.connected)
     result = 31 * result + AdbShellNativePigeonUtils.deepHash(this.uid)
+    result = 31 * result + AdbShellNativePigeonUtils.deepHash(this.everConnected)
     return result
   }
 }

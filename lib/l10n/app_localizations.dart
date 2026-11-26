@@ -380,6 +380,42 @@ abstract class AppLocalizations {
   /// **'有线'**
   String get adbTypeUsb;
 
+  /// ADB 状态副标题与卡片状态；仅在确认无线调试已关闭（wifiState 为 off）时使用，读不到开关时用 statusDetecting
+  ///
+  /// In zh, this message translates to:
+  /// **'无线调试未开启'**
+  String get adbWifiOff;
+
+  /// 开关关闭时卡片主按钮与终端页连接条按钮；只跳转系统无线调试设置，不发起配对
+  ///
+  /// In zh, this message translates to:
+  /// **'去开启无线调试'**
+  String get adbGoEnableWifi;
+
+  /// 开关关闭且从未连接过时的卡片备注行
+  ///
+  /// In zh, this message translates to:
+  /// **'打开后回到这里输入配对码'**
+  String get adbWifiOffHintFirst;
+
+  /// 开关关闭但曾经连接过时的卡片备注行
+  ///
+  /// In zh, this message translates to:
+  /// **'打开后会自动重新连接，无需重新配对'**
+  String get adbWifiOffHintPaired;
+
+  /// 检测到无线调试已开启、正在静默重连时的状态文案
+  ///
+  /// In zh, this message translates to:
+  /// **'正在重新连接…'**
+  String get adbReconnecting;
+
+  /// 首页卡片检测到开关打开并自动连接成功后的轻提示
+  ///
+  /// In zh, this message translates to:
+  /// **'已检测到无线调试开启，已自动连接'**
+  String get adbWifiDetectedConnected;
+
   /// 多个并列项之间的分隔符
   ///
   /// In zh, this message translates to:
@@ -541,6 +577,330 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'获取 Key'**
   String get aiConfigGetKey;
+
+  /// 内置配置提示条上的主按钮：进入内置登录页自动获取 Key
+  ///
+  /// In zh, this message translates to:
+  /// **'网页一键获取'**
+  String get aiBuiltinGetKey;
+
+  /// 内置配置尚未绑定分组时的展示
+  ///
+  /// In zh, this message translates to:
+  /// **'分组：未绑定'**
+  String get aiBuiltinGroupUnbound;
+
+  /// 内置配置已绑定分组的展示
+  ///
+  /// In zh, this message translates to:
+  /// **'分组：{name}'**
+  String aiBuiltinCurrentGroup(String name);
+
+  /// 内置登录页标题
+  ///
+  /// In zh, this message translates to:
+  /// **'登录沐雪'**
+  String get aiBuiltinLoginTitle;
+
+  /// 非 Android 平台打开内置登录页时的说明
+  ///
+  /// In zh, this message translates to:
+  /// **'内置浏览器仅在 Android 上可用。请用系统浏览器登录后，回到这里手动填写 API Key。'**
+  String get aiBuiltinLoginDesktopUnsupported;
+
+  /// 用系统浏览器打开内置面板登录页
+  ///
+  /// In zh, this message translates to:
+  /// **'打开登录页'**
+  String get aiBuiltinOpenSite;
+
+  /// 内置登录页顶部引导条的标题
+  ///
+  /// In zh, this message translates to:
+  /// **'在这里完成注册或登录'**
+  String get aiBuiltinLoginGuideTitle;
+
+  /// 内置登录页顶部引导条的说明
+  ///
+  /// In zh, this message translates to:
+  /// **'邮箱仅支持 QQ / Gmail / 163；需要保证账号内有额度；已有账号可直接登录。'**
+  String get aiBuiltinLoginGuideBody;
+
+  /// 拿到登录令牌后的进度文案
+  ///
+  /// In zh, this message translates to:
+  /// **'已获取登录状态，正在读取分组'**
+  String get aiBuiltinLoginDetected;
+
+  /// 创建密钥时的进度文案
+  ///
+  /// In zh, this message translates to:
+  /// **'正在创建密钥'**
+  String get aiBuiltinCreating;
+
+  /// 内置登录流程完成后的状态条标题
+  ///
+  /// In zh, this message translates to:
+  /// **'密钥已写入内置配置'**
+  String get aiBuiltinLoginDoneTitle;
+
+  /// 内置登录流程失败时的状态条标题
+  ///
+  /// In zh, this message translates to:
+  /// **'操作未完成'**
+  String get aiBuiltinLoginFailedTitle;
+
+  /// 内置登录页主文档加载失败
+  ///
+  /// In zh, this message translates to:
+  /// **'页面加载失败'**
+  String get aiBuiltinLoginLoadFailed;
+
+  /// 内置登录页加载超时
+  ///
+  /// In zh, this message translates to:
+  /// **'页面加载超时，请检查网络后重试'**
+  String get aiBuiltinLoginLoadTimeout;
+
+  /// 失败后的重试按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'重试'**
+  String get aiBuiltinRetry;
+
+  /// 刷新内置登录页
+  ///
+  /// In zh, this message translates to:
+  /// **'刷新页面'**
+  String get aiBuiltinReload;
+
+  /// 内置登录流程的取消按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'取消'**
+  String get aiBuiltinCancel;
+
+  /// 已持有登录令牌时，继续选择分组与模型
+  ///
+  /// In zh, this message translates to:
+  /// **'继续'**
+  String get aiBuiltinContinue;
+
+  /// 厂商选择弹层标题
+  ///
+  /// In zh, this message translates to:
+  /// **'选择模型厂商'**
+  String get aiBuiltinPlatformTitle;
+
+  /// 厂商选择弹层的搜索框占位
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索厂商'**
+  String get aiBuiltinPlatformSearchHint;
+
+  /// 没有可用厂商时的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无可选厂商，可手动填写 Key'**
+  String get aiBuiltinPlatformEmpty;
+
+  /// 厂商行的副标题：分组数量与模型数量
+  ///
+  /// In zh, this message translates to:
+  /// **'{groups} 个分组 · {models} 个模型'**
+  String aiBuiltinPlatformMeta(int groups, int models);
+
+  /// 分组选择弹层标题
+  ///
+  /// In zh, this message translates to:
+  /// **'选择分组'**
+  String get aiBuiltinGroupTitle;
+
+  /// 分组选择弹层的搜索框占位
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索分组'**
+  String get aiBuiltinGroupSearchHint;
+
+  /// 所选厂商下没有分组时的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无可选分组，可返回换一个厂商'**
+  String get aiBuiltinGroupEmpty;
+
+  /// 分组选择弹层顶部提示：选分组前先看渠道状态看板
+  ///
+  /// In zh, this message translates to:
+  /// **'分组稳定性差别很大，建议先看渠道状态，选绿色（在线）节点最多的分组。'**
+  String get aiBuiltinMonitorHint;
+
+  /// 打开渠道状态看板的按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'查看渠道状态'**
+  String get aiBuiltinMonitorOpen;
+
+  /// 专属分组的标记
+  ///
+  /// In zh, this message translates to:
+  /// **'专属'**
+  String get aiBuiltinGroupExclusive;
+
+  /// 分组行的副标题：倍率与模型数量
+  ///
+  /// In zh, this message translates to:
+  /// **'倍率 x{rate} · {count} 个模型'**
+  String aiBuiltinGroupMeta(String rate, int count);
+
+  /// 模型选择弹层标题
+  ///
+  /// In zh, this message translates to:
+  /// **'选择模型'**
+  String get aiBuiltinModelTitle;
+
+  /// 模型选择弹层的搜索框占位
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索模型'**
+  String get aiBuiltinModelSearchHint;
+
+  /// 所选分组没有模型时的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'该分组下没有可选模型，可返回换一个分组'**
+  String get aiBuiltinModelEmpty;
+
+  /// 复制已生成的密钥
+  ///
+  /// In zh, this message translates to:
+  /// **'复制密钥'**
+  String get aiBuiltinCopyKey;
+
+  /// 密钥复制到剪贴板后的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'密钥已复制'**
+  String get aiBuiltinKeyCopied;
+
+  /// 结束内置登录流程并返回编辑页
+  ///
+  /// In zh, this message translates to:
+  /// **'完成'**
+  String get aiBuiltinFinish;
+
+  /// 自动建密钥失败后，转到网页里由用户自己创建
+  ///
+  /// In zh, this message translates to:
+  /// **'在网页中手动创建'**
+  String get aiBuiltinCreateInWeb;
+
+  /// 内置配置编辑页的额度卡片标题
+  ///
+  /// In zh, this message translates to:
+  /// **'账户额度'**
+  String get aiBuiltinWalletTitle;
+
+  /// 额度卡片里的金额标签
+  ///
+  /// In zh, this message translates to:
+  /// **'当前额度'**
+  String get aiBuiltinWalletBalance;
+
+  /// 额度低于阈值时的红色提示
+  ///
+  /// In zh, this message translates to:
+  /// **'额度偏低，建议先充值，否则调用会很快失败。'**
+  String get aiBuiltinWalletLow;
+
+  /// 打开额度说明文档的文字按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'获取额度'**
+  String get aiBuiltinWalletGetCredit;
+
+  /// 输入兑换码充值额度的按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'兑换码兑换'**
+  String get aiBuiltinWalletRedeem;
+
+  /// 重新拉取当前额度的按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'刷新额度'**
+  String get aiBuiltinWalletRefresh;
+
+  /// 额度查询失败时的兜底文案
+  ///
+  /// In zh, this message translates to:
+  /// **'额度获取失败'**
+  String get aiBuiltinWalletFailed;
+
+  /// 额度查询失败后回到内置登录页的入口
+  ///
+  /// In zh, this message translates to:
+  /// **'重新登录'**
+  String get aiBuiltinWalletRelogin;
+
+  /// 兑换码输入弹框标题
+  ///
+  /// In zh, this message translates to:
+  /// **'兑换码兑换'**
+  String get aiBuiltinWalletRedeemTitle;
+
+  /// 兑换码输入框占位
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入兑换码'**
+  String get aiBuiltinWalletRedeemHint;
+
+  /// 兑换码弹框的确认按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'兑换'**
+  String get aiBuiltinWalletRedeemConfirm;
+
+  /// 兑换码兑换成功的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'兑换成功，额度已刷新'**
+  String get aiBuiltinWalletRedeemSuccess;
+
+  /// 兑换码兑换失败的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'兑换失败：{message}'**
+  String aiBuiltinWalletRedeemFailed(String message);
+
+  /// 内置配置里把已绑定的密钥换到另一个分组
+  ///
+  /// In zh, this message translates to:
+  /// **'更换分组'**
+  String get aiBuiltinChangeGroup;
+
+  /// 没有登录态或没有密钥时点更换分组的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'请先获取 Key 后再更换分组'**
+  String get aiBuiltinChangeGroupNoKey;
+
+  /// 更换分组成功且模型仍可用时的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'已切换到 {name}'**
+  String aiBuiltinChangeGroupSuccess(String name);
+
+  /// 更换分组成功但当前模型不在新分组里时的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'已切换到 {name}，请重新选择模型'**
+  String aiBuiltinChangeGroupNeedModel(String name);
+
+  /// 更换分组失败的兜底提示
+  ///
+  /// In zh, this message translates to:
+  /// **'更换分组失败：{message}'**
+  String aiBuiltinChangeGroupFailed(String message);
 
   /// 切换到该 AI 配置
   ///
@@ -4417,6 +4777,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'配对鉴权失败，请重试'**
   String get shellReasonHostAuthFailed;
+
+  /// 原因码-hostAuthFailed 的业务化表述；连接阶段公钥未被设备信任，需重新配对
+  ///
+  /// In zh, this message translates to:
+  /// **'设备已撤销授权，需重新配对'**
+  String get shellReasonAuthRevoked;
 
   /// 原因码-hostDisconnected
   ///

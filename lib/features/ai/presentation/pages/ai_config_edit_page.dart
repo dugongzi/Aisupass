@@ -1,15 +1,22 @@
 import 'package:Aisupass/common/widgets/app_select.dart';
 import 'package:Aisupass/common/widgets/toast.dart';
 import 'package:Aisupass/core/extensions/context_extensions.dart';
+import 'package:Aisupass/core/network/api_exception.dart';
 import 'package:Aisupass/core/routes/app_route.dart';
 import 'package:Aisupass/core/utils/platform.dart';
 import 'package:Aisupass/features/ai/data/datasources/ai_model_query_datasource.dart';
 import 'package:Aisupass/features/ai/domain/constants/builtin_ai_config.dart';
 import 'package:Aisupass/features/ai/domain/enums/ai_api_type.dart';
+import 'package:Aisupass/features/ai/domain/models/ai_builtin_group.dart';
 import 'package:Aisupass/features/ai/domain/models/ai_config.dart';
+import 'package:Aisupass/features/ai/presentation/providers/ai_builtin_action_provider.dart';
+import 'package:Aisupass/features/ai/presentation/providers/ai_builtin_query_provider.dart';
 import 'package:Aisupass/features/ai/presentation/providers/ai_config_action_provider.dart';
 import 'package:Aisupass/features/ai/presentation/providers/ai_config_query_provider.dart';
 import 'package:Aisupass/features/ai/presentation/providers/ai_model_query_provider.dart';
+import 'package:Aisupass/features/ai/presentation/widgets/ai_builtin_group_picker_sheet.dart';
+import 'package:Aisupass/features/ai/presentation/widgets/ai_builtin_platform_picker_sheet.dart';
+import 'package:Aisupass/features/ai/presentation/widgets/ai_builtin_wallet_card.dart';
 import 'package:Aisupass/features/ai/presentation/widgets/ai_model_picker.dart';
 import 'package:Aisupass/features/ai/presentation/widgets/ai_section_card.dart';
 import 'package:Aisupass/features/ai/presentation/widgets/ai_test_sheet.dart';
@@ -21,7 +28,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 
 /// 连通性检测状态。
@@ -45,13 +51,19 @@ class AiConfigEditPage extends HookConsumerWidget {
         : configState?.byId(configId);
 
     // 内置配置只允许改 API Key，其余字段一律取常量。
-    final bool isBuiltinEditing = existing != null && isBuiltinAiConfig(existing);
+    final bool isBuiltinEditing =
+        existing != null && isBuiltinAiConfig(existing);
     final bool isCurrent =
         existing != null && configState?.currentId == existing.id;
 
     // 已保存的配置才需要底部操作；内置配置只能「设为当前」，不能删除。
     final bool showFooterActions =
         existing != null && (!isCurrent || !isBuiltinEditing);
+
+    // 内置配置已绑定的分组名，只用于展示，未绑定时为空串。
+    final String builtinGroupName = isBuiltinEditing
+        ? ref.watch(builtinGroupNameProvider).value ?? ''
+        : '';
 
     final TextEditingController nameController = useTextEditingController(
       text: existing?.name ?? '',
@@ -90,6 +102,7 @@ class AiConfigEditPage extends HookConsumerWidget {
     final ValueNotifier<bool> loadingModels = useState<bool>(false);
     final ValueNotifier<bool> saving = useState<bool>(false);
     final ValueNotifier<bool> advancedOpen = useState<bool>(false);
+    final ValueNotifier<bool> changingGroup = useState<bool>(false);
     final ValueNotifier<Map<String, String>> errors =
         useState<Map<String, String>>(const <String, String>{});
     final ValueNotifier<_ConnState> connState = useState<_ConnState>(
@@ -97,6 +110,22 @@ class AiConfigEditPage extends HookConsumerWidget {
     );
     final ValueNotifier<String> connMessage = useState<String>('');
     final ValueNotifier<int> connCount = useState<int>(0);
+
+    // 内置登录页写完配置后会失效 aiConfigProvider，本页随即拿到新的
+    // 密钥 / 模型 / 协议；这里把输入框与选择器同步过去，否则停留在本页时
+    // 仍显示旧值（密钥为空、模型未选）。
+    useEffect(() {
+      final AiConfig? config = existing;
+      if (config == null) return null;
+      if (config.apiKey.isNotEmpty && apiKeyController.text != config.apiKey) {
+        apiKeyController.text = config.apiKey;
+      }
+      if (config.modelName.isNotEmpty && model.value != config.modelName) {
+        model.value = config.modelName;
+      }
+      if (config.apiType != apiType.value) apiType.value = config.apiType;
+      return null;
+    }, <Object?>[existing?.apiKey, existing?.modelName, existing?.apiType]);
 
     void clearFieldError(String key) {
       if (!errors.value.containsKey(key)) return;
@@ -120,12 +149,6 @@ class AiConfigEditPage extends HookConsumerWidget {
                 double.tryParse(temperatureController.text.trim()) ?? -1,
             apiType: apiType.value,
           );
-
-    /// 打开内置服务的站点获取 API Key。
-    Future<void> openGetKey() => launchUrl(
-      Uri.parse(builtinAiConfigPurchaseUrl),
-      mode: LaunchMode.externalApplication,
-    );
 
     String describeError(AiRequestException error) {
       final int? code = error.statusCode;
@@ -192,6 +215,84 @@ class AiConfigEditPage extends HookConsumerWidget {
         return false;
       } finally {
         loadingModels.value = false;
+      }
+    }
+
+    /// 进入内置登录页；取到密钥即说明配置已写入，停留在本页并刷新额度。
+    ///
+    /// 不在这里回填输入框再触发拉模型：模型与分组已由登录页写进配置，
+    /// 再拉一次网关模型列表反而可能把已选模型清掉。
+    Future<void> openBuiltinLogin() async {
+      final String? issued = await context.push<String>(
+        AppRoute.aiBuiltinLogin,
+      );
+      if (!context.mounted) return;
+      if ((issued ?? '').trim().isEmpty) return;
+      ToastMessage.success(l10n.aiSaveSuccess);
+      ref.invalidate(builtinWalletProvider);
+    }
+
+    /// 把已绑定的密钥换到另一个分组：密钥不变，只改面板上的分组绑定。
+    ///
+    /// 只需选厂商与分组，不涉及模型；换完后若当前模型不在新分组里会被清空，
+    /// 提示用户回到模型卡片重新选择。
+    Future<void> handleChangeGroup() async {
+      if (changingGroup.value) return;
+      if (apiKeyController.text.trim().isEmpty) {
+        ToastMessage.show(l10n.aiBuiltinChangeGroupNoKey);
+        return;
+      }
+
+      changingGroup.value = true;
+      try {
+        final String token =
+            (await ref.read(aiBuiltinActionsProvider).readToken()).trim();
+        if (!context.mounted) return;
+        if (token.isEmpty) {
+          ToastMessage.show(l10n.aiBuiltinChangeGroupNoKey);
+          return;
+        }
+
+        final List<AiBuiltinGroup> groups = await ref.read(
+          builtinGroupsProvider(token: token).future,
+        );
+        if (!context.mounted) return;
+        if (groups.isEmpty) {
+          ToastMessage.show(l10n.aiBuiltinPlatformEmpty);
+          return;
+        }
+
+        final List<AiBuiltinGroup>? vendorGroups =
+            await showAiBuiltinPlatformPickerSheet(context, groups: groups);
+        if (vendorGroups == null || !context.mounted) return;
+
+        final AiBuiltinGroup? group = await showAiBuiltinGroupPickerSheet(
+          context,
+          groups: vendorGroups,
+        );
+        if (group == null || !context.mounted) return;
+
+        final bool modelCleared = await ref
+            .read(aiBuiltinActionsProvider)
+            .changeGroup(group: group);
+        if (!context.mounted) return;
+
+        // 配置已被重写：把协议同步成新分组的，模型被清空时一并清掉本页选择。
+        apiType.value = group.apiType;
+        if (modelCleared) model.value = '';
+        ToastMessage.success(
+          modelCleared
+              ? l10n.aiBuiltinChangeGroupNeedModel(group.name)
+              : l10n.aiBuiltinChangeGroupSuccess(group.name),
+        );
+      } on ApiException catch (error) {
+        if (!context.mounted) return;
+        ToastMessage.error(error.message);
+      } catch (error) {
+        if (!context.mounted) return;
+        ToastMessage.error(l10n.aiBuiltinChangeGroupFailed('$error'));
+      } finally {
+        changingGroup.value = false;
       }
     }
 
@@ -362,7 +463,36 @@ class AiConfigEditPage extends HookConsumerWidget {
       icon: Icons.link_rounded,
       children: <Widget>[
         if (isBuiltinEditing) ...<Widget>[
-          _BuiltinNotice(onGetKey: openGetKey),
+          Row(
+            children: <Widget>[
+              Icon(
+                Icons.layers_outlined,
+                size: 14.sp,
+                color: context.colorScheme.onSurfaceVariant,
+              ),
+              SizedBox(width: 6.w),
+              Expanded(
+                child: Text(
+                  builtinGroupName.isEmpty
+                      ? l10n.aiBuiltinGroupUnbound
+                      : l10n.aiBuiltinCurrentGroup(builtinGroupName),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11.5.sp,
+                    color: context.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              if (builtinGroupName.isNotEmpty)
+                _InlineActionButton(
+                  icon: Icons.swap_horiz_rounded,
+                  label: l10n.aiBuiltinChangeGroup,
+                  busy: changingGroup.value,
+                  onTap: handleChangeGroup,
+                ),
+            ],
+          ),
           SizedBox(height: 14.h),
         ],
         AiTextField(
@@ -396,6 +526,15 @@ class AiConfigEditPage extends HookConsumerWidget {
           obscure: true,
           errorText: errors.value['key'],
           onChanged: (String _) => clearFieldError('key'),
+          // 内置配置在密钥框右侧直接给「获取 Key」，走内置登录页一键取密钥；
+          // 自定义配置保持原样，仍由用户自行粘贴。
+          labelTrailing: isBuiltinEditing
+              ? _InlineActionButton(
+                  icon: Icons.key_rounded,
+                  label: l10n.aiConfigGetKey,
+                  onTap: openBuiltinLogin,
+                )
+              : null,
         ),
         SizedBox(height: 14.h),
         apiTypeField,
@@ -489,6 +628,12 @@ class AiConfigEditPage extends HookConsumerWidget {
               ? const EdgeInsets.fromLTRB(28, 6, 28, 24)
               : EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 24.h),
           children: <Widget>[
+            // 额度只在已走通网页流程（有绑定分组）时展示，避免仅手工填 Key
+            // 的用户被一次必然失败的额度查询打扰。
+            if (isBuiltinEditing && builtinGroupName.isNotEmpty) ...<Widget>[
+              const AiBuiltinWalletCard(),
+              SizedBox(height: isDesktop ? 16 : 16.h),
+            ],
             connectionCard,
             SizedBox(height: isDesktop ? 16 : 16.h),
             modelCard,
@@ -754,61 +899,58 @@ class _FooterAction extends HookWidget {
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         minimumSize: Size.zero,
         padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.r),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
       ),
     );
   }
 }
 
-/// 内置配置提示条：说明服务地址已锁定，并给出获取 Key 的入口。
-class _BuiltinNotice extends HookWidget {
-  const _BuiltinNotice({required this.onGetKey});
+/// 字段标题或说明行末尾的紧凑文字按钮。
+///
+/// 内置配置用它承载「获取 Key」与「更换分组」；[busy] 时换成同尺寸的进度圈，
+/// 避免连点。
+class _InlineActionButton extends StatelessWidget {
+  const _InlineActionButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.busy = false,
+  });
 
-  final VoidCallback onGetKey;
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final bool busy;
 
   @override
   Widget build(BuildContext context) {
-    final AppLocalizations l10n = context.l10n;
     final ColorScheme scheme = context.colorScheme;
 
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-      decoration: BoxDecoration(
-        color: scheme.primary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: scheme.primary.withValues(alpha: 0.18)),
-      ),
-      child: Row(
-        children: <Widget>[
-          Icon(Icons.lock_outline_rounded, size: 16.sp, color: scheme.primary),
-          SizedBox(width: 8.w),
-          Expanded(
-            child: Text(
-              l10n.aiConfigBuiltinHint,
-              style: TextStyle(
-                fontSize: 11.5.sp,
-                height: 1.35,
-                color: scheme.onSurfaceVariant,
-              ),
-            ),
+    if (busy) {
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+        child: SizedBox(
+          width: 13.w,
+          height: 13.w,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: scheme.primary,
           ),
-          SizedBox(width: 8.w),
-          TextButton(
-            onPressed: onGetKey,
-            style: TextButton.styleFrom(
-              visualDensity: VisualDensity.compact,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              minimumSize: Size.zero,
-              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-            ),
-            child: Text(
-              l10n.aiConfigGetKey,
-              style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
+        ),
+      );
+    }
+
+    return TextButton.icon(
+      onPressed: onTap,
+      icon: Icon(icon, size: 13.sp),
+      label: Text(label),
+      style: TextButton.styleFrom(
+        foregroundColor: scheme.primary,
+        visualDensity: VisualDensity.compact,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        minimumSize: Size.zero,
+        padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 0),
+        textStyle: TextStyle(fontSize: 11.5.sp, fontWeight: FontWeight.w600),
       ),
     );
   }

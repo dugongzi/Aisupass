@@ -1,5 +1,6 @@
 import 'package:Aisupass/common/widgets/loading.dart';
 import 'package:Aisupass/common/widgets/ref_error.dart';
+import 'package:Aisupass/common/widgets/toast.dart';
 import 'package:Aisupass/core/extensions/context_extensions.dart';
 import 'package:Aisupass/core/routes/app_route.dart';
 import 'package:Aisupass/core/themes/ai_activation_theme.dart';
@@ -38,6 +39,20 @@ class AiConfigPage extends HookConsumerWidget {
       mode: LaunchMode.externalApplication,
     );
 
+    /// 进入内置登录页，网页里注册登录后自动创建密钥并写进内置配置。
+    ///
+    /// 拿到密钥说明配置已写好，直接进入编辑配置页，让用户看到额度与已选项。
+    Future<void> openBuiltinLogin() async {
+      final String? issued = await context.push<String>(
+        AppRoute.aiBuiltinLogin,
+      );
+      if (!context.mounted) return;
+      ref.invalidate(aiConfigProvider);
+      if ((issued ?? '').trim().isEmpty) return;
+      ToastMessage.success(l10n.aiSaveSuccess);
+      context.push(AppRoute.aiConfigEditPath(builtinAiConfigId));
+    }
+
     final Widget content = configsAsync.when(
       loading: () => const Loading(),
       error: (Object error, StackTrace stackTrace) =>
@@ -49,6 +64,7 @@ class AiConfigPage extends HookConsumerWidget {
               currentId: state.currentId,
               onEdit: (AiConfig config) => openEditor(config.id),
               onGetKey: openGetKey,
+              onBuiltinLogin: openBuiltinLogin,
             ),
     );
 
@@ -113,12 +129,14 @@ class _ConfigList extends HookWidget {
     required this.currentId,
     required this.onEdit,
     required this.onGetKey,
+    required this.onBuiltinLogin,
   });
 
   final List<AiConfig> configs;
   final String currentId;
   final ValueChanged<AiConfig> onEdit;
   final VoidCallback onGetKey;
+  final VoidCallback onBuiltinLogin;
 
   @override
   Widget build(BuildContext context) {
@@ -176,6 +194,7 @@ class _ConfigList extends HookWidget {
                 isCurrent: configs[index].id == currentId,
                 onEdit: () => onEdit(configs[index]),
                 onGetKey: onGetKey,
+                onBuiltinLogin: onBuiltinLogin,
               ),
             ],
           ],
@@ -192,12 +211,14 @@ class _ConfigCard extends HookWidget {
     required this.isCurrent,
     required this.onEdit,
     required this.onGetKey,
+    required this.onBuiltinLogin,
   });
 
   final AiConfig config;
   final bool isCurrent;
   final VoidCallback onEdit;
   final VoidCallback onGetKey;
+  final VoidCallback onBuiltinLogin;
 
   @override
   Widget build(BuildContext context) {
@@ -333,6 +354,12 @@ class _ConfigCard extends HookWidget {
                               label: l10n.aiConfigGetKey,
                               onTap: onGetKey,
                             ),
+                            SizedBox(width: 10.w),
+                            _GetKeyLink(
+                              label: l10n.aiBuiltinGetKey,
+                              onTap: onBuiltinLogin,
+                              icon: Icons.login_rounded,
+                            ),
                           ],
                         ],
                       ),
@@ -406,12 +433,19 @@ class _BuiltinBadge extends HookWidget {
   }
 }
 
-/// 卡片上的「获取 Key」入口，点击跳转内置服务站点。
+/// 卡片上的取密钥入口。
 class _GetKeyLink extends HookWidget {
-  const _GetKeyLink({required this.label, required this.onTap});
+  const _GetKeyLink({
+    required this.label,
+    required this.onTap,
+    this.icon = Icons.open_in_new_rounded,
+  });
 
   final String label;
   final VoidCallback onTap;
+
+  /// 链接前的图标，默认外链图标。
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
@@ -434,11 +468,7 @@ class _GetKeyLink extends HookWidget {
               ),
             ),
             SizedBox(width: 2.w),
-            Icon(
-              Icons.open_in_new_rounded,
-              size: 11.sp,
-              color: scheme.primary,
-            ),
+            Icon(icon, size: 11.sp, color: scheme.primary),
           ],
         ),
       ),

@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:Aisupass/core/models/adb_wifi_state.dart';
+import 'package:Aisupass/core/providers/system_status_provider.dart';
 import 'package:Aisupass/core/storage/preferences_store.dart';
 import 'package:Aisupass/core/storage/storage_providers.dart';
 import 'package:Aisupass/core/utils/su_shell.dart';
@@ -29,7 +31,7 @@ final Provider<ShellExec> adbShellExecProvider = Provider<ShellExec>((ref) {
 final FutureProvider<ShellConnection> shellConnectionProvider =
     FutureProvider<ShellConnection>((ref) async {
       ShellConnection disconnected() =>
-          ShellConnection(connected: false, uid: -1);
+          ShellConnection(connected: false, uid: -1, everConnected: false);
       if (!Platform.isAndroid) return disconnected();
 
       final AdbShellNative native = ref.watch(adbShellNativeProvider);
@@ -41,16 +43,26 @@ final FutureProvider<ShellConnection> shellConnectionProvider =
       }
     });
 
-/// 连接态里 UI 需要的两个值，隔离原生桥接类型。
+/// 连接态里 UI 需要的三个值，隔离原生桥接类型。
 @immutable
 class ShellLink {
-  const ShellLink({required this.connected, required this.uid});
+  const ShellLink({
+    required this.connected,
+    required this.uid,
+    required this.everConnected,
+  });
 
   /// 是否已连上。
   final bool connected;
 
   /// 当前 shell 的 uid。
   final int uid;
+
+  /// 本机是否至少成功建链过一次。
+  ///
+  /// 与「密钥文件是否存在」不等价。设备撤销授权后会被原生复位为 false。
+  /// 无线调试关闭时该值仍可信，UI 据此区分「从没配对过」与「配对过但开关没开」。
+  final bool everConnected;
 }
 
 /// 当前连接态；未连上或无数据时为 `null`。
@@ -58,13 +70,21 @@ final Provider<ShellLink?> shellLinkProvider = Provider<ShellLink?>((ref) {
   final ShellConnection? link = ref.watch(shellConnectionProvider).value;
   return link == null
       ? null
-      : ShellLink(connected: link.connected, uid: link.uid);
+      : ShellLink(
+          connected: link.connected,
+          uid: link.uid,
+          everConnected: link.everConnected,
+        );
 });
 
 /// 自动连接的结果：只说通道现在能不能用，不解释原因。
 enum AdbAutoConnectResult {
   /// 已经有一条可用的 shell 连接。
   ready,
+
+  /// 无线调试开关没开（`AdbWifiState.off`）：配对码此刻在系统里生成不了，
+  /// 必须先让用户去打开。
+  needsWifiOn,
 
   /// 当前是「小窗输入」模式：配对码要用户在界面里填，本端拿不到码。
   needsCode,
@@ -82,8 +102,9 @@ const Duration _autoLinkPollInterval = Duration(milliseconds: 500);
 
 /// 静默重连的默认预算。
 ///
-/// 覆盖「本地 mDNS 解析 + TLS 握手」绰绰有余；再长就变成用户对着屏幕干等。
-const int _silentReconnectTimeoutMs = 5000;
+/// 覆盖「刚打开开关时 mDNS 起播延迟 + 本地解析 + TLS 握手」；再长就变成
+/// 用户对着屏幕干等（终端页进入时会同步等待这一步）。
+const int _silentReconnectTimeoutMs = 15000;
 
 /// 静默重连：不配对、不弹通知、不跳设置页，连不上也不打扰用户。
 ///
@@ -107,6 +128,9 @@ final Provider<Future<bool> Function()> adbSilentReconnectProvider =
 
 /// 自动连接：保证现在有一条可用的无线 ADB shell 连接。
 ///
+/// 第一道闸门是开关状态：无线调试明确关着时直接返回
+/// [AdbAutoConnectResult.needsWifiOn]，既不重连也不发起配对。
+///
 /// 分两步，先轻后重：
 /// 1. **静默重连**：已配对过的设备只需要 mDNS 发现 + TLS，全程不打扰用户；
 ///    断线重连都走这里，不需要再输一次配对码。
@@ -126,6 +150,17 @@ final Provider<Future<AdbAutoConnectResult> Function()> adbAutoConnectProvider =
 
         final AdbShellNative native = ref.read(adbShellNativeProvider);
         if (await _shellLinked(native)) return AdbAutoConnectResult.ready;
+
+        // 只有明确读到「开关关着」才拦：此时配对码在系统里生成不了，重连也必然失败，
+        // start() 只会让用户对着「等待输入配对码」等到原生超时。
+        // `unknown`（ROM 未暴露该键，或查询尚未返回）一律不拦，退回下面原有逻辑，
+        // 用静默重连的结果去反推。
+        final AdbWifiState wifiState = AdbWifiState.fromName(
+          ref.read(adbStatusProvider).value?.wifiState,
+        );
+        if (wifiState == AdbWifiState.off) {
+          return AdbAutoConnectResult.needsWifiOn;
+        }
 
         // 已经有一轮配对在跑就只等结果，不再叠一条新会话。
         if (ref.read(shellPairingProvider).active) {

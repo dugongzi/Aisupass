@@ -1,8 +1,11 @@
 import 'dart:async';
 
 import 'package:Aisupass/common/widgets/adb_pairing_code_input.dart';
+import 'package:Aisupass/common/widgets/toast.dart';
 import 'package:Aisupass/core/extensions/context_extensions.dart';
+import 'package:Aisupass/core/models/adb_wifi_state.dart';
 import 'package:Aisupass/core/providers/adb_shell_provider.dart';
+import 'package:Aisupass/core/providers/system_status_provider.dart';
 import 'package:Aisupass/core/utils/platform.dart';
 import 'package:Aisupass/generated/adb_shell.g.dart';
 import 'package:Aisupass/l10n/app_localizations.dart';
@@ -30,13 +33,34 @@ class AppAdbShellPanel extends HookConsumerWidget {
     final ColorScheme colors = context.colorScheme;
     final bool isDesktop = isDesktopPlatform;
 
-    final AsyncValue<ShellConnection> link = ref.watch(shellConnectionProvider);
+    final ShellLink? link = ref.watch(shellLinkProvider);
     final ShellPairingState pairing = ref.watch(shellPairingProvider);
-    final bool connected = link.value?.connected ?? false;
+    final bool connected = link?.connected ?? false;
     // 卡片输入模式：通知栏弹不出输入框的机型由卡片直接收码。
     final bool cardInput = ref.watch(shellPairingModeProvider).isCard;
-    // 输入框只在「还没连上、也没在配对」时出现，其余状态仍是状态文案。
-    final bool showCodeInput = cardInput && !connected && !pairing.active;
+
+    // 三态判定：只有 off 才拦截；unknown 表示「ROM 读不到或尚未查到」，
+    // 不得据此断言用户没开无线调试。
+    final AdbWifiState wifiState = AdbWifiState.fromName(
+      ref.watch(adbStatusProvider).value?.wifiState,
+    );
+    final bool wifiOff = wifiState == AdbWifiState.off;
+    final bool everConnected = link?.everConnected ?? false;
+
+    // true = 用户刚经本卡片去开过无线调试，正在等开关翻转。
+    final ValueNotifier<bool> awaitingWifi = useState<bool>(false);
+
+    // true = 开关已开，正在替用户静默重连（S4）。
+    final ValueNotifier<bool> reconnecting = useState<bool>(false);
+
+    // 输入框只在「还没连上、也没在配对、开关非同 off、也没有自动重连在跑」时出现，
+    // 其余状态仍是状态文案。
+    final bool showCodeInput =
+        cardInput &&
+        !connected &&
+        !pairing.active &&
+        !wifiOff &&
+        !reconnecting.value;
 
     // 连接状态不是推送式的：用户关掉无线调试或设备重启时原生不会主动通知，
     // 所以已连接期间定时重查，让配对入口能自己回来；未连接时不轮询，
@@ -51,13 +75,59 @@ class AppAdbShellPanel extends HookConsumerWidget {
       return timer.cancel;
     }, <Object?>[connected]);
 
+    // 开关关闭期间，用户点了「去开启无线调试」后每 1.8s 查一次，直到开关翻转。
+    // 只在「已跳设置且在等开关」这一段时间运行；wifiOff 变 false 即自动停表。
+    useEffect(() {
+      if (!awaitingWifi.value || !wifiOff) return null;
+      final Timer timer = Timer.periodic(const Duration(milliseconds: 1800), (_) {
+        if (ref.read(adbStatusProvider).isLoading) return;
+        ref.invalidate(adbStatusProvider);
+      });
+      return timer.cancel;
+    }, <Object?>[awaitingWifi.value, wifiOff]);
+
+    // 开关由「明确关闭」翻成「开启」，且用户刚才是从本卡片跳过去开的：自动接管。
+    // 用 wifiState == on 而非「wifiOff 变 false」——off → unknown 同样会让 wifiOff 变
+    // false，但那不是「用户开了开关」。
+    useEffect(() {
+      if (!awaitingWifi.value) return null;
+      if (wifiState != AdbWifiState.on) return null;
+      awaitingWifi.value = false;
+      unawaited(() async {
+        reconnecting.value = true;
+        try {
+          final AdbAutoConnectResult result = await ref.read(
+            adbAutoConnectProvider,
+          )();
+          if (!context.mounted) return;
+          if (result == AdbAutoConnectResult.ready) {
+            ToastMessage.success(l10n.adbWifiDetectedConnected);
+          }
+          // needsCode / needsWifiOn / failed 由状态表自然呈现，不再额外弹提示。
+        } finally {
+          // 已卸载时 ValueNotifier 随之释放，不能再写。
+          if (context.mounted) reconnecting.value = false;
+        }
+      }());
+      return null;
+    }, <Object?>[wifiState]);
+
     late final String statusText;
     String? actionLabel;
     IconData actionIcon = Icons.wifi_tethering_rounded;
     VoidCallback? action;
     String? hint;
 
-    if (pairing.active) {
+    if (wifiOff) {
+      // S1 / S2：开关明确关着时配对码在系统里生成不出来，只引导用户去打开开关。
+      statusText = l10n.adbWifiOff;
+      actionLabel = l10n.adbGoEnableWifi;
+      actionIcon = Icons.settings_rounded;
+      action = () => _goEnableWifi(ref, awaitingWifi);
+      hint = everConnected
+          ? l10n.adbWifiOffHintPaired
+          : l10n.adbWifiOffHintFirst;
+    } else if (pairing.active) {
       statusText = _stageLabel(l10n, pairing.stage);
       actionLabel = l10n.shellPairingCancel;
       actionIcon = Icons.close_rounded;
@@ -73,12 +143,15 @@ class AppAdbShellPanel extends HookConsumerWidget {
         action = () => _startPairing(ref);
       }
       hint = pairing.detail;
-    } else if (!link.hasValue) {
+    } else if (link == null) {
       // 首次查询还没有结果，先只显示检测中，不给按钮。
       statusText = l10n.statusDetecting;
     } else if (connected) {
-      final int uid = link.value?.uid ?? -1;
+      final int uid = link.uid;
       statusText = uid > 0 ? l10n.shellConnectedUid(uid) : l10n.shellConnected;
+    } else if (reconnecting.value) {
+      // S4：开关刚被打开，正在替用户静默重连；此时不给按钮，避免叠出第二个动作。
+      statusText = l10n.adbReconnecting;
     } else {
       statusText = l10n.shellDisconnected;
       if (!showCodeInput) {
@@ -173,6 +246,19 @@ class AppAdbShellPanel extends HookConsumerWidget {
     );
   }
 
+  /// 只跳设置，不发起配对：开关关闭时配对码在系统里生成不出来。
+  Future<void> _goEnableWifi(
+    WidgetRef ref,
+    ValueNotifier<bool> awaitingWifi,
+  ) async {
+    awaitingWifi.value = true;
+    try {
+      await ref.read(adbShellNativeProvider).openWirelessDebuggingSettings();
+    } catch (_) {
+      // ROM 拒绝跳转：等待态轮询仍在跑，用户手动去设置页打开同样能被识别。
+    }
+  }
+
   /// 配对前先要通知权限：没有权限，通知栏里的配对码输入框根本弹不出来。
   /// 被拒也继续发起，原生会立刻以配对失败收尾，好过点了按钮毫无反应。
   Future<void> _startPairing(WidgetRef ref) async {
@@ -214,7 +300,7 @@ String _stageLabel(AppLocalizations l10n, PairingStage? stage) {
 String _reasonLabel(AppLocalizations l10n, String? reason) {
   switch (reason) {
     case 'hostAuthFailed':
-      return l10n.shellReasonHostAuthFailed;
+      return l10n.shellReasonAuthRevoked;
     case 'hostDisconnected':
       return l10n.shellReasonHostDisconnected;
     case 'pairingEndpointNotFound':

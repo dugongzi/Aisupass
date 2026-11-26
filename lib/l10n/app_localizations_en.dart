@@ -159,6 +159,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adbTypeUsb => 'USB';
 
   @override
+  String get adbWifiOff => 'Wireless debugging is off';
+
+  @override
+  String get adbGoEnableWifi => 'Turn on wireless debugging';
+
+  @override
+  String get adbWifiOffHintFirst => 'Come back here and enter the pairing code';
+
+  @override
+  String get adbWifiOffHintPaired => 'It reconnects automatically once enabled';
+
+  @override
+  String get adbReconnecting => 'Reconnecting…';
+
+  @override
+  String get adbWifiDetectedConnected =>
+      'Wireless debugging enabled; reconnected';
+
+  @override
   String get listSeparator => ', ';
 
   @override
@@ -240,6 +259,191 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiConfigGetKey => 'Get API Key';
+
+  @override
+  String get aiBuiltinGetKey => 'Get key in app';
+
+  @override
+  String get aiBuiltinGroupUnbound => 'Group: not bound';
+
+  @override
+  String aiBuiltinCurrentGroup(String name) {
+    return 'Group: $name';
+  }
+
+  @override
+  String get aiBuiltinLoginTitle => 'Sign in to Muxue';
+
+  @override
+  String get aiBuiltinLoginDesktopUnsupported =>
+      'The in-app browser is available on Android only. Sign in with a system browser, then enter the API key here.';
+
+  @override
+  String get aiBuiltinOpenSite => 'Open sign-in page';
+
+  @override
+  String get aiBuiltinLoginGuideTitle => 'Register or sign in here';
+
+  @override
+  String get aiBuiltinLoginGuideBody =>
+      'Email must be QQ / Gmail / 163. Make sure the account has credit. Existing accounts can sign in directly.';
+
+  @override
+  String get aiBuiltinLoginDetected => 'Signed in, loading groups';
+
+  @override
+  String get aiBuiltinCreating => 'Creating key';
+
+  @override
+  String get aiBuiltinLoginDoneTitle => 'Key saved to the built-in config';
+
+  @override
+  String get aiBuiltinLoginFailedTitle => 'Action not completed';
+
+  @override
+  String get aiBuiltinLoginLoadFailed => 'Page failed to load';
+
+  @override
+  String get aiBuiltinLoginLoadTimeout =>
+      'Page load timed out. Check your network and retry.';
+
+  @override
+  String get aiBuiltinRetry => 'Retry';
+
+  @override
+  String get aiBuiltinReload => 'Reload page';
+
+  @override
+  String get aiBuiltinCancel => 'Cancel';
+
+  @override
+  String get aiBuiltinContinue => 'Continue';
+
+  @override
+  String get aiBuiltinPlatformTitle => 'Choose a provider';
+
+  @override
+  String get aiBuiltinPlatformSearchHint => 'Search providers';
+
+  @override
+  String get aiBuiltinPlatformEmpty =>
+      'No providers available. You can enter a key manually.';
+
+  @override
+  String aiBuiltinPlatformMeta(int groups, int models) {
+    return '$groups groups · $models models';
+  }
+
+  @override
+  String get aiBuiltinGroupTitle => 'Choose a group';
+
+  @override
+  String get aiBuiltinGroupSearchHint => 'Search groups';
+
+  @override
+  String get aiBuiltinGroupEmpty =>
+      'No groups under this provider. Go back and pick another provider.';
+
+  @override
+  String get aiBuiltinMonitorHint =>
+      'Groups differ a lot in stability. Check the channel status first and pick the group with the most green (online) nodes.';
+
+  @override
+  String get aiBuiltinMonitorOpen => 'Channel status';
+
+  @override
+  String get aiBuiltinGroupExclusive => 'Exclusive';
+
+  @override
+  String aiBuiltinGroupMeta(String rate, int count) {
+    return 'rate x$rate · $count models';
+  }
+
+  @override
+  String get aiBuiltinModelTitle => 'Choose a model';
+
+  @override
+  String get aiBuiltinModelSearchHint => 'Search models';
+
+  @override
+  String get aiBuiltinModelEmpty =>
+      'No model in this group. Go back and pick another group.';
+
+  @override
+  String get aiBuiltinCopyKey => 'Copy key';
+
+  @override
+  String get aiBuiltinKeyCopied => 'Key copied';
+
+  @override
+  String get aiBuiltinFinish => 'Done';
+
+  @override
+  String get aiBuiltinCreateInWeb => 'Create manually on the web';
+
+  @override
+  String get aiBuiltinWalletTitle => 'Account credit';
+
+  @override
+  String get aiBuiltinWalletBalance => 'Current credit';
+
+  @override
+  String get aiBuiltinWalletLow =>
+      'Credit is low. Top up soon or requests will start failing.';
+
+  @override
+  String get aiBuiltinWalletGetCredit => 'Get credit';
+
+  @override
+  String get aiBuiltinWalletRedeem => 'Redeem code';
+
+  @override
+  String get aiBuiltinWalletRefresh => 'Refresh credit';
+
+  @override
+  String get aiBuiltinWalletFailed => 'Failed to load credit';
+
+  @override
+  String get aiBuiltinWalletRelogin => 'Sign in again';
+
+  @override
+  String get aiBuiltinWalletRedeemTitle => 'Redeem code';
+
+  @override
+  String get aiBuiltinWalletRedeemHint => 'Enter the redeem code';
+
+  @override
+  String get aiBuiltinWalletRedeemConfirm => 'Redeem';
+
+  @override
+  String get aiBuiltinWalletRedeemSuccess => 'Redeemed. Credit refreshed.';
+
+  @override
+  String aiBuiltinWalletRedeemFailed(String message) {
+    return 'Redeem failed: $message';
+  }
+
+  @override
+  String get aiBuiltinChangeGroup => 'Switch group';
+
+  @override
+  String get aiBuiltinChangeGroupNoKey =>
+      'Get the key first, then you can switch groups';
+
+  @override
+  String aiBuiltinChangeGroupSuccess(String name) {
+    return 'Switched to $name';
+  }
+
+  @override
+  String aiBuiltinChangeGroupNeedModel(String name) {
+    return 'Switched to $name. Pick a model again.';
+  }
+
+  @override
+  String aiBuiltinChangeGroupFailed(String message) {
+    return 'Failed to switch group: $message';
+  }
 
   @override
   String get aiConfigUse => 'Use';
@@ -2524,6 +2728,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get shellReasonHostAuthFailed =>
       'Pairing authentication failed, please retry';
+
+  @override
+  String get shellReasonAuthRevoked => 'Authorization revoked; pair again';
 
   @override
   String get shellReasonHostDisconnected => 'Connection lost';

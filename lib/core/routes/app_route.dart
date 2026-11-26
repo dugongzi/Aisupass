@@ -1,6 +1,7 @@
 import 'package:Aisupass/common/pages/desktop_page.dart';
 import 'package:Aisupass/common/pages/main_page.dart';
 import 'package:Aisupass/common/pages/open_source_license_page.dart';
+import 'package:Aisupass/features/ai/presentation/pages/ai_builtin_login_page.dart';
 import 'package:Aisupass/features/ai/presentation/pages/ai_config_edit_page.dart';
 import 'package:Aisupass/features/ai/presentation/pages/ai_config_page.dart';
 import 'package:Aisupass/features/chat/presentation/pages/chat_page.dart';
@@ -45,6 +46,9 @@ class AppRoute {
   // AI 配置
   static const aiConfig = '/aiConfig';
   static const aiConfigEdit = '/aiConfig/edit/:id';
+
+  /// 内置服务的内置登录页（网页注册登录后自动取 Key）。
+  static const aiBuiltinLogin = '/aiConfig/builtinLogin';
 
   /// 新建 AI 配置时使用的占位 id。
   static const newConfigId = 'new';
@@ -116,6 +120,10 @@ final List<GoRoute> appRoutes = [
     path: AppRoute.aiConfig,
     builder: (context, state) => const AiConfigPage(),
     routes: <RouteBase>[
+      GoRoute(
+        path: 'builtinLogin',
+        builder: (context, state) => const AiBuiltinLoginPage(),
+      ),
       GoRoute(
         path: 'edit/:id',
         builder: (context, state) => AiConfigEditPage(

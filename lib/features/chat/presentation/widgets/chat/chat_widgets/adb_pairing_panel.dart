@@ -1,5 +1,6 @@
 import 'package:Aisupass/common/widgets/adb_pairing_code_input.dart';
 import 'package:Aisupass/core/extensions/context_extensions.dart';
+import 'package:Aisupass/core/models/adb_wifi_state.dart';
 import 'package:Aisupass/core/providers/adb_shell_provider.dart';
 import 'package:Aisupass/core/providers/system_status_provider.dart';
 import 'package:Aisupass/core/utils/platform.dart';
@@ -92,6 +93,13 @@ class AdbPairingPanel extends HookConsumerWidget {
     final ColorScheme colors = context.colorScheme;
     final AppLocalizations l10n = context.l10n;
 
+    // 与首页同口径：只有明确读到「关着」才拦下配对，unknown 不拦截。
+    final AdbWifiState wifiState = AdbWifiState.fromName(
+      ref.watch(adbStatusProvider).value?.wifiState,
+    );
+    final bool wifiOff = wifiState == AdbWifiState.off;
+    final bool everConnected = link.value?.everConnected ?? false;
+
     late final IconData icon;
     late final String statusText;
     late final Color statusColor;
@@ -99,7 +107,15 @@ class AdbPairingPanel extends HookConsumerWidget {
     IconData actionIcon = Icons.wifi_tethering_rounded;
     VoidCallback? action;
 
-    if (connected) {
+    if (wifiOff) {
+      // 开关明确关着：此刻系统里生成不出配对码，只引导用户去打开开关。
+      icon = Icons.wifi_off_rounded;
+      statusText = l10n.adbWifiOff;
+      statusColor = colors.onSurfaceVariant;
+      actionLabel = l10n.adbGoEnableWifi;
+      actionIcon = Icons.settings_rounded;
+      action = () => _goEnableWifi(ref, suspended);
+    } else if (connected) {
       icon = Icons.link_rounded;
       statusText = l10n.shellConnectedUid(uid);
       statusColor = colors.primary;
@@ -114,7 +130,10 @@ class AdbPairingPanel extends HookConsumerWidget {
       statusColor = colors.onSurfaceVariant;
     } else if (pairing.failed) {
       icon = Icons.link_off_rounded;
-      statusText = l10n.chatAdbPairingFailed;
+      // 设备撤销授权要与其他失败分开：前者必须重新配对，后者多是时序问题。
+      statusText = pairing.reason == 'hostAuthFailed'
+          ? l10n.shellReasonAuthRevoked
+          : l10n.chatAdbPairingFailed;
       statusColor = colors.error;
       // 卡片模式下失败的码已经作废，直接让用户重输，不再给「重试」按钮。
       if (!cardInput) {
@@ -200,7 +219,8 @@ class AdbPairingPanel extends HookConsumerWidget {
             ],
           ),
           // 卡片输入模式且还没开始配对：输入框就是这一步唯一的动作。
-          if (cardInput && !connected && !pairing.active) ...<Widget>[
+          // 开关明确关着时不渲染输入框——此时系统里生成不出配对码。
+          if (cardInput && !connected && !pairing.active && !wifiOff) ...<Widget>[
             SizedBox(height: isDesktop ? 8 : 8.h),
             const AdbPairingCodeInput(),
           ] else if (actionLabel != null) ...<Widget>[
@@ -233,7 +253,19 @@ class AdbPairingPanel extends HookConsumerWidget {
             ),
           ],
           // 通知栏模式给一句兜底说明：弹不出输入框时换小窗输入。
-          if (!cardInput && !connected) ...<Widget>[
+          if (wifiOff) ...<Widget>[
+            SizedBox(height: isDesktop ? 6 : 6.h),
+            Text(
+              everConnected
+                  ? l10n.adbWifiOffHintPaired
+                  : l10n.adbWifiOffHintFirst,
+              style: TextStyle(
+                fontSize: isDesktop ? 11 : 11.sp,
+                height: 1.35,
+                color: colors.onSurfaceVariant.withValues(alpha: 0.8),
+              ),
+            ),
+          ] else if (!cardInput && !connected) ...<Widget>[
             SizedBox(height: isDesktop ? 6 : 6.h),
             Text(
               l10n.shellPairingNotice,
@@ -247,6 +279,18 @@ class AdbPairingPanel extends HookConsumerWidget {
         ],
       ),
     );
+  }
+
+  /// 只跳设置：此刻系统里生成不出配对码，先让用户把开关打开。
+  Future<void> _goEnableWifi(
+    WidgetRef ref,
+    ValueNotifier<bool> suspended,
+  ) async {
+    try {
+      await ref.read(adbShellNativeProvider).openWirelessDebuggingSettings();
+    } catch (_) {
+      // ROM 拒绝跳转；用户自行前往同样有效。
+    }
   }
 
   /// 发起配对并把用户送到系统「无线调试」页，随即进入等待形态。

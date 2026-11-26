@@ -102,18 +102,27 @@ class AdbStatus {
   AdbStatus({
     required this.usb,
     required this.wifi,
+    required this.wifiState,
   });
 
   /// 有线（USB）调试。
   bool usb;
 
-  /// 无线调试。
+  /// 无线调试；读不到开关时按 `false` 上报，需要区分时用 [wifiState]。
   bool wifi;
+
+  /// 无线调试开关三态：`unknown` / `on` / `off`。
+  ///
+  /// 与 [wifi] 的区别：[wifi] 是布尔快照（读不到即 `false`），本字段用于区分
+  /// 「ROM 未暴露隐藏键」与「用户真的关了开关」。UI 只允许在 `off` 时断言
+  /// 「用户没开无线调试」。
+  String wifiState;
 
   List<Object?> _toList() {
     return <Object?>[
       usb,
       wifi,
+      wifiState,
     ];
   }
 
@@ -125,6 +134,7 @@ class AdbStatus {
     return AdbStatus(
       usb: result[0]! as bool,
       wifi: result[1]! as bool,
+      wifiState: result[2]! as String,
     );
   }
 
@@ -137,7 +147,7 @@ class AdbStatus {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(usb, other.usb) && _deepEquals(wifi, other.wifi);
+    return _deepEquals(usb, other.usb) && _deepEquals(wifi, other.wifi) && _deepEquals(wifiState, other.wifiState);
   }
 
   @override

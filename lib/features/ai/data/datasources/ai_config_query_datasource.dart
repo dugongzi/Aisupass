@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:Aisupass/core/storage/preferences_store.dart';
 import 'package:Aisupass/core/storage/secure_store.dart';
 import 'package:Aisupass/features/ai/data/models/ai_config_dto.dart';
+import 'package:Aisupass/features/ai/domain/constants/builtin_ai_config.dart';
 
 /// AI 配置的只读数据源。
 ///
@@ -78,4 +79,16 @@ class AiConfigQueryDatasource {
   /// 读取内置配置所选协议的枚举名，未设置时返回空串。
   Future<String> readBuiltinApiTypeName() =>
       _preferences.read<String>(builtinApiTypeKey, defaultValue: '');
+
+  /// 读取内置配置已绑定的分组 id，未绑定时返回 `0`。
+  Future<int> readBuiltinGroupId() =>
+      _preferences.read<int>(builtinAiConfigGroupIdKey, defaultValue: 0);
+
+  /// 读取内置配置已绑定的分组名，未绑定时返回空串。
+  Future<String> readBuiltinGroupName() =>
+      _preferences.read<String>(builtinAiConfigGroupNameKey, defaultValue: '');
+
+  /// 读取内置面板的登录令牌，未登录时返回空串。
+  Future<String> readBuiltinAuthToken() =>
+      _secure.read<String>(builtinAiConfigAuthTokenKey, defaultValue: '');
 }

@@ -12,6 +12,35 @@ const String builtinAiConfigBaseUrl = 'https://v2.muxueai.pro';
 /// 获取 API Key 的站点。
 const String builtinAiConfigPurchaseUrl = 'https://muxueai.pro';
 
+/// 渠道状态看板，选分组前用它判断哪个分组的渠道更健康。
+const String builtinAiConfigMonitorUrl =
+    'https://v2.muxueai.pro/monitor/public';
+
+/// 额度说明与获取方式的文档地址。
+const String builtinAiConfigCreditDocUrl =
+    'https://www.yuque.com/ababa-haoqq/ykpku4/gpvqwygqvbfqsetd?singleDoc#';
+
+/// 新建密钥的名称前缀，便于在面板上识别来源。
+const String builtinAiConfigKeyNamePrefix = 'Aisupass';
+
+/// 额度低于该值时界面标红提醒，单位与面板一致（美元）。
+const double builtinAiConfigLowBalanceThreshold = 1.0;
+
+/// 内置面板的登录页，内置浏览器从这里进入注册 / 登录流程。
+const String builtinAiConfigLoginUrl = 'https://v2.muxueai.pro/login';
+
+/// 内置面板接口前缀，与面板前端的 `/api/v1` 一致。
+const String builtinAiConfigApiPath = '/api/v1';
+
+/// 登录令牌的存储键，存于安全存储。
+const String builtinAiConfigAuthTokenKey = 'ai_builtin_auth_token';
+
+/// 已绑定分组 id 的存储键，存于普通配置。
+const String builtinAiConfigGroupIdKey = 'ai_config_builtin_group_id';
+
+/// 已绑定分组名的存储键，存于普通配置。
+const String builtinAiConfigGroupNameKey = 'ai_config_builtin_group_name';
+
 /// 内置配置的默认最大输出 Token。
 const int builtinAiConfigMaxToken = 4096;
 

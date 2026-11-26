@@ -173,4 +173,4 @@ final class CoolapkAuthActionsProvider
 }
 
 String _$coolapkAuthActionsHash() =>
-    r'ddee6a9b1dc525f247432a15f3dbede23b44d32b';
+    r'7c6112553b7bbb5970ef5baab8831bfef0bd8b3d';

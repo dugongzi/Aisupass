@@ -71,6 +71,12 @@
   },
   "adbTypeWifi": "Wi-Fi",
   "adbTypeUsb": "USB",
+  "adbWifiOff": "Wireless debugging is off",
+  "adbGoEnableWifi": "Turn on wireless debugging",
+  "adbWifiOffHintFirst": "Come back here and enter the pairing code",
+  "adbWifiOffHintPaired": "It reconnects automatically once enabled",
+  "adbReconnecting": "Reconnecting…",
+  "adbWifiDetectedConnected": "Wireless debugging enabled; reconnected",
   "listSeparator": ", ",
   "refreshTooltip": "Refresh",
   "deviceInfoTitle": "Device Info",
@@ -98,6 +104,263 @@
   "aiConfigBuiltin": "Built-in",
   "aiConfigBuiltinHint": "The built-in endpoint is fixed. Enter your API key, then refresh to load models.",
   "aiConfigGetKey": "Get API Key",
+  "aiBuiltinGetKey": "Get key in app",
+  "@aiBuiltinGetKey": {
+    "description": "Primary button on the built-in notice: open the in-app login page to fetch a key"
+  },
+  "aiBuiltinGroupUnbound": "Group: not bound",
+  "@aiBuiltinGroupUnbound": {
+    "description": "Shown when the built-in config has no bound group"
+  },
+  "aiBuiltinCurrentGroup": "Group: {name}",
+  "@aiBuiltinCurrentGroup": {
+    "description": "Shown when the built-in config has a bound group",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiBuiltinLoginTitle": "Sign in to Muxue",
+  "@aiBuiltinLoginTitle": {
+    "description": "Title of the in-app login page"
+  },
+  "aiBuiltinLoginDesktopUnsupported": "The in-app browser is available on Android only. Sign in with a system browser, then enter the API key here.",
+  "@aiBuiltinLoginDesktopUnsupported": {
+    "description": "Shown on non-Android platforms when opening the in-app login page"
+  },
+  "aiBuiltinOpenSite": "Open sign-in page",
+  "@aiBuiltinOpenSite": {
+    "description": "Open the panel sign-in page in a system browser"
+  },
+  "aiBuiltinLoginGuideTitle": "Register or sign in here",
+  "@aiBuiltinLoginGuideTitle": {
+    "description": "Title of the guide bar on the in-app login page"
+  },
+  "aiBuiltinLoginGuideBody": "Email must be QQ / Gmail / 163. Make sure the account has credit. Existing accounts can sign in directly.",
+  "@aiBuiltinLoginGuideBody": {
+    "description": "Body of the guide bar on the in-app login page"
+  },
+  "aiBuiltinLoginDetected": "Signed in, loading groups",
+  "@aiBuiltinLoginDetected": {
+    "description": "Progress text after the access token is captured"
+  },
+  "aiBuiltinCreating": "Creating key",
+  "@aiBuiltinCreating": {
+    "description": "Progress text while creating the key"
+  },
+  "aiBuiltinLoginDoneTitle": "Key saved to the built-in config",
+  "@aiBuiltinLoginDoneTitle": {
+    "description": "Status bar title after the in-app login flow succeeds"
+  },
+  "aiBuiltinLoginFailedTitle": "Action not completed",
+  "@aiBuiltinLoginFailedTitle": {
+    "description": "Status bar title when the in-app login flow fails"
+  },
+  "aiBuiltinLoginLoadFailed": "Page failed to load",
+  "@aiBuiltinLoginLoadFailed": {
+    "description": "Main document of the in-app login page failed to load"
+  },
+  "aiBuiltinLoginLoadTimeout": "Page load timed out. Check your network and retry.",
+  "@aiBuiltinLoginLoadTimeout": {
+    "description": "In-app login page load timeout"
+  },
+  "aiBuiltinRetry": "Retry",
+  "@aiBuiltinRetry": {
+    "description": "Retry button after a failure"
+  },
+  "aiBuiltinReload": "Reload page",
+  "@aiBuiltinReload": {
+    "description": "Reload the in-app login page"
+  },
+  "aiBuiltinCancel": "Cancel",
+  "@aiBuiltinCancel": {
+    "description": "Cancel button of the in-app login flow"
+  },
+  "aiBuiltinContinue": "Continue",
+  "@aiBuiltinContinue": {
+    "description": "Continue with the captured token when choosing a group and model"
+  },
+  "aiBuiltinPlatformTitle": "Choose a provider",
+  "@aiBuiltinPlatformTitle": {
+    "description": "Title of the provider picker sheet"
+  },
+  "aiBuiltinPlatformSearchHint": "Search providers",
+  "@aiBuiltinPlatformSearchHint": {
+    "description": "Search placeholder of the provider picker sheet"
+  },
+  "aiBuiltinPlatformEmpty": "No providers available. You can enter a key manually.",
+  "@aiBuiltinPlatformEmpty": {
+    "description": "Shown when no provider is available"
+  },
+  "aiBuiltinPlatformMeta": "{groups} groups · {models} models",
+  "@aiBuiltinPlatformMeta": {
+    "description": "Provider row subtitle: group count and model count",
+    "placeholders": {
+      "groups": {
+        "type": "int"
+      },
+      "models": {
+        "type": "int"
+      }
+    }
+  },
+  "aiBuiltinGroupTitle": "Choose a group",
+  "@aiBuiltinGroupTitle": {
+    "description": "Title of the group picker sheet"
+  },
+  "aiBuiltinGroupSearchHint": "Search groups",
+  "@aiBuiltinGroupSearchHint": {
+    "description": "Search placeholder of the group picker sheet"
+  },
+  "aiBuiltinGroupEmpty": "No groups under this provider. Go back and pick another provider.",
+  "@aiBuiltinGroupEmpty": {
+    "description": "Shown when the selected provider has no group"
+  },
+  "aiBuiltinMonitorHint": "Groups differ a lot in stability. Check the channel status first and pick the group with the most green (online) nodes.",
+  "@aiBuiltinMonitorHint": {
+    "description": "Tip at the top of the group picker: check channel status before choosing"
+  },
+  "aiBuiltinMonitorOpen": "Channel status",
+  "@aiBuiltinMonitorOpen": {
+    "description": "Button that opens the public channel status board"
+  },
+  "aiBuiltinGroupExclusive": "Exclusive",
+  "@aiBuiltinGroupExclusive": {
+    "description": "Badge on exclusive groups"
+  },
+  "aiBuiltinGroupMeta": "rate x{rate} · {count} models",
+  "@aiBuiltinGroupMeta": {
+    "description": "Group row subtitle: rate multiplier and model count",
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiBuiltinModelTitle": "Choose a model",
+  "@aiBuiltinModelTitle": {
+    "description": "Title of the model picker sheet"
+  },
+  "aiBuiltinModelSearchHint": "Search models",
+  "@aiBuiltinModelSearchHint": {
+    "description": "Search placeholder of the model picker sheet"
+  },
+  "aiBuiltinModelEmpty": "No model in this group. Go back and pick another group.",
+  "@aiBuiltinModelEmpty": {
+    "description": "Shown when the selected group has no model"
+  },
+  "aiBuiltinCopyKey": "Copy key",
+  "@aiBuiltinCopyKey": {
+    "description": "Copy the generated key"
+  },
+  "aiBuiltinKeyCopied": "Key copied",
+  "@aiBuiltinKeyCopied": {
+    "description": "Shown after the key is copied to the clipboard"
+  },
+  "aiBuiltinFinish": "Done",
+  "@aiBuiltinFinish": {
+    "description": "Finish the in-app login flow and return to the edit page"
+  },
+  "aiBuiltinCreateInWeb": "Create manually on the web",
+  "@aiBuiltinCreateInWeb": {
+    "description": "Fallback that opens the web key page when automatic creation fails"
+  },
+  "aiBuiltinWalletTitle": "Account credit",
+  "@aiBuiltinWalletTitle": {
+    "description": "Title of the credit card on the built-in config edit page"
+  },
+  "aiBuiltinWalletBalance": "Current credit",
+  "@aiBuiltinWalletBalance": {
+    "description": "Label of the amount on the credit card"
+  },
+  "aiBuiltinWalletLow": "Credit is low. Top up soon or requests will start failing.",
+  "@aiBuiltinWalletLow": {
+    "description": "Red warning shown when credit is below the threshold"
+  },
+  "aiBuiltinWalletGetCredit": "Get credit",
+  "@aiBuiltinWalletGetCredit": {
+    "description": "Text button that opens the credit guide document"
+  },
+  "aiBuiltinWalletRedeem": "Redeem code",
+  "@aiBuiltinWalletRedeem": {
+    "description": "Button that opens the redeem code dialog"
+  },
+  "aiBuiltinWalletRefresh": "Refresh credit",
+  "@aiBuiltinWalletRefresh": {
+    "description": "Button that re-fetches the current credit"
+  },
+  "aiBuiltinWalletFailed": "Failed to load credit",
+  "@aiBuiltinWalletFailed": {
+    "description": "Fallback message when the credit request fails"
+  },
+  "aiBuiltinWalletRelogin": "Sign in again",
+  "@aiBuiltinWalletRelogin": {
+    "description": "Entry back to the in-app login page after a credit failure"
+  },
+  "aiBuiltinWalletRedeemTitle": "Redeem code",
+  "@aiBuiltinWalletRedeemTitle": {
+    "description": "Title of the redeem code dialog"
+  },
+  "aiBuiltinWalletRedeemHint": "Enter the redeem code",
+  "@aiBuiltinWalletRedeemHint": {
+    "description": "Placeholder of the redeem code field"
+  },
+  "aiBuiltinWalletRedeemConfirm": "Redeem",
+  "@aiBuiltinWalletRedeemConfirm": {
+    "description": "Confirm button of the redeem code dialog"
+  },
+  "aiBuiltinWalletRedeemSuccess": "Redeemed. Credit refreshed.",
+  "@aiBuiltinWalletRedeemSuccess": {
+    "description": "Shown after a redeem code succeeds"
+  },
+  "aiBuiltinWalletRedeemFailed": "Redeem failed: {message}",
+  "@aiBuiltinWalletRedeemFailed": {
+    "description": "Shown when redeeming a code fails",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "aiBuiltinChangeGroup": "Switch group",
+  "@aiBuiltinChangeGroup": {
+    "description": "Move the key bound to the built-in config to another group"
+  },
+  "aiBuiltinChangeGroupNoKey": "Get the key first, then you can switch groups",
+  "@aiBuiltinChangeGroupNoKey": {
+    "description": "Shown when switching groups without a session or a key"
+  },
+  "aiBuiltinChangeGroupSuccess": "Switched to {name}",
+  "@aiBuiltinChangeGroupSuccess": {
+    "description": "Shown when the group is switched and the current model still works",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiBuiltinChangeGroupNeedModel": "Switched to {name}. Pick a model again.",
+  "@aiBuiltinChangeGroupNeedModel": {
+    "description": "Shown when the group is switched but the current model is gone",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiBuiltinChangeGroupFailed": "Failed to switch group: {message}",
+  "@aiBuiltinChangeGroupFailed": {
+    "description": "Fallback message when switching groups fails",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "aiConfigUse": "Use",
   "aiConfigSwitched": "Configuration switched",
   "aiConfigDelete": "Delete",
@@ -1289,6 +1552,7 @@
   "shellCopy": "Copy",
   "shellCopied": "Copied to clipboard",
   "shellReasonHostAuthFailed": "Pairing authentication failed, please retry",
+  "shellReasonAuthRevoked": "Authorization revoked; pair again",
   "shellReasonHostDisconnected": "Connection lost",
   "shellReasonEndpointNotFound": "Pairing service not found. Open \"Pair device with pairing code\" in Settings first, then enter the code again",
   "shellReasonPairingTimeout": "Pairing timed out, please retry",

@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 internal class AdbShellChannel(
     private val manager: AdbConnectionManager,
+    private val history: AdbPairingHistory,
 ) : ShellChannel {
 
     override val source: String get() = SOURCE
@@ -84,7 +85,15 @@ internal class AdbShellChannel(
         return runCatching { manager.connectDiscovered(timeoutMs) }
             .onFailure { lastError = it.javaClass.simpleName }
             .getOrDefault(false)
-            .also { if (it) identity = probeIdentity() }
+            .also { linked ->
+                if (linked) {
+                    identity = probeIdentity()
+                    // 只有真正拿到身份才算建链成功：仅有 TLS 通不代表设备信任本机。
+                    if (identity > 0L) history.markConnected()
+                } else {
+                    onLinkFailure()
+                }
+            }
     }
 
     /** 已知连接端口时直接连接（无 mDNS）。 */
@@ -93,7 +102,19 @@ internal class AdbShellChannel(
         return runCatching { manager.connectDevice(host, port) }
             .onFailure { lastError = it.javaClass.simpleName }
             .getOrDefault(false)
-            .also { if (it) identity = probeIdentity() }
+            .also { linked ->
+                if (linked) {
+                    identity = probeIdentity()
+                    if (identity > 0L) history.markConnected()
+                } else {
+                    onLinkFailure()
+                }
+            }
+    }
+
+    /** 判定是否为「设备撤销授权」；是则复位配对历史，下次必须重新配对。 */
+    private fun onLinkFailure() {
+        if (lastError == AdbConnectionManager.AUTH_FAILED_EXCEPTION) history.markRevoked()
     }
 
     /** 断开但保留磁盘凭据；下次连接会重新读密钥。 */

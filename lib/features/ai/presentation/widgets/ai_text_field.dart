@@ -18,6 +18,7 @@ class AiTextField extends HookWidget {
     this.obscure = false,
     this.readOnly = false,
     this.prefixIcon,
+    this.labelTrailing,
     this.onChanged,
   });
 
@@ -33,6 +34,9 @@ class AiTextField extends HookWidget {
   /// 只读：用于内置配置等不允许修改的字段。
   final bool readOnly;
   final IconData? prefixIcon;
+
+  /// 标题行右侧的附加操作，如内置配置的「获取 Key」。
+  final Widget? labelTrailing;
   final ValueChanged<String>? onChanged;
 
   @override
@@ -46,13 +50,20 @@ class AiTextField extends HookWidget {
       children: <Widget>[
         Padding(
           padding: EdgeInsets.only(left: 2.w, bottom: 7.h),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 12.5.sp,
-              fontWeight: FontWeight.w600,
-              color: scheme.onSurfaceVariant,
-            ),
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12.5.sp,
+                    fontWeight: FontWeight.w600,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              ?labelTrailing,
+            ],
           ),
         ),
         TextField(
@@ -116,7 +127,11 @@ class AiTextField extends HookWidget {
     );
   }
 
-  OutlineInputBorder _border(ColorScheme scheme, Color color, {double width = 1}) {
+  OutlineInputBorder _border(
+    ColorScheme scheme,
+    Color color, {
+    double width = 1,
+  }) {
     return OutlineInputBorder(
       borderRadius: BorderRadius.circular(14.r),
       borderSide: BorderSide(color: color, width: width),

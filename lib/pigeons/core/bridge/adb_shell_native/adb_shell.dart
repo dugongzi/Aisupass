@@ -2,15 +2,26 @@ import 'package:pigeon/pigeon.dart';
 
 /// 无线 ADB 的 shell 连接状态。
 ///
-/// 只描述「连上了没有、当前是什么身份」。
+/// 只描述「连上了没有、当前是什么身份，以及本机是否曾经连上过」。
 class ShellConnection {
-  ShellConnection({required this.connected, required this.uid});
+  ShellConnection({
+    required this.connected,
+    required this.uid,
+    required this.everConnected,
+  });
 
   /// ADB 连接是否活着。
   bool connected;
 
   /// 当前身份 uid：`2000` = shell，`-1` = 未知或不可用。
   int uid;
+
+  /// 本机是否至少成功建立过一次 adb shell 连接。
+  ///
+  /// 与「密钥文件是否存在」不等价：配对失败也会留下密钥。设备撤销授权后
+  /// 会复位为 false。无线调试关闭时该值仍可信，用于区分「从没配对过」与
+  /// 「配对过但当前开关没开」。
+  bool everConnected;
 }
 
 /// 配对受理结果。

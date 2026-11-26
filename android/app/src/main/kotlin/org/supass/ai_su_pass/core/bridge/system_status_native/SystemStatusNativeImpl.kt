@@ -53,8 +53,18 @@ class SystemStatusNativeImpl(private val context: Context) : SystemStatusNative 
         val resolver = context.contentResolver
         // 总开关。无线调试开启时系统也会把它置 1，所以它只代表 adbd 在跑。
         val adbEnabled = Settings.Global.getInt(resolver, Settings.Global.ADB_ENABLED, 0) == 1
+
         // `adb_wifi_enabled` 没有公开常量，只能按字符串读。
-        val wifi = Settings.Global.getInt(resolver, "adb_wifi_enabled", 0) == 1
+        // 用 getString 而非 getInt(..., 0)：后者在键不存在时返回默认值 0，会把
+        // 「ROM 不暴露该键」压成「开关关着」，导致 UI 误判用户没开无线调试。
+        // 三态让 Dart 侧能区分「真关着」（off）与「读不到」（unknown）。
+        val wifiRaw = Settings.Global.getString(resolver, "adb_wifi_enabled")
+        val wifiState = when (wifiRaw) {
+            "1" -> "on"
+            "0" -> "off"
+            else -> "unknown"
+        }
+        val wifi = wifiState == "on"
 
         // `sys.usb.state` 在无线调试时同样会变成 `adb`，所以只能靠 USB 是否
         // 真的连着来区分有线。USB_STATE 是 sticky 广播，直接查当前值即可。
@@ -63,11 +73,11 @@ class SystemStatusNativeImpl(private val context: Context) : SystemStatusNative 
 
         Log.i(
             TAG,
-            "ADB probe: adb_enabled=$adbEnabled, adb_wifi_enabled=$wifi, " +
+            "ADB probe: adb_enabled=$adbEnabled, adb_wifi_enabled=$wifiState, " +
                 "usb_connected=$usbConnected -> usb=$usb, wifi=$wifi",
         )
 
-        return AdbStatus(usb = usb, wifi = wifi)
+        return AdbStatus(usb = usb, wifi = wifi, wifiState = wifiState)
     }
 
     /**

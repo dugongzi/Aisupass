@@ -30,6 +30,8 @@ class TerminalLinkNotice extends HookConsumerWidget {
     final ValueNotifier<bool> needAction = useState<bool>(false);
     // true = 这次重试需要用户填配对码（小窗输入模式）。
     final ValueNotifier<bool> wantCode = useState<bool>(false);
+    // true = 这一轮重试的结论是「无线调试没开」，需要先跳设置而不是输码。
+    final ValueNotifier<bool> wantWifi = useState<bool>(false);
     // true = 这一轮重试还在跑，避免连点叠出两次。
     final ValueNotifier<bool> retrying = useState<bool>(false);
     final ShellPairingState pairing = ref.watch(shellPairingProvider);
@@ -51,6 +53,7 @@ class TerminalLinkNotice extends HookConsumerWidget {
         final AdbAutoConnectResult result = await ref.read(
           adbAutoConnectProvider,
         )();
+        wantWifi.value = result == AdbAutoConnectResult.needsWifiOn;
         wantCode.value = result == AdbAutoConnectResult.needsCode;
       } finally {
         retrying.value = false;
@@ -68,49 +71,111 @@ class TerminalLinkNotice extends HookConsumerWidget {
     final AppLocalizations l10n = context.l10n;
     final ColorScheme colors = context.colorScheme;
 
+    // 三态互斥：输码优先（小窗模式），其次「开关没开」，最后才是重试提示。
+    final Widget content;
+    if (wantCode.value) {
+      content = const AdbPairingCodeInput();
+    } else if (wantWifi.value) {
+      content = _enableWifiBar(ref, wantWifi, l10n, colors);
+    } else {
+      content = Row(
+        children: <Widget>[
+          Icon(
+            Icons.link_off_rounded,
+            size: 16.sp,
+            color: colors.onSurfaceVariant,
+          ),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: Text(
+              l10n.escalationTerminalNeedsAdb,
+              style: TextStyle(
+                fontSize: 12.sp,
+                height: 1.3,
+                color: colors.onSurfaceVariant,
+              ),
+            ),
+          ),
+          TextButton(
+            // 配对进行中或重连还没回来，先不叠第二次。
+            onPressed: (pairing.active || retrying.value)
+                ? null
+                : () => unawaited(retry()),
+            style: TextButton.styleFrom(
+              visualDensity: VisualDensity.compact,
+              padding: EdgeInsets.symmetric(horizontal: 10.w),
+            ),
+            child: Text(
+              l10n.shellPairingRetry,
+              style: TextStyle(
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     return Container(
       width: double.infinity,
       padding: EdgeInsets.fromLTRB(12.w, 8.h, 8.w, 8.h),
       color: colors.surfaceContainerHigh,
-      child: wantCode.value
-          ? const AdbPairingCodeInput()
-          : Row(
-              children: <Widget>[
-                Icon(
-                  Icons.link_off_rounded,
-                  size: 16.sp,
-                  color: colors.onSurfaceVariant,
-                ),
-                SizedBox(width: 8.w),
-                Expanded(
-                  child: Text(
-                    l10n.escalationTerminalNeedsAdb,
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      height: 1.3,
-                      color: colors.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-                TextButton(
-                  // 配对进行中或重连还没回来，先不叠第二次。
-                  onPressed: (pairing.active || retrying.value)
-                      ? null
-                      : () => unawaited(retry()),
-                  style: TextButton.styleFrom(
-                    visualDensity: VisualDensity.compact,
-                    padding: EdgeInsets.symmetric(horizontal: 10.w),
-                  ),
-                  child: Text(
-                    l10n.shellPairingRetry,
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+      child: content,
     );
+  }
+
+  /// 无线调试明确关着：说明一句并把人送到设置页，不发起配对。
+  Widget _enableWifiBar(
+    WidgetRef ref,
+    ValueNotifier<bool> wantWifi,
+    AppLocalizations l10n,
+    ColorScheme colors,
+  ) {
+    return Row(
+      children: <Widget>[
+        Icon(
+          Icons.wifi_off_rounded,
+          size: 16.sp,
+          color: colors.onSurfaceVariant,
+        ),
+        SizedBox(width: 8.w),
+        Expanded(
+          child: Text(
+            l10n.adbWifiOff,
+            style: TextStyle(
+              fontSize: 12.sp,
+              height: 1.3,
+              color: colors.onSurfaceVariant,
+            ),
+          ),
+        ),
+        TextButton(
+          onPressed: () => unawaited(_goEnableWifi(ref, wantWifi)),
+          style: TextButton.styleFrom(
+            visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.symmetric(horizontal: 10.w),
+          ),
+          child: Text(
+            l10n.adbGoEnableWifi,
+            style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 只跳设置：此刻系统里生成不出配对码。
+  Future<void> _goEnableWifi(
+    WidgetRef ref,
+    ValueNotifier<bool> wantWifi,
+  ) async {
+    try {
+      await ref.read(adbShellNativeProvider).openWirelessDebuggingSettings();
+    } catch (_) {
+      // ROM 拒绝跳转；用户自行前往同样有效。
+    }
+    // 从设置页回来后重新露出重试入口：开关到底开没开，交给下一轮重试去判定。
+    if (wantWifi.value) wantWifi.value = false;
   }
 }

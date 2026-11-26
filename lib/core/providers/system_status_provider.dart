@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:Aisupass/core/models/adb_wifi_state.dart';
 import 'package:Aisupass/generated/system_status.g.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -25,10 +26,15 @@ final FutureProvider<bool> rootStatusProvider = FutureProvider<bool>((ref) async
 
 /// ADB 调试开关状态。
 ///
-/// 有线与无线分别由原生判定，桌面端固定返回均未开启。
+/// 有线与无线分别由原生判定，桌面端固定返回均未开启（`wifiState` 为
+/// `unknown`，表示无法判断而非「关着」）。
 final FutureProvider<AdbStatus> adbStatusProvider =
     FutureProvider<AdbStatus>((ref) async {
-      final AdbStatus disabled = AdbStatus(usb: false, wifi: false);
+      final AdbStatus disabled = AdbStatus(
+        usb: false,
+        wifi: false,
+        wifiState: AdbWifiState.unknown.name,
+      );
       if (!Platform.isAndroid) return disabled;
 
       final SystemStatusNative native = ref.watch(systemStatusNativeProvider);

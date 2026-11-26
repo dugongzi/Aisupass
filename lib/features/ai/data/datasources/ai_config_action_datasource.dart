@@ -4,6 +4,7 @@ import 'package:Aisupass/core/storage/preferences_store.dart';
 import 'package:Aisupass/core/storage/secure_store.dart';
 import 'package:Aisupass/features/ai/data/datasources/ai_config_query_datasource.dart';
 import 'package:Aisupass/features/ai/data/models/ai_config_dto.dart';
+import 'package:Aisupass/features/ai/domain/constants/builtin_ai_config.dart';
 import 'package:Aisupass/features/ai/domain/enums/ai_api_type.dart';
 
 /// AI 配置的写入数据源。
@@ -51,4 +52,20 @@ class AiConfigActionDatasource {
     AiConfigQueryDatasource.currentIdKey,
     id,
   );
+
+  /// 写入内置配置已绑定的分组 id。
+  Future<void> writeBuiltinGroupId(int groupId) =>
+      _preferences.write<int>(builtinAiConfigGroupIdKey, groupId);
+
+  /// 写入内置配置已绑定的分组名。
+  Future<void> writeBuiltinGroupName(String groupName) =>
+      _preferences.write<String>(builtinAiConfigGroupNameKey, groupName);
+
+  /// 写入内置面板的登录令牌。
+  Future<void> writeBuiltinAuthToken(String token) =>
+      _secure.write<String>(builtinAiConfigAuthTokenKey, token);
+
+  /// 清除内置面板的登录令牌，用于令牌失效后要求重新登录。
+  Future<void> deleteBuiltinAuthToken() =>
+      _secure.delete(builtinAiConfigAuthTokenKey);
 }

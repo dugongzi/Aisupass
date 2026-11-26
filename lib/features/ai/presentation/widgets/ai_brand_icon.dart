@@ -118,6 +118,27 @@ enum AiBrand {
 AiBrand? resolveAiBrand({String? apiUrl, String? modelName, String? name}) =>
     AiBrand.resolve(apiUrl: apiUrl, modelName: modelName, name: name);
 
+/// 依据面板下发的平台标识推断品牌图标，识别不出返回 null。
+///
+/// 平台标识是精确值，先按已知平台直取，未知值再退回关键词推断，
+/// 都命中不了时由 [AiBrandIcon] 显示通用图标。
+AiBrand? resolveAiBrandForPlatform(String platform) {
+  final String key = platform.trim().toLowerCase();
+  if (key.isEmpty) return null;
+
+  const Map<String, AiBrand> exact = <String, AiBrand>{
+    'openai': AiBrand.openai,
+    'anthropic': AiBrand.anthropic,
+    'gemini': AiBrand.gemini,
+    'grok': AiBrand.grok,
+    'xai': AiBrand.xai,
+  };
+  final AiBrand? known = exact[key];
+  if (known != null) return known;
+
+  return AiBrand.resolve(apiUrl: key);
+}
+
 /// 品牌图标，按各家官方品牌色着色；无匹配品牌时回退为通用图标。
 class AiBrandIcon extends HookWidget {
   const AiBrandIcon({

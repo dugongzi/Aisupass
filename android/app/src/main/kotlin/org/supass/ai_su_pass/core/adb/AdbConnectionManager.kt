@@ -36,6 +36,15 @@ internal class AdbConnectionManager(
 
     private val appContext: Context = context.applicationContext
 
+    /**
+     * 配对历史。
+     *
+     * 与 [AdbShellChannel] 共用同一实例：写入点收敛在建链成功 / 设备撤销授权处，
+     * 读取点只有 [org.supass.ai_su_pass.core.bridge.adb_shell_native.AdbShellNativeImpl.connection]，
+     * 两处判定依据永远一致。
+     */
+    val pairingHistory = AdbPairingHistory(context)
+
     init {
         // 只用于决定 ADB 协议版本与单包大小（api >= 28 → 0x01000001 / 1MB）。
         setApi(Build.VERSION.SDK_INT)
@@ -171,9 +180,17 @@ internal class AdbConnectionManager(
 
     override fun getDeviceName(): String = keyStore.deviceName
 
-    private companion object {
+    internal companion object {
         /** 配对链路统一日志标签；logcat 里筛这一个就够了。 */
         const val TAG = "AdbShell"
+
+        /**
+         * libadb 在设备未授权时抛的异常类名。
+         *
+         * 「设备撤销授权」的配对历史复位与配对失败原因码映射共用这一份字面量，
+         * 避免两处各写一遍导致判定不一致。
+         */
+        const val AUTH_FAILED_EXCEPTION = "AdbAuthenticationFailedException"
 
         /** 连接等待上限；配对后再连接通常 1 秒内完成，15 秒足够覆盖慢设备。 */
         const val CONNECT_TIMEOUT_MS = 15_000L

@@ -207,6 +207,30 @@
   "@adbTypeUsb": {
     "description": "ADB 调试类型-有线（USB）调试"
   },
+  "adbWifiOff": "无线调试未开启",
+  "@adbWifiOff": {
+    "description": "ADB 状态副标题与卡片状态；仅在确认无线调试已关闭（wifiState 为 off）时使用，读不到开关时用 statusDetecting"
+  },
+  "adbGoEnableWifi": "去开启无线调试",
+  "@adbGoEnableWifi": {
+    "description": "开关关闭时卡片主按钮与终端页连接条按钮；只跳转系统无线调试设置，不发起配对"
+  },
+  "adbWifiOffHintFirst": "打开后回到这里输入配对码",
+  "@adbWifiOffHintFirst": {
+    "description": "开关关闭且从未连接过时的卡片备注行"
+  },
+  "adbWifiOffHintPaired": "打开后会自动重新连接，无需重新配对",
+  "@adbWifiOffHintPaired": {
+    "description": "开关关闭但曾经连接过时的卡片备注行"
+  },
+  "adbReconnecting": "正在重新连接…",
+  "@adbReconnecting": {
+    "description": "检测到无线调试已开启、正在静默重连时的状态文案"
+  },
+  "adbWifiDetectedConnected": "已检测到无线调试开启，已自动连接",
+  "@adbWifiDetectedConnected": {
+    "description": "首页卡片检测到开关打开并自动连接成功后的轻提示"
+  },
   "listSeparator": "、",
   "@listSeparator": {
     "description": "多个并列项之间的分隔符"
@@ -314,6 +338,263 @@
   "aiConfigGetKey": "获取 Key",
   "@aiConfigGetKey": {
     "description": "跳转到内置服务站点获取 API Key"
+  },
+  "aiBuiltinGetKey": "网页一键获取",
+  "@aiBuiltinGetKey": {
+    "description": "内置配置提示条上的主按钮：进入内置登录页自动获取 Key"
+  },
+  "aiBuiltinGroupUnbound": "分组：未绑定",
+  "@aiBuiltinGroupUnbound": {
+    "description": "内置配置尚未绑定分组时的展示"
+  },
+  "aiBuiltinCurrentGroup": "分组：{name}",
+  "@aiBuiltinCurrentGroup": {
+    "description": "内置配置已绑定分组的展示",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiBuiltinLoginTitle": "登录沐雪",
+  "@aiBuiltinLoginTitle": {
+    "description": "内置登录页标题"
+  },
+  "aiBuiltinLoginDesktopUnsupported": "内置浏览器仅在 Android 上可用。请用系统浏览器登录后，回到这里手动填写 API Key。",
+  "@aiBuiltinLoginDesktopUnsupported": {
+    "description": "非 Android 平台打开内置登录页时的说明"
+  },
+  "aiBuiltinOpenSite": "打开登录页",
+  "@aiBuiltinOpenSite": {
+    "description": "用系统浏览器打开内置面板登录页"
+  },
+  "aiBuiltinLoginGuideTitle": "在这里完成注册或登录",
+  "@aiBuiltinLoginGuideTitle": {
+    "description": "内置登录页顶部引导条的标题"
+  },
+  "aiBuiltinLoginGuideBody": "邮箱仅支持 QQ / Gmail / 163；需要保证账号内有额度；已有账号可直接登录。",
+  "@aiBuiltinLoginGuideBody": {
+    "description": "内置登录页顶部引导条的说明"
+  },
+  "aiBuiltinLoginDetected": "已获取登录状态，正在读取分组",
+  "@aiBuiltinLoginDetected": {
+    "description": "拿到登录令牌后的进度文案"
+  },
+  "aiBuiltinCreating": "正在创建密钥",
+  "@aiBuiltinCreating": {
+    "description": "创建密钥时的进度文案"
+  },
+  "aiBuiltinLoginDoneTitle": "密钥已写入内置配置",
+  "@aiBuiltinLoginDoneTitle": {
+    "description": "内置登录流程完成后的状态条标题"
+  },
+  "aiBuiltinLoginFailedTitle": "操作未完成",
+  "@aiBuiltinLoginFailedTitle": {
+    "description": "内置登录流程失败时的状态条标题"
+  },
+  "aiBuiltinLoginLoadFailed": "页面加载失败",
+  "@aiBuiltinLoginLoadFailed": {
+    "description": "内置登录页主文档加载失败"
+  },
+  "aiBuiltinLoginLoadTimeout": "页面加载超时，请检查网络后重试",
+  "@aiBuiltinLoginLoadTimeout": {
+    "description": "内置登录页加载超时"
+  },
+  "aiBuiltinRetry": "重试",
+  "@aiBuiltinRetry": {
+    "description": "失败后的重试按钮"
+  },
+  "aiBuiltinReload": "刷新页面",
+  "@aiBuiltinReload": {
+    "description": "刷新内置登录页"
+  },
+  "aiBuiltinCancel": "取消",
+  "@aiBuiltinCancel": {
+    "description": "内置登录流程的取消按钮"
+  },
+  "aiBuiltinContinue": "继续",
+  "@aiBuiltinContinue": {
+    "description": "已持有登录令牌时，继续选择分组与模型"
+  },
+  "aiBuiltinPlatformTitle": "选择模型厂商",
+  "@aiBuiltinPlatformTitle": {
+    "description": "厂商选择弹层标题"
+  },
+  "aiBuiltinPlatformSearchHint": "搜索厂商",
+  "@aiBuiltinPlatformSearchHint": {
+    "description": "厂商选择弹层的搜索框占位"
+  },
+  "aiBuiltinPlatformEmpty": "暂无可选厂商，可手动填写 Key",
+  "@aiBuiltinPlatformEmpty": {
+    "description": "没有可用厂商时的提示"
+  },
+  "aiBuiltinPlatformMeta": "{groups} 个分组 · {models} 个模型",
+  "@aiBuiltinPlatformMeta": {
+    "description": "厂商行的副标题：分组数量与模型数量",
+    "placeholders": {
+      "groups": {
+        "type": "int"
+      },
+      "models": {
+        "type": "int"
+      }
+    }
+  },
+  "aiBuiltinGroupTitle": "选择分组",
+  "@aiBuiltinGroupTitle": {
+    "description": "分组选择弹层标题"
+  },
+  "aiBuiltinGroupSearchHint": "搜索分组",
+  "@aiBuiltinGroupSearchHint": {
+    "description": "分组选择弹层的搜索框占位"
+  },
+  "aiBuiltinGroupEmpty": "暂无可选分组，可返回换一个厂商",
+  "@aiBuiltinGroupEmpty": {
+    "description": "所选厂商下没有分组时的提示"
+  },
+  "aiBuiltinMonitorHint": "分组稳定性差别很大，建议先看渠道状态，选绿色（在线）节点最多的分组。",
+  "@aiBuiltinMonitorHint": {
+    "description": "分组选择弹层顶部提示：选分组前先看渠道状态看板"
+  },
+  "aiBuiltinMonitorOpen": "查看渠道状态",
+  "@aiBuiltinMonitorOpen": {
+    "description": "打开渠道状态看板的按钮"
+  },
+  "aiBuiltinGroupExclusive": "专属",
+  "@aiBuiltinGroupExclusive": {
+    "description": "专属分组的标记"
+  },
+  "aiBuiltinGroupMeta": "倍率 x{rate} · {count} 个模型",
+  "@aiBuiltinGroupMeta": {
+    "description": "分组行的副标题：倍率与模型数量",
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aiBuiltinModelTitle": "选择模型",
+  "@aiBuiltinModelTitle": {
+    "description": "模型选择弹层标题"
+  },
+  "aiBuiltinModelSearchHint": "搜索模型",
+  "@aiBuiltinModelSearchHint": {
+    "description": "模型选择弹层的搜索框占位"
+  },
+  "aiBuiltinModelEmpty": "该分组下没有可选模型，可返回换一个分组",
+  "@aiBuiltinModelEmpty": {
+    "description": "所选分组没有模型时的提示"
+  },
+  "aiBuiltinCopyKey": "复制密钥",
+  "@aiBuiltinCopyKey": {
+    "description": "复制已生成的密钥"
+  },
+  "aiBuiltinKeyCopied": "密钥已复制",
+  "@aiBuiltinKeyCopied": {
+    "description": "密钥复制到剪贴板后的提示"
+  },
+  "aiBuiltinFinish": "完成",
+  "@aiBuiltinFinish": {
+    "description": "结束内置登录流程并返回编辑页"
+  },
+  "aiBuiltinCreateInWeb": "在网页中手动创建",
+  "@aiBuiltinCreateInWeb": {
+    "description": "自动建密钥失败后，转到网页里由用户自己创建"
+  },
+  "aiBuiltinWalletTitle": "账户额度",
+  "@aiBuiltinWalletTitle": {
+    "description": "内置配置编辑页的额度卡片标题"
+  },
+  "aiBuiltinWalletBalance": "当前额度",
+  "@aiBuiltinWalletBalance": {
+    "description": "额度卡片里的金额标签"
+  },
+  "aiBuiltinWalletLow": "额度偏低，建议先充值，否则调用会很快失败。",
+  "@aiBuiltinWalletLow": {
+    "description": "额度低于阈值时的红色提示"
+  },
+  "aiBuiltinWalletGetCredit": "获取额度",
+  "@aiBuiltinWalletGetCredit": {
+    "description": "打开额度说明文档的文字按钮"
+  },
+  "aiBuiltinWalletRedeem": "兑换码兑换",
+  "@aiBuiltinWalletRedeem": {
+    "description": "输入兑换码充值额度的按钮"
+  },
+  "aiBuiltinWalletRefresh": "刷新额度",
+  "@aiBuiltinWalletRefresh": {
+    "description": "重新拉取当前额度的按钮"
+  },
+  "aiBuiltinWalletFailed": "额度获取失败",
+  "@aiBuiltinWalletFailed": {
+    "description": "额度查询失败时的兜底文案"
+  },
+  "aiBuiltinWalletRelogin": "重新登录",
+  "@aiBuiltinWalletRelogin": {
+    "description": "额度查询失败后回到内置登录页的入口"
+  },
+  "aiBuiltinWalletRedeemTitle": "兑换码兑换",
+  "@aiBuiltinWalletRedeemTitle": {
+    "description": "兑换码输入弹框标题"
+  },
+  "aiBuiltinWalletRedeemHint": "请输入兑换码",
+  "@aiBuiltinWalletRedeemHint": {
+    "description": "兑换码输入框占位"
+  },
+  "aiBuiltinWalletRedeemConfirm": "兑换",
+  "@aiBuiltinWalletRedeemConfirm": {
+    "description": "兑换码弹框的确认按钮"
+  },
+  "aiBuiltinWalletRedeemSuccess": "兑换成功，额度已刷新",
+  "@aiBuiltinWalletRedeemSuccess": {
+    "description": "兑换码兑换成功的提示"
+  },
+  "aiBuiltinWalletRedeemFailed": "兑换失败：{message}",
+  "@aiBuiltinWalletRedeemFailed": {
+    "description": "兑换码兑换失败的提示",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "aiBuiltinChangeGroup": "更换分组",
+  "@aiBuiltinChangeGroup": {
+    "description": "内置配置里把已绑定的密钥换到另一个分组"
+  },
+  "aiBuiltinChangeGroupNoKey": "请先获取 Key 后再更换分组",
+  "@aiBuiltinChangeGroupNoKey": {
+    "description": "没有登录态或没有密钥时点更换分组的提示"
+  },
+  "aiBuiltinChangeGroupSuccess": "已切换到 {name}",
+  "@aiBuiltinChangeGroupSuccess": {
+    "description": "更换分组成功且模型仍可用时的提示",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiBuiltinChangeGroupNeedModel": "已切换到 {name}，请重新选择模型",
+  "@aiBuiltinChangeGroupNeedModel": {
+    "description": "更换分组成功但当前模型不在新分组里时的提示",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aiBuiltinChangeGroupFailed": "更换分组失败：{message}",
+  "@aiBuiltinChangeGroupFailed": {
+    "description": "更换分组失败的兜底提示",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "aiConfigUse": "切换",
   "@aiConfigUse": {
@@ -2917,6 +3198,10 @@
   "shellReasonHostAuthFailed": "配对鉴权失败，请重试",
   "@shellReasonHostAuthFailed": {
     "description": "原因码-hostAuthFailed"
+  },
+  "shellReasonAuthRevoked": "设备已撤销授权，需重新配对",
+  "@shellReasonAuthRevoked": {
+    "description": "原因码-hostAuthFailed 的业务化表述；连接阶段公钥未被设备信任，需重新配对"
   },
   "shellReasonHostDisconnected": "连接已断开",
   "@shellReasonHostDisconnected": {

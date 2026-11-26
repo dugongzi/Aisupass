@@ -2,6 +2,7 @@ import 'package:Aisupass/common/widgets/app_adb_shell_panel.dart';
 import 'package:Aisupass/common/widgets/app_status_card.dart';
 import 'package:Aisupass/common/widgets/app_stellar_service_card.dart';
 import 'package:Aisupass/core/extensions/context_extensions.dart';
+import 'package:Aisupass/core/models/adb_wifi_state.dart';
 import 'package:Aisupass/core/models/command_channel.dart';
 import 'package:Aisupass/core/providers/adb_shell_provider.dart';
 import 'package:Aisupass/core/providers/command_channel_provider.dart';
@@ -86,12 +87,18 @@ class AppSystemStatusCards extends HookConsumerWidget {
   String _adbSubtitle(BuildContext context, AsyncValue<AdbStatus> adbAsync) {
     final AdbStatus? adb = adbAsync.value;
     if (adb == null) return context.l10n.statusDetecting;
-    if (!_isAdbEnabled(adb)) return context.l10n.notActivated;
+
+    final AdbWifiState wifiState = AdbWifiState.fromName(adb.wifiState);
+    // 只有能确认「无线调试已关闭」时才断言未开启；unknown 不得冒充关闭，按「检测中」呈现。
+    if (!adb.usb && wifiState == AdbWifiState.off) {
+      return context.l10n.adbWifiOff;
+    }
 
     final List<String> types = <String>[
-      if (adb.wifi) context.l10n.adbTypeWifi,
+      if (wifiState == AdbWifiState.on) context.l10n.adbTypeWifi,
       if (adb.usb) context.l10n.adbTypeUsb,
     ];
+    if (types.isEmpty) return context.l10n.statusDetecting;
     return context.l10n.adbActivatedWithType(
       types.join(context.l10n.listSeparator),
     );
