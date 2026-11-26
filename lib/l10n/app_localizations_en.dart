@@ -629,6 +629,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatToolWebSearch => 'Search the web';
 
   @override
+  String get chatToolCoolapkSearch => 'Search Coolapk';
+
+  @override
   String get chatToolOpenInBrowser => 'Open page in browser';
 
   @override
@@ -852,6 +855,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get chatToolDesc_web_search =>
       'Search the public web with Bing and return titles, links and snippets';
+
+  @override
+  String get chatToolDesc_coolapk_search =>
+      'Search Coolapk posts, users and topics for real-device and rooting experience';
 
   @override
   String get chatToolDesc_fetch_web_page =>

@@ -314,7 +314,7 @@ final class EscalationActionsProvider
 
 String _$escalationActionsHash() => r'161c8871c554ad28674166549b1a8bf8a745bed7';
 
-/// 把临时 root 移交给用户选定的 [manager]。
+/// 把临时 root 移交给用户选定的 [manager]，成功后把该管理器拉到前台。
 ///
 /// 先由原生按该管理器解析 ksud 路径（支持改了名的管理器），再拼脚本；
 /// 管理器未安装时返回 [HandoffKind.managerMissing]，不抛异常。
@@ -322,7 +322,7 @@ String _$escalationActionsHash() => r'161c8871c554ad28674166549b1a8bf8a745bed7';
 @ProviderFor(handoffRoot)
 const handoffRootProvider = HandoffRootFamily._();
 
-/// 把临时 root 移交给用户选定的 [manager]。
+/// 把临时 root 移交给用户选定的 [manager]，成功后把该管理器拉到前台。
 ///
 /// 先由原生按该管理器解析 ksud 路径（支持改了名的管理器），再拼脚本；
 /// 管理器未安装时返回 [HandoffKind.managerMissing]，不抛异常。
@@ -335,7 +335,7 @@ final class HandoffRootProvider
           FutureOr<HandoffOutcome>
         >
     with $FutureModifier<HandoffOutcome>, $FutureProvider<HandoffOutcome> {
-  /// 把临时 root 移交给用户选定的 [manager]。
+  /// 把临时 root 移交给用户选定的 [manager]，成功后把该管理器拉到前台。
   ///
   /// 先由原生按该管理器解析 ksud 路径（支持改了名的管理器），再拼脚本；
   /// 管理器未安装时返回 [HandoffKind.managerMissing]，不抛异常。
@@ -383,9 +383,9 @@ final class HandoffRootProvider
   }
 }
 
-String _$handoffRootHash() => r'59c73c4f5ad7f89dd349ff99217a1e398b435ea8';
+String _$handoffRootHash() => r'25c3a053ff558a504a0e6b8cc43241f37a2dbb53';
 
-/// 把临时 root 移交给用户选定的 [manager]。
+/// 把临时 root 移交给用户选定的 [manager]，成功后把该管理器拉到前台。
 ///
 /// 先由原生按该管理器解析 ksud 路径（支持改了名的管理器），再拼脚本；
 /// 管理器未安装时返回 [HandoffKind.managerMissing]，不抛异常。
@@ -401,7 +401,7 @@ final class HandoffRootFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// 把临时 root 移交给用户选定的 [manager]。
+  /// 把临时 root 移交给用户选定的 [manager]，成功后把该管理器拉到前台。
   ///
   /// 先由原生按该管理器解析 ksud 路径（支持改了名的管理器），再拼脚本；
   /// 管理器未安装时返回 [HandoffKind.managerMissing]，不抛异常。
@@ -1570,7 +1570,7 @@ final class GhostLockPreflightProvider
 }
 
 String _$ghostLockPreflightHash() =>
-    r'7918570ef0742a8d3172d8bb2ceb4ef04a765733';
+    r'61686b25188450100085d617b07ddc665ec2f739';
 
 /// GhostLock 运行期的写操作。
 ///

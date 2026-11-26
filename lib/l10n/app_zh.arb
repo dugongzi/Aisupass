@@ -862,6 +862,10 @@
   "@chatToolWebSearch": {
     "description": "工具动作名-web_search"
   },
+  "chatToolCoolapkSearch": "搜索酷安",
+  "@chatToolCoolapkSearch": {
+    "description": "工具动作名-coolapk_search"
+  },
   "chatToolOpenInBrowser": "用浏览器打开网页",
   "@chatToolOpenInBrowser": {
     "description": "工具动作名-open_in_browser"
@@ -1145,6 +1149,7 @@
   "chatToolDesc_adb_pairing_request": "打开无线调试配对面板，引导完成 adb 配对",
   "chatToolDesc_stellar_service_status": "读取 Stellar 特权服务的可用状态与运行身份",
   "chatToolDesc_web_search": "用 Bing 搜索公开网络，返回标题、链接与摘要",
+  "chatToolDesc_coolapk_search": "在酷安社区搜索帖子、用户与话题，游客态可读，用于真实机型与刷机经验",
   "chatToolDesc_fetch_web_page": "抓取指定网页的原始源码，同时返回状态码与内容类型",
   "chatToolDesc_open_in_browser": "用应用内浏览器打开网页，可回传网址或页面源码",
   "chatToolDesc_escalation_get_device_identity": "读取提权需要的设备与内核标识",

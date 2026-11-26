@@ -238,6 +238,7 @@ String _toolLabel(BuildContext context, String name) {
     'adb_pairing_request' => context.l10n.chatToolRequestAdbPairing,
     'stellar_service_status' => context.l10n.chatToolReadStellarStatus,
     'web_search' => context.l10n.chatToolWebSearch,
+    'coolapk_search' => context.l10n.chatToolCoolapkSearch,
     'fetch_web_page' => context.l10n.chatToolFetchWebPage,
     'open_in_browser' => context.l10n.chatToolOpenInBrowser,
     _ => name.isEmpty ? context.l10n.chatToolRunning : _humanize(name),

@@ -1238,6 +1238,12 @@ abstract class AppLocalizations {
   /// **'联网搜索'**
   String get chatToolWebSearch;
 
+  /// 工具动作名-coolapk_search
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索酷安'**
+  String get chatToolCoolapkSearch;
+
   /// 工具动作名-open_in_browser
   ///
   /// In zh, this message translates to:
@@ -1627,6 +1633,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'用 Bing 搜索公开网络，返回标题、链接与摘要'**
   String get chatToolDesc_web_search;
+
+  /// No description provided for @chatToolDesc_coolapk_search.
+  ///
+  /// In zh, this message translates to:
+  /// **'在酷安社区搜索帖子、用户与话题，游客态可读，用于真实机型与刷机经验'**
+  String get chatToolDesc_coolapk_search;
 
   /// No description provided for @chatToolDesc_fetch_web_page.
   ///

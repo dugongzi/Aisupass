@@ -51,6 +51,7 @@ ChatManualGroup resolveChatManualGroup(String name) {
   if (name.startsWith('stellar_')) return ChatManualGroup.stellar;
   if (name == 'open_in_browser' ||
       name == 'web_search' ||
+      name == 'coolapk_search' ||
       name == 'fetch_web_page') {
     return ChatManualGroup.web;
   }

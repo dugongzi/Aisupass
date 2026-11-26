@@ -618,6 +618,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatToolWebSearch => '联网搜索';
 
   @override
+  String get chatToolCoolapkSearch => '搜索酷安';
+
+  @override
   String get chatToolOpenInBrowser => '用浏览器打开网页';
 
   @override
@@ -830,6 +833,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get chatToolDesc_web_search => '用 Bing 搜索公开网络，返回标题、链接与摘要';
+
+  @override
+  String get chatToolDesc_coolapk_search => '在酷安社区搜索帖子、用户与话题，游客态可读，用于真实机型与刷机经验';
 
   @override
   String get chatToolDesc_fetch_web_page => '抓取指定网页的原始源码，同时返回状态码与内容类型';

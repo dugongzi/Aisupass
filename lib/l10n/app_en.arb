@@ -418,6 +418,10 @@
   "@chatToolWebSearch": {
     "description": "工具动作名-web_search"
   },
+  "chatToolCoolapkSearch": "Search Coolapk",
+  "@chatToolCoolapkSearch": {
+    "description": "工具动作名-coolapk_search"
+  },
   "chatToolOpenInBrowser": "Open page in browser",
   "@chatToolOpenInBrowser": {
     "description": "工具动作名-open_in_browser"
@@ -610,6 +614,7 @@
   "chatToolDesc_adb_pairing_request": "Open the wireless debugging pairing panel and walk through adb pairing",
   "chatToolDesc_stellar_service_status": "Read whether the Stellar privileged service is available and which uid it runs as",
   "chatToolDesc_web_search": "Search the public web with Bing and return titles, links and snippets",
+  "chatToolDesc_coolapk_search": "Search Coolapk posts, users and topics for real-device and rooting experience",
   "chatToolDesc_fetch_web_page": "Download the raw source of a page together with its status code and content type",
   "chatToolDesc_open_in_browser": "Open a page in the in-app browser and hand back the URL or page source",
   "chatToolDesc_escalation_get_device_identity": "Read the device and kernel identity required for escalation",

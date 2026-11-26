@@ -30,6 +30,7 @@ import 'package:Aisupass/features/chat/presentation/controllers/chat_stream_sess
 import 'package:Aisupass/features/chat/presentation/providers/chat_query_provider.dart';
 import 'package:Aisupass/features/chat/presentation/widgets/chat/tools/adb_tools.dart';
 import 'package:Aisupass/features/chat/presentation/widgets/chat/tools/browser_tools.dart';
+import 'package:Aisupass/features/chat/presentation/widgets/chat/tools/coolapk_tools.dart';
 import 'package:Aisupass/features/chat/presentation/widgets/chat/tools/dirty_frag_tools.dart';
 import 'package:Aisupass/features/chat/presentation/widgets/chat/tools/escalation_action_tools.dart';
 import 'package:Aisupass/features/chat/presentation/widgets/chat/tools/escalation_query_tools.dart';
@@ -230,6 +231,7 @@ List<ChatToolDefinition> chatTools(Ref ref) => <ChatToolDefinition>[
   },
   ...browserTools(ref),
   ...webSearchTools(ref),
+  ...coolapkTools(ref),
   ...escalationQueryTools(ref),
   ...escalationActionTools(ref),
   ...ghostKeyTools(ref),

@@ -14,6 +14,7 @@ String localizedChatToolDescription(AppLocalizations l10n, String name) {
     'adb_pairing_request' => l10n.chatToolDesc_adb_pairing_request,
     'stellar_service_status' => l10n.chatToolDesc_stellar_service_status,
     'web_search' => l10n.chatToolDesc_web_search,
+    'coolapk_search' => l10n.chatToolDesc_coolapk_search,
     'fetch_web_page' => l10n.chatToolDesc_fetch_web_page,
     'open_in_browser' => l10n.chatToolDesc_open_in_browser,
     'escalation_get_device_identity' =>

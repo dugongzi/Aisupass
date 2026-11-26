@@ -110,6 +110,10 @@ dependencies:
   # 应用内浏览器（过验证码、看原始页面）。仅 Android 支持，桌面端走外部浏览器。
   webview_flutter: ^4.13.0
 
+  # 酷安搜索工具：MD5 摘要 + bcrypt 生成 X-App-Token 签名头
+  crypto: ^3.0.8
+  bcrypt: ^1.2.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

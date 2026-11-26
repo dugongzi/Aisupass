@@ -390,7 +390,7 @@ final class ChatToolsProvider
   }
 }
 
-String _$chatToolsHash() => r'cda176138658cb206b1aacbde75c77310d72eb6c';
+String _$chatToolsHash() => r'9061a0d0564f5480ff878b11617c95059eb7baed';
 
 /// 对话控制器。
 ///
