@@ -447,6 +447,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiKeyFormatSkip => '不需要';
 
   @override
+  String get aiProbeNotOkTitle => '检测到状态码非 200';
+
+  @override
+  String aiProbeNotOkBody(int code) {
+    return '本次测试返回状态码 $code，当前分组的渠道可能异常。是否查看渠道状态？';
+  }
+
+  @override
+  String get aiProbeSaveAnyway => '继续保存';
+
+  @override
   String get aiConfigUse => '切换';
 
   @override

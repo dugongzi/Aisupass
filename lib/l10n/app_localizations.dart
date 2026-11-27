@@ -926,6 +926,24 @@ abstract class AppLocalizations {
   /// **'不需要'**
   String get aiKeyFormatSkip;
 
+  /// 保存前连通性测试返回非 200 时的提示标题
+  ///
+  /// In zh, this message translates to:
+  /// **'检测到状态码非 200'**
+  String get aiProbeNotOkTitle;
+
+  /// 保存前连通性测试返回非 200 时的提示正文
+  ///
+  /// In zh, this message translates to:
+  /// **'本次测试返回状态码 {code}，当前分组的渠道可能异常。是否查看渠道状态？'**
+  String aiProbeNotOkBody(int code);
+
+  /// 状态码非 200 提示里的次要按钮：跳过检查直接保存
+  ///
+  /// In zh, this message translates to:
+  /// **'继续保存'**
+  String get aiProbeSaveAnyway;
+
   /// 切换到该 AI 配置
   ///
   /// In zh, this message translates to:

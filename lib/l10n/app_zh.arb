@@ -612,6 +612,23 @@
   "@aiKeyFormatSkip": {
     "description": "密钥格式提示弹窗的次要按钮：忽略提示继续填自己的 Key"
   },
+  "aiProbeNotOkTitle": "检测到状态码非 200",
+  "@aiProbeNotOkTitle": {
+    "description": "保存前连通性测试返回非 200 时的提示标题"
+  },
+  "aiProbeNotOkBody": "本次测试返回状态码 {code}，当前分组的渠道可能异常。是否查看渠道状态？",
+  "@aiProbeNotOkBody": {
+    "description": "保存前连通性测试返回非 200 时的提示正文",
+    "placeholders": {
+      "code": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProbeSaveAnyway": "继续保存",
+  "@aiProbeSaveAnyway": {
+    "description": "状态码非 200 提示里的次要按钮：跳过检查直接保存"
+  },
   "aiConfigUse": "切换",
   "@aiConfigUse": {
     "description": "切换到该 AI 配置"

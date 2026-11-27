@@ -459,6 +459,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiKeyFormatSkip => 'Not now';
 
   @override
+  String get aiProbeNotOkTitle => 'Status code is not 200';
+
+  @override
+  String aiProbeNotOkBody(int code) {
+    return 'The test returned status code $code. The current group\'s channels may be unhealthy. View channel status?';
+  }
+
+  @override
+  String get aiProbeSaveAnyway => 'Save anyway';
+
+  @override
   String get aiConfigUse => 'Use';
 
   @override

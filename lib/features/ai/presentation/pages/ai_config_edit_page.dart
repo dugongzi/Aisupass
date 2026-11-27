@@ -28,6 +28,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 
 /// 连通性检测状态。
@@ -348,6 +349,7 @@ class AiConfigEditPage extends HookConsumerWidget {
     }
 
     Future<void> handleSave() async {
+      if (saving.value) return;
       final Map<String, String> nextErrors = <String, String>{};
       // 内置配置的名称与地址由常量决定，跳过这两项校验。
       if (!isBuiltinEditing) {
@@ -377,15 +379,61 @@ class AiConfigEditPage extends HookConsumerWidget {
         return;
       }
 
+      // 保存前先测一次连通性：自动发一条测试消息，结果直接在弹窗里看。
+      // 测试期间按钮保持禁用，避免连点叠加多次请求。
       saving.value = true;
       try {
+        int? probeStatus;
+        await showAiTestSheet(
+          context,
+          buildConfig(),
+          autoSend: true,
+          autoCloseOnFinish: true,
+          onProbeStatus: (int? code) => probeStatus = code,
+        );
+        if (!context.mounted) return;
+
+        // 内置配置且明确拿到非 200：多半是当前分组渠道异常，先问是否看渠道状态。
+        if (isBuiltinEditing && probeStatus != null && probeStatus != 200) {
+          final bool? viewChannel = await showDialog<bool>(
+            context: context,
+            builder: (BuildContext dialogContext) {
+              final AppLocalizations dialogL10n = dialogContext.l10n;
+              return AlertDialog(
+                title: Text(dialogL10n.aiProbeNotOkTitle),
+                content: Text(dialogL10n.aiProbeNotOkBody(probeStatus!)),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(false),
+                    child: Text(dialogL10n.aiProbeSaveAnyway),
+                  ),
+                  FilledButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(true),
+                    child: Text(dialogL10n.aiBuiltinMonitorOpen),
+                  ),
+                ],
+              );
+            },
+          );
+          if (!context.mounted) return;
+          // 去看渠道状态时先不保存：用户很可能要回去换分组，
+          // 保存一份连不通的配置没有意义。
+          if (viewChannel == true) {
+            await launchUrl(
+              Uri.parse(builtinAiConfigMonitorUrl),
+              mode: LaunchMode.externalApplication,
+            );
+            return;
+          }
+        }
+
         await ref.read(aiConfigActionsProvider).save(buildConfig());
-        saving.value = false;
         ToastMessage.success(l10n.aiSaveSuccess);
         if (context.mounted) context.pop();
       } catch (error) {
-        saving.value = false;
         ToastMessage.error(l10n.aiSaveFailed(error.toString()));
+      } finally {
+        if (context.mounted) saving.value = false;
       }
     }
 

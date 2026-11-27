@@ -377,6 +377,23 @@
   "@aiKeyFormatSkip": {
     "description": "Secondary action of the key format dialog: keep the user's own key"
   },
+  "aiProbeNotOkTitle": "Status code is not 200",
+  "@aiProbeNotOkTitle": {
+    "description": "Dialog title when the pre-save connectivity test returns a non-200 status"
+  },
+  "aiProbeNotOkBody": "The test returned status code {code}. The current group's channels may be unhealthy. View channel status?",
+  "@aiProbeNotOkBody": {
+    "description": "Dialog body when the pre-save connectivity test returns a non-200 status",
+    "placeholders": {
+      "code": {
+        "type": "int"
+      }
+    }
+  },
+  "aiProbeSaveAnyway": "Save anyway",
+  "@aiProbeSaveAnyway": {
+    "description": "Secondary action of the non-200 dialog: skip the check and save"
+  },
   "aiConfigUse": "Use",
   "aiConfigSwitched": "Configuration switched",
   "aiConfigDelete": "Delete",

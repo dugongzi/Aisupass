@@ -16,19 +16,48 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 /// 打开配置测试窗口。
 ///
 /// 会真实发送一条消息给服务端，并以流式方式展示返回内容。
-Future<void> showAiTestSheet(BuildContext context, AiConfig config) {
+///
+/// [autoSend] 为 `true` 时打开后立刻发一条测试消息，用于保存前的连通性检查。
+/// [onProbeStatus] 在每次测试结束时回传状态码，没拿到状态码时回传 `null`。
+/// [autoCloseOnFinish] 为 `true` 时测试一结束就自动关闭弹窗，无需用户手动关。
+Future<void> showAiTestSheet(
+  BuildContext context,
+  AiConfig config, {
+  bool autoSend = false,
+  bool autoCloseOnFinish = false,
+  ValueChanged<int?>? onProbeStatus,
+}) {
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (BuildContext _) => _AiTestSheet(config: config),
+    builder: (BuildContext _) => _AiTestSheet(
+      config: config,
+      autoSend: autoSend,
+      autoCloseOnFinish: autoCloseOnFinish,
+      onProbeStatus: onProbeStatus,
+    ),
   );
 }
 
 class _AiTestSheet extends HookConsumerWidget {
-  const _AiTestSheet({required this.config});
+  const _AiTestSheet({
+    required this.config,
+    required this.autoSend,
+    required this.autoCloseOnFinish,
+    required this.onProbeStatus,
+  });
 
   final AiConfig config;
+
+  /// 打开后是否立刻发一条测试消息。
+  final bool autoSend;
+
+  /// 测试结束后是否自动关闭弹窗。
+  final bool autoCloseOnFinish;
+
+  /// 测试结束时回传状态码。
+  final ValueChanged<int?>? onProbeStatus;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -51,14 +80,27 @@ class _AiTestSheet extends HookConsumerWidget {
 
     final ObjectRef<StreamSubscription<AiChatProbeEvent>?> subscription =
         useRef<StreamSubscription<AiChatProbeEvent>?>(null);
+    final ObjectRef<Timer?> autoCloseTimer = useRef<Timer?>(null);
     final ScrollController scrollController = useScrollController();
 
     // 关闭弹层时中断请求，避免后台继续收流。
     useEffect(() {
       return () {
         subscription.value?.cancel();
+        autoCloseTimer.value?.cancel();
       };
     }, const <Object?>[]);
+
+    /// 测试结束后自动关闭弹窗：成功留短一点，失败多留一会儿看原因。
+    void scheduleAutoClose(int? code) {
+      if (!autoCloseOnFinish) return;
+      autoCloseTimer.value?.cancel();
+      final int delayMs = code == 200 ? 800 : 1500;
+      autoCloseTimer.value = Timer(Duration(milliseconds: delayMs), () {
+        if (!context.mounted) return;
+        Navigator.of(context).maybePop();
+      });
+    }
 
     // 流式输出时自动跟随到底部，避免新内容落在可视区外看起来像没动。
     useEffect(() {
@@ -111,18 +153,24 @@ class _AiTestSheet extends HookConsumerWidget {
                   elapsed.value = event.duration;
                   streamed.value = event.streamed;
                   streaming.value = false;
+                  onProbeStatus?.call(event.statusCode);
+                  scheduleAutoClose(event.statusCode);
                 case AiChatProbeFailed():
                   statusCode.value = event.statusCode;
                   elapsed.value = event.duration;
                   errorMessage.value = event.message;
                   rawBody.value = event.rawBody;
                   streaming.value = false;
+                  onProbeStatus?.call(event.statusCode);
+                  scheduleAutoClose(event.statusCode);
               }
             },
             onError: (Object error) {
               if (!context.mounted) return;
               errorMessage.value = error.toString();
               streaming.value = false;
+              onProbeStatus?.call(null);
+              scheduleAutoClose(null);
             },
             onDone: () {
               if (!context.mounted) return;
@@ -130,6 +178,18 @@ class _AiTestSheet extends HookConsumerWidget {
             },
           );
     }
+
+    // 保存前检查：打开即发一条测试消息，用户直接看结果。
+    final ObjectRef<bool> autoSent = useRef(false);
+    useEffect(() {
+      if (!autoSend || autoSent.value) return null;
+      autoSent.value = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!context.mounted) return;
+        unawaited(send());
+      });
+      return null;
+    }, const <Object?>[]);
 
     Future<void> copyResult() async {
       final String text = errorMessage.value != null
@@ -255,9 +315,7 @@ class _AiTestSheet extends HookConsumerWidget {
                         child: FilledButton.icon(
                           onPressed: streaming.value ? null : send,
                           style: FilledButton.styleFrom(
-                            minimumSize: Size.fromHeight(
-                              isDesktop ? 42 : 44.h,
-                            ),
+                            minimumSize: Size.fromHeight(isDesktop ? 42 : 44.h),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12.r),
                             ),
@@ -355,29 +413,32 @@ class _ProbeResultCard extends StatelessWidget {
     final ColorScheme scheme = context.colorScheme;
     final bool failed = error != null;
     final _ProbeState state = _resolveState();
-    final (String stateLabel, Color accent, IconData stateIcon) =
-        switch (state) {
-          _ProbeState.streaming => (
-            l10n.aiTestStateStreaming,
-            scheme.primary,
-            Icons.autorenew_rounded,
-          ),
-          _ProbeState.success => (
-            l10n.aiTestStateSuccess,
-            const Color(0xFF2E7D32),
-            Icons.check_circle_rounded,
-          ),
-          _ProbeState.failed => (
-            l10n.aiTestStateFailed,
-            scheme.error,
-            Icons.error_rounded,
-          ),
-          _ProbeState.unknown => (
-            l10n.aiTestStateUnknown,
-            scheme.onSurfaceVariant,
-            Icons.help_outline_rounded,
-          ),
-        };
+    final (
+      String stateLabel,
+      Color accent,
+      IconData stateIcon,
+    ) = switch (state) {
+      _ProbeState.streaming => (
+        l10n.aiTestStateStreaming,
+        scheme.primary,
+        Icons.autorenew_rounded,
+      ),
+      _ProbeState.success => (
+        l10n.aiTestStateSuccess,
+        const Color(0xFF2E7D32),
+        Icons.check_circle_rounded,
+      ),
+      _ProbeState.failed => (
+        l10n.aiTestStateFailed,
+        scheme.error,
+        Icons.error_rounded,
+      ),
+      _ProbeState.unknown => (
+        l10n.aiTestStateUnknown,
+        scheme.onSurfaceVariant,
+        Icons.help_outline_rounded,
+      ),
+    };
     final String tagText = statusCode == null
         ? stateLabel
         : '$stateLabel · ${statusCode!}';
@@ -413,11 +474,7 @@ class _ProbeResultCard extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-                    Icon(
-                      stateIcon,
-                      size: 12.sp,
-                      color: accent,
-                    ),
+                    Icon(stateIcon, size: 12.sp, color: accent),
                     SizedBox(width: 4.w),
                     Text(
                       tagText,
