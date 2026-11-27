@@ -2409,9 +2409,9 @@
   "@escalationGhostKeyReasonAlreadyRunning": {
     "description": "原因码 alreadyRunning"
   },
-  "escalationGhostKeyReasonNoAdb": "ADB 未连接",
+  "escalationGhostKeyReasonNoAdb": "命令通道未连接",
   "@escalationGhostKeyReasonNoAdb": {
-    "description": "原因码 noAdb"
+    "description": "原因码 noAdb（文案保持通道中立：ADB 与 Stellar 都可能是当前通道）"
   },
   "escalationGhostKeyReasonNotShell": "shell 身份不是 2000",
   "@escalationGhostKeyReasonNotShell": {

@@ -1,8 +1,8 @@
 package org.supass.ai_su_pass.cve43499
 
 import android.os.SystemClock
-import org.supass.ai_su_pass.core.adb.AdbShellChannel
 import org.supass.ai_su_pass.core.bridge.ghost_lock_native.GhostLockChunk
+import org.supass.ai_su_pass.core.shell.ShellChannel
 import org.supass.ai_su_pass.core.shell.ShellProtocol
 import org.supass.ai_su_pass.core.shell.ShellResult
 
@@ -19,7 +19,7 @@ internal class GhostLockSession(
     private val binPath: String,
     private val ksudPath: String,
     private val blob: ByteArray,
-    private val channel: AdbShellChannel,
+    private val channel: ShellChannel,
 ) {
 
     val sessionId: String = "cve43499-${System.currentTimeMillis()}"

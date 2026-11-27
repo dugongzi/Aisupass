@@ -60,7 +60,7 @@ final class EscalationActionDatasourceProvider
 }
 
 String _$escalationActionDatasourceHash() =>
-    r'033cb08c2ea1d7d43ed2f87cf285a4f223d499e4';
+    r'6007e5ad66a41000c4c879b06ae95c73185ad418';
 
 /// 提权链路执行仓储。
 

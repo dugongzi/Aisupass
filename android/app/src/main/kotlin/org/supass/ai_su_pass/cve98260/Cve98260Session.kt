@@ -2,10 +2,10 @@ package org.supass.ai_su_pass.cve98260
 
 import android.os.SystemClock
 import java.util.ArrayDeque
-import org.supass.ai_su_pass.core.adb.AdbShellChannel
 import org.supass.ai_su_pass.core.bridge.cve98260_native.Cve98260Chunk
 import org.supass.ai_su_pass.core.bridge.cve98260_native.Cve98260Request
 import org.supass.ai_su_pass.core.bridge.cve98260_native.Cve98260StageEvent
+import org.supass.ai_su_pass.core.shell.ShellChannel
 import org.supass.ai_su_pass.core.shell.ShellResult
 
 /** 流水线五个阶段的阶段码，与 Pigeon `events.stage` 逐字一致。 */
@@ -28,7 +28,7 @@ internal object Cve98260Status {
     const val SKIPPED = "skipped"
 }
 
-/** 阶段命令不设时限：`0` 交给 [AdbShellChannel] 表示不限时，由用户手动取消。 */
+/** 阶段命令不设时限：`0` 交给 [ShellChannel] 表示不限时，由用户手动取消。 */
 private const val STAGE_TIMEOUT_MS = 0L
 private const val CANCEL_TIMEOUT_MS = 10_000L
 private const val SETUP_TIMEOUT_MS = 5_000L
@@ -78,7 +78,7 @@ internal class Cve98260Session(
     private val binPath: String,
     private val profileBlob: ByteArray,
     private val ksudPath: String,
-    private val channel: AdbShellChannel,
+    private val channel: ShellChannel,
 ) {
 
     val sessionId: String = "cve98260-${System.currentTimeMillis()}"

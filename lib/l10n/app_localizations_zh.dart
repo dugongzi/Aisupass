@@ -1962,7 +1962,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get escalationGhostKeyReasonAlreadyRunning => '已有任务在运行';
 
   @override
-  String get escalationGhostKeyReasonNoAdb => 'ADB 未连接';
+  String get escalationGhostKeyReasonNoAdb => '命令通道未连接';
 
   @override
   String get escalationGhostKeyReasonNotShell => 'shell 身份不是 2000';

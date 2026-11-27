@@ -2123,7 +2123,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'A run is already in progress';
 
   @override
-  String get escalationGhostKeyReasonNoAdb => 'ADB is not connected';
+  String get escalationGhostKeyReasonNoAdb =>
+      'Command channel is not connected';
 
   @override
   String get escalationGhostKeyReasonNotShell => 'Shell uid is not 2000';

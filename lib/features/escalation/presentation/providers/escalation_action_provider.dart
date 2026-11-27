@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:Aisupass/core/providers/adb_shell_provider.dart';
+import 'package:Aisupass/core/providers/channel_exec_provider.dart';
 import 'package:Aisupass/core/providers/escalation_native_provider.dart';
 import 'package:Aisupass/core/storage/storage_providers.dart';
 import 'package:Aisupass/features/escalation/data/datasources/dirty_frag_action_datasource.dart';
@@ -51,6 +52,7 @@ part 'escalation_action_provider.g.dart';
 EscalationActionDatasource escalationActionDatasource(Ref ref) =>
     EscalationActionDatasource(
       native: ref.watch(adbShellNativeProvider),
+      exec: ref.watch(channelShellExecProvider),
       storage: ref.watch(preferencesStoreProvider),
     );
 

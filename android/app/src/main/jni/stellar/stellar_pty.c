@@ -146,6 +146,8 @@ int pty_serve(int fd, const char *cmd, uint32_t cmd_len, int rows, int cols) {
         /* 子进程：forkpty 已把 slave 接到 0/1/2 并建好会话与控制终端。 */
         chdir("/");
         close(fd);
+        /* 复位 SIGPIPE：服务端 SIG_IGN 会随 exec 继承，导致 `yes | head` 挂住。 */
+        (void) signal(SIGPIPE, SIG_DFL);
         execl("/system/bin/sh", "sh", "-c", cmd, (char *) NULL);
         _exit(127);
     }

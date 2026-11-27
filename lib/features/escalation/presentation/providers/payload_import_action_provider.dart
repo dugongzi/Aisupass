@@ -1,4 +1,4 @@
-import 'package:Aisupass/core/providers/adb_shell_provider.dart';
+import 'package:Aisupass/core/providers/channel_exec_provider.dart';
 import 'package:Aisupass/core/storage/storage_providers.dart';
 import 'package:Aisupass/features/escalation/data/datasources/payload_import_action_datasource.dart';
 import 'package:Aisupass/features/escalation/data/repositories/payload_import_action_repository_impl.dart';
@@ -13,7 +13,7 @@ part 'payload_import_action_provider.g.dart';
 @riverpod
 PayloadImportActionDatasource payloadImportActionDatasource(Ref ref) =>
     PayloadImportActionDatasource(
-      native: ref.watch(adbShellNativeProvider),
+      exec: ref.watch(channelShellExecWithStdinProvider),
       storage: ref.watch(preferencesStoreProvider),
     );
 

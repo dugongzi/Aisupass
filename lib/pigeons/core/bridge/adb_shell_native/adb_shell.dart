@@ -313,4 +313,16 @@ abstract class AdbShellNative {
   /// 内、不会解压，注入会失败。
   @async
   String nativeLibraryDir();
+
+  /// 下发业务通道与 Stellar 服务的鉴权串。
+  ///
+  /// GhostKey / GhostLock 这类能力不经过 Dart 的执行出口：它们的会话建在原生侧，
+  /// 复用本实例持有的 shell 通道（同一个 uid=2000 身份）。因此 Dart 切通道时
+  /// 必须显式通知原生，否则它们会一直用无线 ADB。
+  ///
+  /// [mode] 取 `adb` 或 `stellar`；其它值一律按 `adb` 处理。
+  /// [stellarToken] 只在 `stellar` 模式下有意义，空串表示 token 尚未准备好，
+  /// 此时该通道视为未连接（不影响 ADB 通道的状态判定）。
+  @async
+  void configureShellChannel(String mode, String stellarToken);
 }

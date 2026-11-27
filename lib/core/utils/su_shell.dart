@@ -1,12 +1,24 @@
+import 'dart:typed_data';
+
 import 'package:Aisupass/generated/adb_shell.g.dart' as pigeon;
 
 /// 一条命令的执行出口：`(命令, 超时毫秒) → 原始结果`。
 ///
 /// 抽掉 `stdin`：提权命令不读标准输入，固定传 `null` 立即 EOF 比挂到超时好。
-typedef ShellExec = Future<pigeon.ShellExecResult> Function(
-  String command,
-  int timeoutMs,
-);
+typedef ShellExec =
+    Future<pigeon.ShellExecResult> Function(String command, int timeoutMs);
+
+/// 带标准输入的执行出口：`(命令, 超时毫秒, 输入字节) → 原始结果`。
+///
+/// 与 [ShellExec] 并存而不是替换：绝大多数命令不读输入，多带一个 `null` 参数
+/// 只会让每个调用点都要写一遍。只有「把二进制推进设备文件」这种场景需要它
+/// （导入自定义载荷）。
+typedef ShellExecWithStdin =
+    Future<pigeon.ShellExecResult> Function(
+      String command,
+      int timeoutMs,
+      Uint8List? stdin,
+    );
 
 /// 以 root 身份执行脚本的薄壳：按固定候选解析 `su` 路径后包一层。
 class SuShell {

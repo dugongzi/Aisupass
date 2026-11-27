@@ -1,4 +1,5 @@
 import 'package:Aisupass/common/widgets/app_bootstrap.dart';
+import 'package:Aisupass/core/providers/channel_exec_provider.dart';
 import 'package:Aisupass/core/providers/locale_provider.dart';
 import 'package:Aisupass/core/providers/theme_provider.dart';
 import 'package:Aisupass/core/routes/app_router.dart';
@@ -24,6 +25,9 @@ class AiSuPassApp extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final Locale locale = ref.watch(localeProvider);
     final AppThemeSettings themeSettings = ref.watch(themeSettingsProvider);
+    // 通道切换要同步到原生：GhostKey / GhostLock 的会话在 Kotlin 侧执行，
+    // 不经过 Dart 的执行出口选择器，只能靠这里下发。
+    ref.watch(shellChannelSyncProvider);
 
     return AppBootstrap(
       builder: (context) => MaterialApp.router(

@@ -21,6 +21,7 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <netinet/in.h>
 #include <signal.h>
 #include <stdarg.h>
@@ -161,12 +162,34 @@ static long parse_long(const char *text) {
 
 /* ------------------------------------------------------------ 请求处理 --- */
 
+/** 丢弃用的最大字节数：超限后不再排空，直接断开（避免被异常长度拖住）。 */
+#define DRAIN_CAP (64L << 20)
+
+/** 读走并丢弃最多 remain 字节的体，避免关闭时对端收到 RST 而丢应答。 */
+static void drain_body(int fd, long remain) {
+    unsigned char hole[8192];
+    if (remain > DRAIN_CAP) remain = DRAIN_CAP;
+    while (remain > 0) {
+        size_t want = (size_t) (remain < (long) sizeof(hole) ? remain : (long) sizeof(hole));
+        if (proto_recv_all(fd, hole, want) != 0) return;
+        remain -= (long) want;
+    }
+}
+
 /** EXEC / OPEN 共用的命令体读取：读满即 `\0` 结尾，失败返回 NULL。 */
 static char *read_command(int fd, long body_len) {
-    if (body_len <= 0 || body_len > CMD_MAX) return NULL;
+    if (body_len <= 0) return NULL;
+    if (body_len > CMD_MAX) {
+        /* 超长：排空体再回错，避免残留数据让 close 触发 RST 丢掉应答。 */
+        drain_body(fd, body_len);
+        return NULL;
+    }
 
     char *cmd = malloc((size_t) body_len + 1);
-    if (cmd == NULL) return NULL;
+    if (cmd == NULL) {
+        drain_body(fd, body_len);
+        return NULL;
+    }
 
     if (proto_recv_all(fd, cmd, (size_t) body_len) != 0) {
         free(cmd);
@@ -174,6 +197,32 @@ static char *read_command(int fd, long body_len) {
     }
     cmd[body_len] = '\0';
     return cmd;
+}
+
+/** 标准输入体读取；长度为 0 时返回 NULL 且不算失败。 */
+static uint8_t *read_stdin(int fd, long body_len, int *failed) {
+    *failed = 0;
+    if (body_len <= 0) return NULL;
+    if (body_len > (long) IN_CAP) {
+        /* 超限：把体排空再报错。不排空直接 close 会因接收缓冲有残留数据触发
+         * RST，客户端连 badStdin 应答都读不到。 */
+        drain_body(fd, body_len);
+        *failed = 1;
+        return NULL;
+    }
+
+    uint8_t *data = malloc((size_t) body_len);
+    if (data == NULL) {
+        drain_body(fd, body_len);
+        *failed = 1;
+        return NULL;
+    }
+    if (proto_recv_all(fd, data, (size_t) body_len) != 0) {
+        free(data);
+        *failed = 1;
+        return NULL;
+    }
+    return data;
 }
 
 /** 处理一条连接；返回即表示该连接结束。 */
@@ -236,19 +285,40 @@ static void handle_conn(int fd, const char *token, int self_uid) {
         if (!proto_token_match(arg1, token)) return;
 
         long timeout_ms = parse_long(arg2);
-        long body_len = parse_long(arg3);
+        long cmd_body_len = parse_long(arg3);
+        /* 第 5 段是可选的标准输入长度；缺省按 0（不喂输入）。 */
+        long stdin_body_len = parse_long(arg4);
+        if (stdin_body_len < 0) stdin_body_len = 0;
 
-        /* 夹在合理区间：异常的 timeout 只影响等多久，不该走到 int 溢出。 */
+        /* 超时原样透传：<= 0 表示不限时，正数按调用方要求等。
+         * 这里不夹上限——服务不是策略层，替调用方改写等待时间属于越权。
+         * 唯一的处理是类型安全：int 装不下 long，溢出会翻成负数被当成「不限时」。 */
         if (timeout_ms < 0) timeout_ms = 0;
-        if (timeout_ms > 600000) timeout_ms = 600000;
+        if (timeout_ms > (long) INT_MAX) timeout_ms = (long) INT_MAX;
 
-        char *cmd = read_command(fd, body_len);
+        char *cmd = read_command(fd, cmd_body_len);
         if (cmd == NULL) {
             reply_line(fd, "{\"ok\":0,\"reason\":\"badCommand\"}");
             return;
         }
 
-        (void) exec_once(fd, cmd, (uint32_t) body_len, (int) timeout_ms);
+        int stdin_failed = 0;
+        uint8_t *stdin_data = read_stdin(fd, stdin_body_len, &stdin_failed);
+        if (stdin_failed) {
+            free(cmd);
+            reply_line(fd, "{\"ok\":0,\"reason\":\"badStdin\"}");
+            return;
+        }
+
+        (void) exec_once(
+            fd,
+            cmd,
+            (uint32_t) cmd_body_len,
+            stdin_data,
+            (uint32_t) stdin_body_len,
+            (int) timeout_ms
+        );
+        free(stdin_data);
         free(cmd);
         return;
     }

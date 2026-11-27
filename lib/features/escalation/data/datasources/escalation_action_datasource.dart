@@ -14,15 +14,22 @@ import 'package:Aisupass/generated/adb_shell.g.dart' as pigeon;
 
 /// 提权链路执行数据源。
 class EscalationActionDatasource {
-  EscalationActionDatasource({required this._native, required this._storage});
+  EscalationActionDatasource({
+    required this._native,
+    required this._exec,
+    required this._storage,
+  });
 
+  /// 只用于读 `nativeLibraryDir`：那是本进程的本地信息，与命令通道无关。
   final pigeon.AdbShellNative _native;
 
-  final KeyValueStore _storage;
+  /// 一次性命令出口，跟随用户选择的命令通道（ADB 或 Stellar）。
+  ///
+  /// 这里拿函数而不是拿 `AdbShellNative`：提权命令与终端、AI 工具走同一条链路，
+  /// 否则通道选 Stellar 时提权仍偷偷走 ADB，用户看到的是两条通道各跑一半。
+  final ShellExec _exec;
 
-  /// `stdin` 固定传 `null`：这里的命令都不读标准输入，立即 EOF 比挂到超时好。
-  Future<pigeon.ShellExecResult> _exec(String command, int timeoutMs) =>
-      _native.exec(command, timeoutMs, null);
+  final KeyValueStore _storage;
 
   late final SuShell _su = SuShell(exec: _exec);
 

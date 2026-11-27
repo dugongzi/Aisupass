@@ -1330,7 +1330,7 @@
   "escalationGhostKeyTimedOut": "GhostKey timed out",
   "escalationGhostKeyNotStarted": "GhostKey not started: {reason}",
   "escalationGhostKeyReasonAlreadyRunning": "A run is already in progress",
-  "escalationGhostKeyReasonNoAdb": "ADB is not connected",
+  "escalationGhostKeyReasonNoAdb": "Command channel is not connected",
   "escalationGhostKeyReasonNotShell": "Shell uid is not 2000",
   "escalationGhostKeyReasonSeccomp": "Shell is filtered by seccomp",
   "escalationGhostKeyReasonMissingBinary": "Payload file is missing",

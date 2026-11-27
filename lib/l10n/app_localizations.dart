@@ -3734,10 +3734,10 @@ abstract class AppLocalizations {
   /// **'已有任务在运行'**
   String get escalationGhostKeyReasonAlreadyRunning;
 
-  /// 原因码 noAdb
+  /// 原因码 noAdb（文案保持通道中立：ADB 与 Stellar 都可能是当前通道）
   ///
   /// In zh, this message translates to:
-  /// **'ADB 未连接'**
+  /// **'命令通道未连接'**
   String get escalationGhostKeyReasonNoAdb;
 
   /// 原因码 notShell

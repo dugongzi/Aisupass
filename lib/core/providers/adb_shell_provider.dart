@@ -27,6 +27,18 @@ final Provider<ShellExec> adbShellExecProvider = Provider<ShellExec>((ref) {
       native.exec(command, timeoutMs, null);
 });
 
+/// uid=2000 的 adb shell 通道上带标准输入的执行出口。
+///
+/// 只有「把二进制推进设备文件」这类场景需要它（导入自定义载荷走
+/// `cat > file`）。与 [adbShellExecProvider] 并存：绝大多数命令不读输入，
+/// 多带一个 null 参数只会让每个调用点都要写一遍。
+final Provider<ShellExecWithStdin> adbShellExecWithStdinProvider =
+    Provider<ShellExecWithStdin>((ref) {
+      final AdbShellNative native = ref.watch(adbShellNativeProvider);
+      return (String command, int timeoutMs, Uint8List? stdin) =>
+          native.exec(command, timeoutMs, stdin);
+    });
+
 /// 当前是否已经有一条 adb shell 连接，以及它是以谁的 uid 跑起来的。
 ///
 /// 桌面端没有无线调试，固定返回未连接。

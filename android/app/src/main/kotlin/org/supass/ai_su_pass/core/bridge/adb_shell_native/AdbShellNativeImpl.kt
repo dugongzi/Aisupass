@@ -12,8 +12,10 @@ import org.supass.ai_su_pass.core.adb.AdbShellChannel
 import org.supass.ai_su_pass.core.adb.ExecChunkResult
 import org.supass.ai_su_pass.core.adb.ExecJob
 import org.supass.ai_su_pass.core.adb.PairingNotification
+import org.supass.ai_su_pass.core.shell.ShellChannel
 import org.supass.ai_su_pass.core.shell.ShellResult
 import org.supass.ai_su_pass.core.shell.ShellStatus
+import org.supass.ai_su_pass.core.shell.StellarShellChannel
 import java.io.File
 import java.util.UUID
 import java.util.concurrent.Executors
@@ -55,8 +57,21 @@ class AdbShellNativeImpl(private val context: Context) : AdbShellNative {
     /** 唯一的身份来源：应用内无线调试自配对，不需要用户安装任何外部 App。 */
     private val adb = AdbShellChannel(connectionManager, connectionManager.pairingHistory)
 
-    /** 供同模块的提权会话复用同一条 ADB 连接；不对外暴露给 Pigeon。 */
-    internal val shellChannel: AdbShellChannel get() = adb
+    /** 回环 Stellar 服务通道；token 由 Dart 下发，未下发前视作未连接。 */
+    private val stellar = StellarShellChannel()
+
+    /** 当前业务通道：`adb`（默认）或 `stellar`。由 Dart 的通道选择器下发。 */
+    @Volatile
+    private var shellMode: String = MODE_ADB
+
+    /**
+     * 供同模块的提权会话复用同一条命令通道；不对外暴露给 Pigeon。
+     *
+     * 返回类型是接口而不是 [AdbShellChannel]：GhostKey / GhostLock 只用到
+     * `status` / `uid` / `exec`，换成 Stellar 实现时它们无需改一行。
+     */
+    internal val shellChannel: ShellChannel
+        get() = if (shellMode == MODE_STELLAR) stellar else adb
 
     /**
      * 配对码输入通知。
@@ -496,6 +511,25 @@ class AdbShellNativeImpl(private val context: Context) : AdbShellNative {
         mainHandler.post { callback(Result.success(if (usable) dir else "")) }
     }
 
+    /**
+     * 下发业务通道与 Stellar token。
+     *
+     * GhostKey / GhostLock 的执行发生在原生侧，复用 [shellChannel] 而不是走 Dart
+     * 的执行出口，所以 Dart 的通道选择器管不到它们——必须由这里同步。
+     * 切换是即时的：已持有的 [org.supass.ai_su_pass.cve98260.Cve98260Session] 之类
+     * 会话在构造时取了通道引用，正在跑的那一轮不受影响，下一轮自然走新通道。
+     */
+    override fun configureShellChannel(
+        mode: String,
+        stellarToken: String,
+        callback: (Result<Unit>) -> Unit,
+    ) {
+        shellMode = if (mode == MODE_STELLAR) MODE_STELLAR else MODE_ADB
+        stellar.updateToken(stellarToken)
+        Log.i(TAG, "configureShellChannel mode=$shellMode tokenSet=${stellarToken.isNotEmpty()}")
+        mainHandler.post { callback(Result.success(Unit)) }
+    }
+
     /** 命令没能跑起来时的统一返回：只回证据，不向 Dart 抛异常。 */
     private fun unstarted(message: String): ShellExecResult = ShellExecResult(
         exitCode = EXIT_NOT_STARTED.toLong(),
@@ -819,6 +853,10 @@ class AdbShellNativeImpl(private val context: Context) : AdbShellNative {
         const val PAIRING_THREAD_NAME = "adb-pairing"
         const val MAX_PAIRING_SESSIONS = 8
         const val UNKNOWN_UID = -1L
+
+        /** 业务通道标识；与 Dart `CommandChannel.name` 对齐。 */
+        const val MODE_ADB = "adb"
+        const val MODE_STELLAR = "stellar"
 
         /** 同时存活的流式会话上限；终端只会跑一两条，4 已足够宽裕。 */
         const val MAX_EXEC_SESSIONS = 4

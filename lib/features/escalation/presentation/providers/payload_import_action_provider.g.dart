@@ -62,7 +62,7 @@ final class PayloadImportActionDatasourceProvider
 }
 
 String _$payloadImportActionDatasourceHash() =>
-    r'6a768fdae03e0228132b0fcfde7717704e704ef8';
+    r'30c3aa539061fa7cfb9ee6a79cf36746d60420e0';
 
 /// 自定义载荷动作仓储。
 

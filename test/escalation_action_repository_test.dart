@@ -154,12 +154,19 @@ class _FakeNative extends pigeon.AdbShellNative {
   Future<String> nativeLibraryDir() async => directory;
 }
 
+/// 装配仓储。
+///
+/// 数据源现在收「执行出口」而不是「原生桥」：`native` 只留着读
+/// `nativeLibraryDir`，命令一律走 `exec`。测试里把两条都指向同一个
+/// [_FakeNative]，保持「按命令内容分流」的既有断言不变。
 EscalationActionRepositoryImpl _repository(
   _FakeNative native, {
   KeyValueStore? storage,
 }) => EscalationActionRepositoryImpl(
   datasource: EscalationActionDatasource(
     native: native,
+    exec: (String command, int timeoutMs) =>
+        native.exec(command, timeoutMs, null),
     storage: storage ?? _FakeStore(),
   ),
 );

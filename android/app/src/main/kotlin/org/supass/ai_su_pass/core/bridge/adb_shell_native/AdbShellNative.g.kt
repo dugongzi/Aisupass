@@ -790,6 +790,18 @@ interface AdbShellNative {
    * 内、不会解压，注入会失败。
    */
   fun nativeLibraryDir(callback: (Result<String>) -> Unit)
+  /**
+   * 下发业务通道与 Stellar 服务的鉴权串。
+   *
+   * GhostKey / GhostLock 这类能力不经过 Dart 的执行出口：它们的会话建在原生侧，
+   * 复用本实例持有的 shell 通道（同一个 uid=2000 身份）。因此 Dart 切通道时
+   * 必须显式通知原生，否则它们会一直用无线 ADB。
+   *
+   * [mode] 取 `adb` 或 `stellar`；其它值一律按 `adb` 处理。
+   * [stellarToken] 只在 `stellar` 模式下有意义，空串表示 token 尚未准备好，
+   * 此时该通道视为未连接（不影响 ADB 通道的状态判定）。
+   */
+  fun configureShellChannel(mode: String, stellarToken: String, callback: (Result<Unit>) -> Unit)
 
   companion object {
     /** The codec used by AdbShellNative. */
@@ -1052,6 +1064,26 @@ interface AdbShellNative {
               } else {
                 val data = result.getOrNull()
                 reply.reply(AdbShellNativePigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.Aisupass.AdbShellNative.configureShellChannel$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val modeArg = args[0] as String
+            val stellarTokenArg = args[1] as String
+            api.configureShellChannel(modeArg, stellarTokenArg) { result: Result<Unit> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(AdbShellNativePigeonUtils.wrapError(error))
+              } else {
+                reply.reply(AdbShellNativePigeonUtils.wrapResult(null))
               }
             }
           }
