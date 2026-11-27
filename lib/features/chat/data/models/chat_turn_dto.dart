@@ -22,6 +22,7 @@ abstract class ChatTurnDto with _$ChatTurnDto {
     @Default('') String reasoning,
     @Default(<ChatToolCallDto>[]) List<ChatToolCallDto> toolCalls,
     @Default('') String error,
+    @Default('') String rawError,
     @Default('') String notice,
     @Default(<ChatAttachmentDto>[]) List<ChatAttachmentDto> attachments,
     @Default('') String createdAt,
@@ -41,6 +42,7 @@ abstract class ChatTurnDto with _$ChatTurnDto {
         .map(ChatToolCallDto.fromEntity)
         .toList(growable: false),
     error: entity.error,
+    rawError: entity.rawError,
     notice: entity.notice.name,
     attachments: entity.attachments
         .map(ChatAttachmentDto.fromEntity)
@@ -67,6 +69,7 @@ abstract class ChatTurnDto with _$ChatTurnDto {
         .toList(growable: false),
     streaming: false,
     error: error,
+    rawError: rawError,
     notice: ChatNotice.fromName(notice),
     attachments: attachments
         .map((ChatAttachmentDto item) => item.toEntity())

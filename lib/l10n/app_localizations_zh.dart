@@ -729,6 +729,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatErrorGoConfig => '前往 AI 配置';
 
   @override
+  String get chatErrorShowRaw => '查看原始响应';
+
+  @override
+  String get chatErrorHideRaw => '收起原始响应';
+
+  @override
   String get chatEmptyTitle => 'AISUPASS';
 
   @override

@@ -23,6 +23,11 @@ abstract class ChatTurn with _$ChatTurn {
     required String error,
     required ChatNotice notice,
 
+    /// 失败时服务端返回的原始响应正文。
+    ///
+    /// 界面上原样展开给用户看，避免只给一句概括让用户猜原因。
+    @Default('') String rawError,
+
     /// 用户消息附带的图片或文本文件，assistant 轮次恒为空。
     @Default(<ChatAttachment>[]) List<ChatAttachment> attachments,
 

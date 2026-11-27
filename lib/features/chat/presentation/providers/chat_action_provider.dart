@@ -200,7 +200,8 @@ List<ChatToolDefinition> chatTools(Ref ref) => <ChatToolDefinition>[
   ),
   ChatToolDefinition(
     name: 'get_root_status',
-    description: 'Check whether the current process already has ROOT privileges.',
+    description:
+        'Check whether the current process already has ROOT privileges.',
     parameters: noArgsSchema,
     execute: (Map<String, dynamic> arguments) async {
       final bool rooted = await ref.read(rootStatusProvider.future);
@@ -218,10 +219,7 @@ List<ChatToolDefinition> chatTools(Ref ref) => <ChatToolDefinition>[
     parameters: noArgsSchema,
     execute: (Map<String, dynamic> arguments) async {
       final status = await ref.read(adbStatusProvider.future);
-      return jsonEncode(<String, bool>{
-        'usb': status.usb,
-        'wifi': status.wifi,
-      });
+      return jsonEncode(<String, bool>{'usb': status.usb, 'wifi': status.wifi});
     },
   ),
   // 命令工具按当前通道二选一：两条通道各自的工具集互不引用。
@@ -288,8 +286,9 @@ class ChatController extends _$ChatController {
     List<ChatAttachment> attachments = const <ChatAttachment>[],
   }) async {
     final String text = input.trim();
-    final List<ChatAttachment> files =
-        List<ChatAttachment>.unmodifiable(attachments);
+    final List<ChatAttachment> files = List<ChatAttachment>.unmodifiable(
+      attachments,
+    );
     if (text.isEmpty && files.isEmpty) return;
     if (_jobs[state.sessionId]?.running ?? false) return;
 
@@ -328,11 +327,7 @@ class ChatController extends _$ChatController {
       ],
       title: title,
     );
-    state = ChatState(
-      sessionId: sessionId,
-      turns: job.turns,
-      streaming: true,
-    );
+    state = ChatState(sessionId: sessionId, turns: job.turns, streaming: true);
 
     await _runSession(job, config);
   }
@@ -496,13 +491,14 @@ class ChatController extends _$ChatController {
   ///
   /// 只在会话仍有后台任务（或显式给出快照）时写入，避免普通切换会话
   /// 也刷新「最近更新时间」把列表顺序打乱。
-  Future<void> _flushSession(
-    String id, {
-    List<ChatTurn>? snapshot,
-  }) async {
+  Future<void> _flushSession(String id, {List<ChatTurn>? snapshot}) async {
     if (id.isEmpty) return;
+    // 任务已收尾时 `_jobs` 里没有它，退回当前显示状态，
+    // 否则切换会话会把刚结束（含错误提示）的这一轮漏掉。
     final List<ChatTurn> turns =
-        snapshot ?? _jobs[id]?.turns ?? const <ChatTurn>[];
+        snapshot ??
+        _jobs[id]?.turns ??
+        (id == state.sessionId ? state.turns : const <ChatTurn>[]);
     if (turns.isEmpty) return;
 
     String? title;
@@ -601,10 +597,7 @@ class ChatController extends _$ChatController {
     // 任务被 stop / 删除接管后仍会走完收尾逻辑，此时不能再覆盖新内容。
     if (!identical(_jobs[job.sessionId], job)) return;
     if (job.sessionId != state.sessionId) return;
-    state = state.copyWith(
-      turns: job.turns,
-      awaitingTurnId: job.awaitTurnId,
-    );
+    state = state.copyWith(turns: job.turns, awaitingTurnId: job.awaitTurnId);
   }
 
   /// 由首条用户消息生成会话标题：取首行，最多 24 个字符。
@@ -700,9 +693,7 @@ class ChatSessions extends _$ChatSessions {
     );
     if (_disposed) return;
 
-    final String storedId = await ref.read(
-      storedChatSessionIdProvider.future,
-    );
+    final String storedId = await ref.read(storedChatSessionIdProvider.future);
     if (_disposed) return;
 
     final List<ChatSession> sorted = _sort(sessions);
@@ -785,12 +776,27 @@ class ChatSessions extends _$ChatSessions {
     List<ChatTurn> turns, {
     String? title,
   }) async {
-    if (state.sessions.every((ChatSession session) => session.id != id)) {
-      return;
-    }
+    if (id.isEmpty || turns.isEmpty) return;
     final DateTime now = DateTime.now();
+    final bool exists = state.sessions.any(
+      (ChatSession session) => session.id == id,
+    );
+    // 会话不在列表里说明首次读盘还没落定（`_restore` 是异步的），
+    // 此时直接 return 会把整轮内容连同错误提示一起丢掉，所以补建一条。
+    final List<ChatSession> base = exists
+        ? state.sessions
+        : <ChatSession>[
+            ChatSession(
+              id: id,
+              title: '',
+              createdAt: now,
+              updatedAt: now,
+              turns: const <ChatTurn>[],
+            ),
+            ...state.sessions,
+          ];
     final List<ChatSession> updated = <ChatSession>[
-      for (final ChatSession session in state.sessions)
+      for (final ChatSession session in base)
         if (session.id == id)
           session.copyWith(
             turns: turns,

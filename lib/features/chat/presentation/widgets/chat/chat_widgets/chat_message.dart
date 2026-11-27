@@ -135,9 +135,12 @@ class _AssistantMessage extends HookWidget {
       streaming: turn.streaming,
     );
     final bool showHeader = modelName.trim().isNotEmpty;
-    // 余额不足、密钥无效这类错误，值得引导用户去配置页处理。
+    // 余额不足、密钥无效这类错误，值得引导用户去配置页处理；
+    // 提示文案已精简，判据同时看原始响应，避免漏掉只在服务端原文里出现的线索。
     final bool fixInConfig =
-        turn.hasError && isAiConfigRelatedError(turn.error);
+        turn.hasError &&
+        (isAiConfigRelatedError(turn.error) ||
+            isAiConfigRelatedError(turn.rawError));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -176,10 +179,12 @@ class _AssistantMessage extends HookWidget {
         if (hasText) ChatMarkdown(data: shownText, streaming: turn.streaming),
         if (thinking && turn.toolCalls.isEmpty) const _TypingDots(),
         // 余额不足、密钥无效这类错误，直接在提示条右侧给去配置的入口。
+        // 服务端原文一并带上，用户展开就能看到真实原因。
         if (turn.hasError)
           ChatInlineNotice(
             text: turn.error,
             isError: true,
+            detail: turn.rawError,
             actionLabel: fixInConfig ? context.l10n.chatErrorGoConfig : null,
             onAction: fixInConfig ? () => _openAiConfigList(context) : null,
           ),

@@ -1012,6 +1012,14 @@
   "@chatErrorGoConfig": {
     "description": "对话报错（余额不足、密钥无效等）时，提示条右侧跳转到内置 AI 配置的按钮"
   },
+  "chatErrorShowRaw": "查看原始响应",
+  "@chatErrorShowRaw": {
+    "description": "对话报错时展开服务端原始响应的按钮"
+  },
+  "chatErrorHideRaw": "收起原始响应",
+  "@chatErrorHideRaw": {
+    "description": "对话报错时收起服务端原始响应的按钮"
+  },
   "chatEmptyTitle": "AISUPASS",
   "@chatEmptyTitle": {
     "description": "空会话引导标题"

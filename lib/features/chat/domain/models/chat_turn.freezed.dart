@@ -14,7 +14,10 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ChatTurn {
 
- String get id; ChatRole get role; String get text; String get reasoning; List<ChatToolCall> get toolCalls; bool get streaming; String get error; ChatNotice get notice;/// 用户消息附带的图片或文本文件，assistant 轮次恒为空。
+ String get id; ChatRole get role; String get text; String get reasoning; List<ChatToolCall> get toolCalls; bool get streaming; String get error; ChatNotice get notice;/// 失败时服务端返回的原始响应正文。
+///
+/// 界面上原样展开给用户看，避免只给一句概括让用户猜原因。
+ String get rawError;/// 用户消息附带的图片或文本文件，assistant 轮次恒为空。
  List<ChatAttachment> get attachments;/// 轮次创建时间；`0` 表示未记录。
  DateTime get createdAt;/// 本轮模型调用的总耗时；`Duration.zero` 表示未记录。
  Duration get duration;/// 本轮模型调用的 token 用量。
@@ -29,16 +32,16 @@ $ChatTurnCopyWith<ChatTurn> get copyWith => _$ChatTurnCopyWithImpl<ChatTurn>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChatTurn&&(identical(other.id, id) || other.id == id)&&(identical(other.role, role) || other.role == role)&&(identical(other.text, text) || other.text == text)&&(identical(other.reasoning, reasoning) || other.reasoning == reasoning)&&const DeepCollectionEquality().equals(other.toolCalls, toolCalls)&&(identical(other.streaming, streaming) || other.streaming == streaming)&&(identical(other.error, error) || other.error == error)&&(identical(other.notice, notice) || other.notice == notice)&&const DeepCollectionEquality().equals(other.attachments, attachments)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.duration, duration) || other.duration == duration)&&(identical(other.usage, usage) || other.usage == usage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChatTurn&&(identical(other.id, id) || other.id == id)&&(identical(other.role, role) || other.role == role)&&(identical(other.text, text) || other.text == text)&&(identical(other.reasoning, reasoning) || other.reasoning == reasoning)&&const DeepCollectionEquality().equals(other.toolCalls, toolCalls)&&(identical(other.streaming, streaming) || other.streaming == streaming)&&(identical(other.error, error) || other.error == error)&&(identical(other.notice, notice) || other.notice == notice)&&(identical(other.rawError, rawError) || other.rawError == rawError)&&const DeepCollectionEquality().equals(other.attachments, attachments)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.duration, duration) || other.duration == duration)&&(identical(other.usage, usage) || other.usage == usage));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,role,text,reasoning,const DeepCollectionEquality().hash(toolCalls),streaming,error,notice,const DeepCollectionEquality().hash(attachments),createdAt,duration,usage);
+int get hashCode => Object.hash(runtimeType,id,role,text,reasoning,const DeepCollectionEquality().hash(toolCalls),streaming,error,notice,rawError,const DeepCollectionEquality().hash(attachments),createdAt,duration,usage);
 
 @override
 String toString() {
-  return 'ChatTurn(id: $id, role: $role, text: $text, reasoning: $reasoning, toolCalls: $toolCalls, streaming: $streaming, error: $error, notice: $notice, attachments: $attachments, createdAt: $createdAt, duration: $duration, usage: $usage)';
+  return 'ChatTurn(id: $id, role: $role, text: $text, reasoning: $reasoning, toolCalls: $toolCalls, streaming: $streaming, error: $error, notice: $notice, rawError: $rawError, attachments: $attachments, createdAt: $createdAt, duration: $duration, usage: $usage)';
 }
 
 
@@ -49,7 +52,7 @@ abstract mixin class $ChatTurnCopyWith<$Res>  {
   factory $ChatTurnCopyWith(ChatTurn value, $Res Function(ChatTurn) _then) = _$ChatTurnCopyWithImpl;
 @useResult
 $Res call({
- String id, ChatRole role, String text, String reasoning, List<ChatToolCall> toolCalls, bool streaming, String error, ChatNotice notice, List<ChatAttachment> attachments, DateTime createdAt, Duration duration, ChatUsage usage
+ String id, ChatRole role, String text, String reasoning, List<ChatToolCall> toolCalls, bool streaming, String error, ChatNotice notice, String rawError, List<ChatAttachment> attachments, DateTime createdAt, Duration duration, ChatUsage usage
 });
 
 
@@ -66,7 +69,7 @@ class _$ChatTurnCopyWithImpl<$Res>
 
 /// Create a copy of ChatTurn
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? role = null,Object? text = null,Object? reasoning = null,Object? toolCalls = null,Object? streaming = null,Object? error = null,Object? notice = null,Object? attachments = null,Object? createdAt = null,Object? duration = null,Object? usage = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? role = null,Object? text = null,Object? reasoning = null,Object? toolCalls = null,Object? streaming = null,Object? error = null,Object? notice = null,Object? rawError = null,Object? attachments = null,Object? createdAt = null,Object? duration = null,Object? usage = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
@@ -76,7 +79,8 @@ as String,toolCalls: null == toolCalls ? _self.toolCalls : toolCalls // ignore: 
 as List<ChatToolCall>,streaming: null == streaming ? _self.streaming : streaming // ignore: cast_nullable_to_non_nullable
 as bool,error: null == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
 as String,notice: null == notice ? _self.notice : notice // ignore: cast_nullable_to_non_nullable
-as ChatNotice,attachments: null == attachments ? _self.attachments : attachments // ignore: cast_nullable_to_non_nullable
+as ChatNotice,rawError: null == rawError ? _self.rawError : rawError // ignore: cast_nullable_to_non_nullable
+as String,attachments: null == attachments ? _self.attachments : attachments // ignore: cast_nullable_to_non_nullable
 as List<ChatAttachment>,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,duration: null == duration ? _self.duration : duration // ignore: cast_nullable_to_non_nullable
 as Duration,usage: null == usage ? _self.usage : usage // ignore: cast_nullable_to_non_nullable
@@ -174,10 +178,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  ChatRole role,  String text,  String reasoning,  List<ChatToolCall> toolCalls,  bool streaming,  String error,  ChatNotice notice,  List<ChatAttachment> attachments,  DateTime createdAt,  Duration duration,  ChatUsage usage)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  ChatRole role,  String text,  String reasoning,  List<ChatToolCall> toolCalls,  bool streaming,  String error,  ChatNotice notice,  String rawError,  List<ChatAttachment> attachments,  DateTime createdAt,  Duration duration,  ChatUsage usage)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ChatTurn() when $default != null:
-return $default(_that.id,_that.role,_that.text,_that.reasoning,_that.toolCalls,_that.streaming,_that.error,_that.notice,_that.attachments,_that.createdAt,_that.duration,_that.usage);case _:
+return $default(_that.id,_that.role,_that.text,_that.reasoning,_that.toolCalls,_that.streaming,_that.error,_that.notice,_that.rawError,_that.attachments,_that.createdAt,_that.duration,_that.usage);case _:
   return orElse();
 
 }
@@ -195,10 +199,10 @@ return $default(_that.id,_that.role,_that.text,_that.reasoning,_that.toolCalls,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  ChatRole role,  String text,  String reasoning,  List<ChatToolCall> toolCalls,  bool streaming,  String error,  ChatNotice notice,  List<ChatAttachment> attachments,  DateTime createdAt,  Duration duration,  ChatUsage usage)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  ChatRole role,  String text,  String reasoning,  List<ChatToolCall> toolCalls,  bool streaming,  String error,  ChatNotice notice,  String rawError,  List<ChatAttachment> attachments,  DateTime createdAt,  Duration duration,  ChatUsage usage)  $default,) {final _that = this;
 switch (_that) {
 case _ChatTurn():
-return $default(_that.id,_that.role,_that.text,_that.reasoning,_that.toolCalls,_that.streaming,_that.error,_that.notice,_that.attachments,_that.createdAt,_that.duration,_that.usage);case _:
+return $default(_that.id,_that.role,_that.text,_that.reasoning,_that.toolCalls,_that.streaming,_that.error,_that.notice,_that.rawError,_that.attachments,_that.createdAt,_that.duration,_that.usage);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -215,10 +219,10 @@ return $default(_that.id,_that.role,_that.text,_that.reasoning,_that.toolCalls,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  ChatRole role,  String text,  String reasoning,  List<ChatToolCall> toolCalls,  bool streaming,  String error,  ChatNotice notice,  List<ChatAttachment> attachments,  DateTime createdAt,  Duration duration,  ChatUsage usage)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  ChatRole role,  String text,  String reasoning,  List<ChatToolCall> toolCalls,  bool streaming,  String error,  ChatNotice notice,  String rawError,  List<ChatAttachment> attachments,  DateTime createdAt,  Duration duration,  ChatUsage usage)?  $default,) {final _that = this;
 switch (_that) {
 case _ChatTurn() when $default != null:
-return $default(_that.id,_that.role,_that.text,_that.reasoning,_that.toolCalls,_that.streaming,_that.error,_that.notice,_that.attachments,_that.createdAt,_that.duration,_that.usage);case _:
+return $default(_that.id,_that.role,_that.text,_that.reasoning,_that.toolCalls,_that.streaming,_that.error,_that.notice,_that.rawError,_that.attachments,_that.createdAt,_that.duration,_that.usage);case _:
   return null;
 
 }
@@ -230,7 +234,7 @@ return $default(_that.id,_that.role,_that.text,_that.reasoning,_that.toolCalls,_
 
 
 class _ChatTurn extends ChatTurn {
-  const _ChatTurn({required this.id, required this.role, required this.text, required this.reasoning, required this.toolCalls, required this.streaming, required this.error, required this.notice, this.attachments = const <ChatAttachment>[], required this.createdAt, required this.duration, required this.usage}): super._();
+  const _ChatTurn({required this.id, required this.role, required this.text, required this.reasoning, required this.toolCalls, required this.streaming, required this.error, required this.notice, this.rawError = '', this.attachments = const <ChatAttachment>[], required this.createdAt, required this.duration, required this.usage}): super._();
   
 
 @override final  String id;
@@ -241,6 +245,10 @@ class _ChatTurn extends ChatTurn {
 @override final  bool streaming;
 @override final  String error;
 @override final  ChatNotice notice;
+/// 失败时服务端返回的原始响应正文。
+///
+/// 界面上原样展开给用户看，避免只给一句概括让用户猜原因。
+@override@JsonKey() final  String rawError;
 /// 用户消息附带的图片或文本文件，assistant 轮次恒为空。
 @override@JsonKey() final  List<ChatAttachment> attachments;
 /// 轮次创建时间；`0` 表示未记录。
@@ -260,16 +268,16 @@ _$ChatTurnCopyWith<_ChatTurn> get copyWith => __$ChatTurnCopyWithImpl<_ChatTurn>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ChatTurn&&(identical(other.id, id) || other.id == id)&&(identical(other.role, role) || other.role == role)&&(identical(other.text, text) || other.text == text)&&(identical(other.reasoning, reasoning) || other.reasoning == reasoning)&&const DeepCollectionEquality().equals(other.toolCalls, toolCalls)&&(identical(other.streaming, streaming) || other.streaming == streaming)&&(identical(other.error, error) || other.error == error)&&(identical(other.notice, notice) || other.notice == notice)&&const DeepCollectionEquality().equals(other.attachments, attachments)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.duration, duration) || other.duration == duration)&&(identical(other.usage, usage) || other.usage == usage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ChatTurn&&(identical(other.id, id) || other.id == id)&&(identical(other.role, role) || other.role == role)&&(identical(other.text, text) || other.text == text)&&(identical(other.reasoning, reasoning) || other.reasoning == reasoning)&&const DeepCollectionEquality().equals(other.toolCalls, toolCalls)&&(identical(other.streaming, streaming) || other.streaming == streaming)&&(identical(other.error, error) || other.error == error)&&(identical(other.notice, notice) || other.notice == notice)&&(identical(other.rawError, rawError) || other.rawError == rawError)&&const DeepCollectionEquality().equals(other.attachments, attachments)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.duration, duration) || other.duration == duration)&&(identical(other.usage, usage) || other.usage == usage));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,role,text,reasoning,const DeepCollectionEquality().hash(toolCalls),streaming,error,notice,const DeepCollectionEquality().hash(attachments),createdAt,duration,usage);
+int get hashCode => Object.hash(runtimeType,id,role,text,reasoning,const DeepCollectionEquality().hash(toolCalls),streaming,error,notice,rawError,const DeepCollectionEquality().hash(attachments),createdAt,duration,usage);
 
 @override
 String toString() {
-  return 'ChatTurn(id: $id, role: $role, text: $text, reasoning: $reasoning, toolCalls: $toolCalls, streaming: $streaming, error: $error, notice: $notice, attachments: $attachments, createdAt: $createdAt, duration: $duration, usage: $usage)';
+  return 'ChatTurn(id: $id, role: $role, text: $text, reasoning: $reasoning, toolCalls: $toolCalls, streaming: $streaming, error: $error, notice: $notice, rawError: $rawError, attachments: $attachments, createdAt: $createdAt, duration: $duration, usage: $usage)';
 }
 
 
@@ -280,7 +288,7 @@ abstract mixin class _$ChatTurnCopyWith<$Res> implements $ChatTurnCopyWith<$Res>
   factory _$ChatTurnCopyWith(_ChatTurn value, $Res Function(_ChatTurn) _then) = __$ChatTurnCopyWithImpl;
 @override @useResult
 $Res call({
- String id, ChatRole role, String text, String reasoning, List<ChatToolCall> toolCalls, bool streaming, String error, ChatNotice notice, List<ChatAttachment> attachments, DateTime createdAt, Duration duration, ChatUsage usage
+ String id, ChatRole role, String text, String reasoning, List<ChatToolCall> toolCalls, bool streaming, String error, ChatNotice notice, String rawError, List<ChatAttachment> attachments, DateTime createdAt, Duration duration, ChatUsage usage
 });
 
 
@@ -297,7 +305,7 @@ class __$ChatTurnCopyWithImpl<$Res>
 
 /// Create a copy of ChatTurn
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? role = null,Object? text = null,Object? reasoning = null,Object? toolCalls = null,Object? streaming = null,Object? error = null,Object? notice = null,Object? attachments = null,Object? createdAt = null,Object? duration = null,Object? usage = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? role = null,Object? text = null,Object? reasoning = null,Object? toolCalls = null,Object? streaming = null,Object? error = null,Object? notice = null,Object? rawError = null,Object? attachments = null,Object? createdAt = null,Object? duration = null,Object? usage = null,}) {
   return _then(_ChatTurn(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
@@ -307,7 +315,8 @@ as String,toolCalls: null == toolCalls ? _self.toolCalls : toolCalls // ignore: 
 as List<ChatToolCall>,streaming: null == streaming ? _self.streaming : streaming // ignore: cast_nullable_to_non_nullable
 as bool,error: null == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
 as String,notice: null == notice ? _self.notice : notice // ignore: cast_nullable_to_non_nullable
-as ChatNotice,attachments: null == attachments ? _self.attachments : attachments // ignore: cast_nullable_to_non_nullable
+as ChatNotice,rawError: null == rawError ? _self.rawError : rawError // ignore: cast_nullable_to_non_nullable
+as String,attachments: null == attachments ? _self.attachments : attachments // ignore: cast_nullable_to_non_nullable
 as List<ChatAttachment>,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,duration: null == duration ? _self.duration : duration // ignore: cast_nullable_to_non_nullable
 as Duration,usage: null == usage ? _self.usage : usage // ignore: cast_nullable_to_non_nullable

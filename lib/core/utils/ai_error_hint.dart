@@ -54,4 +54,9 @@ const List<String> _configErrorKeywords = <String>[
   'group',
   'model not found',
   '模型不存在',
+  // 模型侧内容安全拒绝：换分组无效，但用户确实要去配置页换模型。
+  'refusal',
+  'content_filter',
+  '拒绝',
+  '内容安全',
 ];

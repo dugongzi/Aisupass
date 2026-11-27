@@ -320,10 +320,14 @@ class ChatStreamSession {
       case ChatStreamFinished():
         if (!done.isCompleted) done.complete();
 
-      case ChatStreamFailed(:final String message):
+      case ChatStreamFailed(:final String message, :final String rawBody):
         _updateTurn(
           turnId,
-          (ChatTurn item) => item.copyWith(error: message, streaming: false),
+          (ChatTurn item) => item.copyWith(
+            error: message,
+            rawError: rawBody,
+            streaming: false,
+          ),
         );
         if (!done.isCompleted) done.complete();
     }

@@ -746,6 +746,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatErrorGoConfig => 'Open AI settings';
 
   @override
+  String get chatErrorShowRaw => 'Show raw response';
+
+  @override
+  String get chatErrorHideRaw => 'Hide raw response';
+
+  @override
   String get chatEmptyTitle => 'AISUPASS';
 
   @override

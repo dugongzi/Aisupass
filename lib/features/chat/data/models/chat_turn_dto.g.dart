@@ -17,6 +17,7 @@ _ChatTurnDto _$ChatTurnDtoFromJson(Map<String, dynamic> json) => _ChatTurnDto(
           .toList() ??
       const <ChatToolCallDto>[],
   error: json['error'] as String? ?? '',
+  rawError: json['rawError'] as String? ?? '',
   notice: json['notice'] as String? ?? '',
   attachments:
       (json['attachments'] as List<dynamic>?)
@@ -36,6 +37,7 @@ Map<String, dynamic> _$ChatTurnDtoToJson(_ChatTurnDto instance) =>
       'reasoning': instance.reasoning,
       'toolCalls': instance.toolCalls,
       'error': instance.error,
+      'rawError': instance.rawError,
       'notice': instance.notice,
       'attachments': instance.attachments,
       'createdAt': instance.createdAt,

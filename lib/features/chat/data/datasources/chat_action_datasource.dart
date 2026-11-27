@@ -89,7 +89,7 @@ class ChatActionDatasource {
       tools: tools,
       payloads: await _loadPayloads(history),
     );
-    _logRequest(requestBody);
+    _logRequest(requestBody, config: config, url: url);
 
     final Response<ResponseBody> response;
     try {
@@ -141,6 +141,13 @@ class ChatActionDatasource {
     final StringBuffer rawSse = StringBuffer();
     final _FrameParser parser = _FrameParser(config.apiType);
     bool sawSse = false;
+    // 上游可能返回 HTTP 200 的空流（渠道没吐内容），这三个标记用来判定
+    // 「本轮到底有没有拿到东西」，避免把空响应当成正常结束。
+    bool sawText = false;
+    bool sawReasoning = false;
+    bool sawTool = false;
+    String? finishReason;
+    String stopDetail = '';
 
     try {
       await for (final _SseEvent event in _decodeSse(
@@ -176,7 +183,20 @@ class ChatActionDatasource {
         }
 
         final _Frame frame = parser.parse(payload, event.event);
+        finishReason ??= frame.finishReason;
+        if (stopDetail.isEmpty) stopDetail = frame.detail;
         for (final ChatStreamEvent item in frame.events) {
+          switch (item) {
+            case ChatTextDelta(:final String text):
+              if (text.isNotEmpty) sawText = true;
+            case ChatReasoningDelta(:final String text):
+              if (text.isNotEmpty) sawReasoning = true;
+            case ChatToolCallStarted():
+            case ChatToolCallArgumentsDelta():
+              sawTool = true;
+            default:
+              break;
+          }
           yield _track(responseLog, item);
         }
       }
@@ -211,10 +231,59 @@ class ChatActionDatasource {
         return;
       }
       final String reply = _parsePlainReply(decoded, config.apiType);
-      if (reply.isNotEmpty) yield _track(responseLog, ChatTextDelta(reply));
+      if (reply.isNotEmpty) {
+        sawText = true;
+        yield _track(responseLog, ChatTextDelta(reply));
+      }
     }
 
-    yield _track(responseLog, const ChatStreamFinished());
+    // 200 也可能是空流：既没有正文也没有工具调用时不能当成功，
+    // 否则界面只会显示「模型没有返回内容」，用户无从判断该换分组。
+    if (!sawText && !sawTool) {
+      final String reason = (finishReason ?? '').trim();
+      // 原文整段带上：上游的说明排在最前，后面才是完整 SSE，
+      // 用户展开就能看到真实原因，不用猜。
+      final String body = rawSse.isNotEmpty
+          ? rawSse.toString()
+          : plain.toString();
+      final String raw = <String>[
+        if (stopDetail.trim().isNotEmpty) stopDetail.trim(),
+        'finish_reason=${reason.isEmpty ? '(unset)' : reason}',
+        body,
+      ].join('\n');
+      yield _track(
+        responseLog,
+        ChatStreamFailed(
+          message: _emptyReplyMessage(
+            sawReasoning: sawReasoning,
+            finishReason: reason,
+          ),
+          rawBody: raw,
+          statusCode: status,
+        ),
+      );
+      return;
+    }
+
+    yield _track(responseLog, ChatStreamFinished(finishReason: finishReason));
+  }
+
+  /// 空回复的提示文案：一句话说清接下来该做什么，细节交给「原始响应」。
+  ///
+  /// 保留「分组」二字是为了让对话页据此挂出「前往 AI 配置」的入口，
+  /// 具体是哪个渠道、哪条规则拒绝的，都放在原始响应里，不再往文案里堆。
+  String _emptyReplyMessage({
+    required bool sawReasoning,
+    required String finishReason,
+  }) {
+    final String reason = finishReason.trim().toLowerCase();
+    if (reason == 'refusal' || reason == 'content_filter') {
+      return '模型拒绝了这次请求，换个模型再试';
+    }
+    if (sawReasoning) {
+      return '模型只输出了思考，没有正文，建议换个分组';
+    }
+    return '模型没有返回内容，建议换个分组';
   }
 
   /// 记录事件后原样返回，保证日志与实际下发的事件完全一致。
@@ -238,12 +307,22 @@ class ChatActionDatasource {
   /// 把即将发送的提示词、工具清单与历史消息打到日志。
   ///
   /// 只在 debug 构建输出；附件图片与 base64 一律折叠成占位符，避免日志被撑爆。
-  void _logRequest(Map<String, dynamic> body) {
+  /// 协议、终点与 max_tokens 必须一起记：同一个模型在不同协议下的实际输出差异
+  /// 极大，缺了这三项就无法判断「空回复」是走错了协议还是渠道没吐内容。
+  void _logRequest(
+    Map<String, dynamic> body, {
+    required AiConfigDto config,
+    required String url,
+  }) {
     if (!_debugEnabled) return;
 
     final List<Map<String, dynamic>> toolBriefs = _toolBriefs(body);
+    final Object? maxTokens = body['max_tokens'] ?? body['max_output_tokens'];
     final StringBuffer buffer = StringBuffer()
       ..writeln('model: ${body['model']}')
+      ..writeln('protocol: ${config.apiType.name} -> $url')
+      ..writeln('max_tokens: ${maxTokens ?? '(unset)'}')
+      ..writeln('stream: ${body['stream']}')
       ..writeln('tools: ${toolBriefs.length}')
       ..writeln('--- system prompt ---')
       ..writeln(_systemText(body));
@@ -1186,11 +1265,22 @@ class _SseEvent {
 class _Frame {
   const _Frame({
     this.events = const <ChatStreamEvent>[],
-    this.terminal = false,
+    this.finishReason,
+    this.detail = '',
   });
 
   final List<ChatStreamEvent> events;
-  final bool terminal;
+
+  /// 该帧携带的终止原因（`finish_reason` / `stop_reason`）。
+  ///
+  /// 只用于日志与「空回复」判定：没有它就无法区分「模型说完了」与
+  /// 「被 max_tokens / 内容过滤截断」，上游返回空流时更无从判断原因。
+  final String? finishReason;
+
+  /// 上游给出的终止说明原文，例如 Anthropic `stop_details.explanation`。
+  ///
+  /// 直接展示给用户，不做改写：拒绝原因本身就是用户最需要看到的信息。
+  final String detail;
 }
 
 /// 按协议把单个 SSE 事件翻译成统一事件。
@@ -1278,10 +1368,7 @@ class _FrameParser {
       }
     }
 
-    return _Frame(
-      events: events,
-      terminal: _isFinishReason(choice['finish_reason']),
-    );
+    return _Frame(events: events, finishReason: _finishReasonOf(choice));
   }
 
   _Frame _parseResponses(Map<String, Object?> payload, String? event) {
@@ -1337,7 +1424,7 @@ class _FrameParser {
           events: usageEvent == null
               ? const <ChatStreamEvent>[]
               : <ChatStreamEvent>[usageEvent],
-          terminal: true,
+          finishReason: type == 'response.incomplete' ? 'incomplete' : 'stop',
         );
 
       default:
@@ -1414,15 +1501,21 @@ class _FrameParser {
           usage,
           prompt: false,
         );
+        final Object? stopReason = delta is Map ? delta['stop_reason'] : null;
+        final Object? stopDetails = delta is Map ? delta['stop_details'] : null;
+        final String detail = stopDetails is Map
+            ? (stopDetails['explanation']?.toString() ?? '')
+            : '';
         return _Frame(
           events: usageEvent == null
               ? const <ChatStreamEvent>[]
               : <ChatStreamEvent>[usageEvent],
-          terminal: delta is Map && delta['stop_reason'] != null,
+          finishReason: stopReason?.toString(),
+          detail: detail,
         );
 
       case 'message_stop':
-        return const _Frame(terminal: true);
+        return const _Frame();
 
       default:
         return const _Frame();
@@ -1472,6 +1565,12 @@ class _FrameParser {
     'stop' || 'length' || 'tool_calls' || 'content_filter' => true,
     _ => false,
   };
+
+  /// 取出 OpenAI 的 finish_reason，未知取值不当作终止原因。
+  String? _finishReasonOf(Map<String, Object?> choice) {
+    final Object? value = choice['finish_reason'];
+    return _isFinishReason(value) ? value!.toString() : null;
+  }
 
   String _contentToText(Object? content) {
     if (content is String) return content;

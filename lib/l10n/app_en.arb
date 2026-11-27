@@ -592,6 +592,14 @@
   "@chatErrorGoConfig": {
     "description": "Button on a chat error notice (low balance, invalid key, etc.) that opens the built-in AI config"
   },
+  "chatErrorShowRaw": "Show raw response",
+  "@chatErrorShowRaw": {
+    "description": "Expands the raw server response on a chat error notice"
+  },
+  "chatErrorHideRaw": "Hide raw response",
+  "@chatErrorHideRaw": {
+    "description": "Collapses the raw server response on a chat error notice"
+  },
   "chatEmptyTitle": "AISUPASS",
   "@chatEmptyTitle": {
     "description": "Empty conversation title"

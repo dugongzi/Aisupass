@@ -1454,6 +1454,18 @@ abstract class AppLocalizations {
   /// **'前往 AI 配置'**
   String get chatErrorGoConfig;
 
+  /// 对话报错时展开服务端原始响应的按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'查看原始响应'**
+  String get chatErrorShowRaw;
+
+  /// 对话报错时收起服务端原始响应的按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'收起原始响应'**
+  String get chatErrorHideRaw;
+
   /// 空会话引导标题
   ///
   /// In zh, this message translates to:
