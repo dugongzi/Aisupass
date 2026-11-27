@@ -726,6 +726,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatIssueNoConfig => '请先在 AI 配置里完成设置';
 
   @override
+  String get chatErrorGoConfig => '前往 AI 配置';
+
+  @override
   String get chatEmptyTitle => 'AISUPASS';
 
   @override

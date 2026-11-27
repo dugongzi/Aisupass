@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:Aisupass/core/extensions/context_extensions.dart';
+import 'package:Aisupass/core/routes/app_route.dart';
+import 'package:Aisupass/core/utils/ai_error_hint.dart';
 import 'package:Aisupass/core/utils/platform.dart';
 import 'package:Aisupass/features/ai/presentation/widgets/ai_brand_icon.dart';
 import 'package:Aisupass/features/chat/domain/enums/chat_notice.dart';
@@ -16,6 +18,7 @@ import 'package:Aisupass/features/chat/presentation/widgets/chat/chat_widgets/ch
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 
 /// 单条对话消息。
 ///
@@ -132,6 +135,9 @@ class _AssistantMessage extends HookWidget {
       streaming: turn.streaming,
     );
     final bool showHeader = modelName.trim().isNotEmpty;
+    // 余额不足、密钥无效这类错误，值得引导用户去配置页处理。
+    final bool fixInConfig =
+        turn.hasError && isAiConfigRelatedError(turn.error);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -169,7 +175,14 @@ class _AssistantMessage extends HookWidget {
           ?chatToolPanels[call.name]?.call(context, turn.id, isLastTurn, call),
         if (hasText) ChatMarkdown(data: shownText, streaming: turn.streaming),
         if (thinking && turn.toolCalls.isEmpty) const _TypingDots(),
-        if (turn.hasError) ChatInlineNotice(text: turn.error, isError: true),
+        // 余额不足、密钥无效这类错误，直接在提示条右侧给去配置的入口。
+        if (turn.hasError)
+          ChatInlineNotice(
+            text: turn.error,
+            isError: true,
+            actionLabel: fixInConfig ? context.l10n.chatErrorGoConfig : null,
+            onAction: fixInConfig ? () => _openAiConfigList(context) : null,
+          ),
         if (turn.hasNotice)
           ChatInlineNotice(text: _noticeText(context, turn.notice)),
         // 回答结束后再显示信息行与操作按钮，流式过程中不占位。
@@ -259,6 +272,15 @@ String _noticeText(BuildContext context, ChatNotice notice) {
     ChatNotice.awaitingUser => context.l10n.chatNoticeAwaitingUser,
     ChatNotice.emptyReply => context.l10n.chatNoticeEmptyReply,
   };
+}
+
+/// 打开 AI 配置列表页。
+///
+/// 额度不足、密钥失效这类错误基本都能在那里解决：进内置配置看当前额度、
+/// 兑换码充值或换个分组。落在列表页而不是直接进编辑页，是因为聊天里用哪套
+/// 配置不固定，让用户自己挑要处理的那一条更顺手。
+void _openAiConfigList(BuildContext context) {
+  context.push(AppRoute.aiConfig);
 }
 
 /// 流式正文节流：每 24ms 才把最新文本推到 Markdown 渲染，

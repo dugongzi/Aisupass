@@ -743,6 +743,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatIssueNoConfig => 'Finish setting up an AI config first';
 
   @override
+  String get chatErrorGoConfig => 'Open AI settings';
+
+  @override
   String get chatEmptyTitle => 'AISUPASS';
 
   @override

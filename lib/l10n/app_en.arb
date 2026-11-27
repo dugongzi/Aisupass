@@ -588,6 +588,10 @@
   "@chatIssueNoConfig": {
     "description": "No AI config available"
   },
+  "chatErrorGoConfig": "Open AI settings",
+  "@chatErrorGoConfig": {
+    "description": "Button on a chat error notice (low balance, invalid key, etc.) that opens the built-in AI config"
+  },
   "chatEmptyTitle": "AISUPASS",
   "@chatEmptyTitle": {
     "description": "Empty conversation title"

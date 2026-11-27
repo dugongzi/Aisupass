@@ -4,11 +4,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 挂在单条消息下方的轻提示，用于错误与非致命提醒。
+///
+/// [actionLabel] + [onAction] 都给出时，右侧追加一个紧凑文字按钮，
+/// 用于「余额不足」这类错误直接跳到对应配置页处理。
 class ChatInlineNotice extends StatelessWidget {
-  const ChatInlineNotice({super.key, required this.text, this.isError = false});
+  const ChatInlineNotice({
+    super.key,
+    required this.text,
+    this.isError = false,
+    this.actionLabel,
+    this.onAction,
+  });
 
   final String text;
   final bool isError;
+  final String? actionLabel;
+  final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +56,24 @@ class ChatInlineNotice extends StatelessWidget {
               ),
             ),
           ),
+          if (actionLabel != null && onAction != null) ...<Widget>[
+            SizedBox(width: isDesktop ? 6 : 6.w),
+            TextButton(
+              onPressed: onAction,
+              style: TextButton.styleFrom(
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.symmetric(horizontal: isDesktop ? 4 : 4.w),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                foregroundColor: color,
+                textStyle: TextStyle(
+                  fontSize: isDesktop ? 12 : 12.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              child: Text(actionLabel!),
+            ),
+          ],
         ],
       ),
     );

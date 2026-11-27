@@ -1448,6 +1448,12 @@ abstract class AppLocalizations {
   /// **'请先在 AI 配置里完成设置'**
   String get chatIssueNoConfig;
 
+  /// 对话报错（余额不足、密钥无效等）时，提示条右侧跳转到内置 AI 配置的按钮
+  ///
+  /// In zh, this message translates to:
+  /// **'前往 AI 配置'**
+  String get chatErrorGoConfig;
+
   /// 空会话引导标题
   ///
   /// In zh, this message translates to:

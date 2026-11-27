@@ -1008,6 +1008,10 @@
   "@chatIssueNoConfig": {
     "description": "未取到 AI 配置时的提示"
   },
+  "chatErrorGoConfig": "前往 AI 配置",
+  "@chatErrorGoConfig": {
+    "description": "对话报错（余额不足、密钥无效等）时，提示条右侧跳转到内置 AI 配置的按钮"
+  },
   "chatEmptyTitle": "AISUPASS",
   "@chatEmptyTitle": {
     "description": "空会话引导标题"
