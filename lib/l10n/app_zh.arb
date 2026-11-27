@@ -1184,6 +1184,10 @@
   "@chatToolReadStellarStatus": {
     "description": "工具动作名-stellar_service_status"
   },
+  "chatToolExecStellarShell": "执行 Stellar 命令",
+  "@chatToolExecStellarShell": {
+    "description": "工具动作名-stellar_shell_exec"
+  },
   "chatToolWebSearch": "联网搜索",
   "@chatToolWebSearch": {
     "description": "工具动作名-web_search"
@@ -1639,6 +1643,7 @@
   "chatToolDesc_adb_shell_exec": "在已连接的 adb shell（uid 2000）执行一条命令，返回退出码与输出",
   "chatToolDesc_adb_pairing_request": "打开无线调试配对面板，引导完成 adb 配对",
   "chatToolDesc_stellar_service_status": "读取 Stellar 特权服务的可用状态与运行身份",
+  "chatToolDesc_stellar_shell_exec": "通过 Stellar 特权服务执行一条 shell 命令，返回退出码与两路输出",
   "chatToolDesc_web_search": "用 Bing 搜索公开网络，返回标题、链接与摘要",
   "chatToolDesc_coolapk_search": "在酷安社区搜索帖子、用户与话题，游客态可读，用于真实机型与刷机经验",
   "chatToolDesc_coolapk_login": "检查酷安登录状态；帖子正文与完整评论需要账号，未登录时提示用户登录",
@@ -3305,9 +3310,29 @@
   "@stellarStatusNotReady": {
     "description": "首页 Stellar 卡片-服务不可用时的状态"
   },
-  "stellarNotReadyHint": "Stellar 特权服务尚未就绪，这一通道暂时无法执行命令；可在「设置 → 通用 → 命令通道」切换。",
+  "stellarNotReadyHint": "服务尚未启动，命令与终端都不可用。点下方按钮启动服务；首次启动需要无线 ADB 处于可用状态。",
   "@stellarNotReadyHint": {
     "description": "首页 Stellar 卡片-服务不可用时的说明与下一步"
+  },
+  "stellarStatusTokenMismatch": "服务凭据不匹配，无法确认它属于本应用。请断开后重新启动服务。",
+  "@stellarStatusTokenMismatch": {
+    "description": "Stellar 状态-端口上有本协议进程但不认当前 token"
+  },
+  "stellarStatusProtocolMismatch": "检测到旧版服务，重启服务后会被新版本替换。",
+  "@stellarStatusProtocolMismatch": {
+    "description": "Stellar 状态-端口上是 protocol 1 的旧服务"
+  },
+  "stellarStatusPortTaken": "端口 39187 被其它程序占用，服务无法应答。",
+  "@stellarStatusPortTaken": {
+    "description": "Stellar 状态-端口被非本应用进程占用"
+  },
+  "stellarLaunchPortTaken": "端口 39187 被其它程序占用，服务没能启动。关闭占用该端口的程序后重试。",
+  "@stellarLaunchPortTaken": {
+    "description": "拉起失败-端口被其它程序占用"
+  },
+  "stellarLaunchProtocolMismatch": "检测到旧版服务且无法自动停止。重启设备后再启动服务。",
+  "@stellarLaunchProtocolMismatch": {
+    "description": "拉起失败-旧版服务无法自动清场"
   },
   "stellarStartService": "启动服务",
   "@stellarStartService": {
@@ -3348,6 +3373,18 @@
   "escalationTerminalNeedsAdb": "没连上无线调试。",
   "@escalationTerminalNeedsAdb": {
     "description": "手动提权页-无线 ADB 未连接时终端上方的一行提示"
+  },
+  "terminalNeedsStellar": "Stellar 服务未启动，终端不可用。请先在首页 Stellar 卡片启动服务。",
+  "@terminalNeedsStellar": {
+    "description": "终端页-Stellar 通道下服务未启动时的提示"
+  },
+  "terminalChannelStellarHint": "终端跑在本机 Stellar 特权服务上，不依赖无线调试连接",
+  "@terminalChannelStellarHint": {
+    "description": "终端页通道标签的悬浮说明-Stellar"
+  },
+  "terminalChannelAdbHint": "终端跑在无线 ADB 的 pty 上，断开无线调试后不可用",
+  "@terminalChannelAdbHint": {
+    "description": "终端页通道标签的悬浮说明-无线 ADB"
   },
   "rootManagerPillTooltip": "选择 root 管理器",
   "@rootManagerPillTooltip": {

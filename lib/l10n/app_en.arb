@@ -722,6 +722,10 @@
   "@chatToolReadStellarStatus": {
     "description": "工具动作名-stellar_service_status"
   },
+  "chatToolExecStellarShell": "Run Stellar command",
+  "@chatToolExecStellarShell": {
+    "description": "工具动作名-stellar_shell_exec"
+  },
   "chatToolWebSearch": "Search the web",
   "@chatToolWebSearch": {
     "description": "工具动作名-web_search"
@@ -1086,6 +1090,7 @@
   "chatToolDesc_adb_shell_exec": "Run one command on the connected adb shell (uid 2000) and return exit code and output",
   "chatToolDesc_adb_pairing_request": "Open the wireless debugging pairing panel and walk through adb pairing",
   "chatToolDesc_stellar_service_status": "Read whether the Stellar privileged service is available and which uid it runs as",
+  "chatToolDesc_stellar_shell_exec": "Run one shell command through the Stellar privileged service and return the exit code with both output streams",
   "chatToolDesc_web_search": "Search the public web with Bing and return titles, links and snippets",
   "chatToolDesc_coolapk_search": "Search Coolapk posts, users and topics for real-device and rooting experience",
   "chatToolDesc_coolapk_login": "Check the Coolapk sign-in state; post bodies and full comments need an account, and the user is prompted to sign in when missing",
@@ -1611,7 +1616,12 @@
   "stellarCardTitle": "Stellar",
   "stellarStatusReady": "Service ready (uid {uid})",
   "stellarStatusNotReady": "Service not ready",
-  "stellarNotReadyHint": "The Stellar privileged service is not ready, so this channel cannot run commands right now. Switch channels in Settings → General → Command channel.",
+  "stellarNotReadyHint": "The service is not running, so commands and the terminal are unavailable. Tap the button below to start it; the first start still needs a working wireless ADB connection.",
+  "stellarStatusTokenMismatch": "The service credentials do not match this app. Stop and start the service again.",
+  "stellarStatusProtocolMismatch": "An older service version is running; restarting the service replaces it.",
+  "stellarStatusPortTaken": "Port 39187 is held by another program, so the service cannot answer.",
+  "stellarLaunchPortTaken": "Port 39187 is taken by another program, so the service could not start. Free the port and retry.",
+  "stellarLaunchProtocolMismatch": "An older service was found and could not be stopped automatically. Reboot the device, then start the service.",
   "stellarStartService": "Start service",
   "stellarLaunching": "Starting service…",
   "stellarLaunchNoRunner": "Connecting to wireless debugging automatically did not work, so the service could not start. Make sure wireless debugging is on, then try again.",
@@ -1622,6 +1632,9 @@
   "stellarStopping": "Stopping service…",
   "stellarStopFailed": "The service did not respond to the disconnect request and may still be running.",
   "escalationTerminalNeedsAdb": "Not connected to wireless debugging.",
+  "terminalNeedsStellar": "The Stellar service is not running, so the terminal is unavailable. Start it from the Stellar card on the home screen.",
+  "terminalChannelStellarHint": "The terminal runs on the local Stellar privileged service and does not depend on the wireless debugging connection",
+  "terminalChannelAdbHint": "The terminal runs on the wireless ADB pty and stops working when wireless debugging is off",
   "rootManagerPillTooltip": "Choose root manager",
   "rootManagerTitle": "Root manager",
   "rootManagerCurrent": "Current",

@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:Aisupass/core/models/adb_wifi_state.dart';
 import 'package:Aisupass/core/providers/system_status_provider.dart';
+import 'package:Aisupass/core/providers/terminal_backend_provider.dart';
+import 'package:Aisupass/core/providers/terminal_exec_backend.dart';
 import 'package:Aisupass/core/storage/preferences_store.dart';
 import 'package:Aisupass/core/storage/storage_providers.dart';
 import 'package:Aisupass/core/utils/su_shell.dart';
@@ -552,8 +554,8 @@ class ShellExecController extends Notifier<ShellTerminalState> {
     if (sessionId == null) return false;
     try {
       return await ref
-          .read(adbShellNativeProvider)
-          .writeExecStdin(sessionId, Uint8List.fromList(bytes));
+          .read(terminalExecBackendProvider)
+          .writeStdin(sessionId, Uint8List.fromList(bytes));
     } catch (_) {
       // 会话刚好断开时写必然失败；调用方按「这次按键丢了」处理即可。
       return false;
@@ -568,7 +570,7 @@ class ShellExecController extends Notifier<ShellTerminalState> {
     final String? sessionId = _sessionId;
     if (sessionId == null || rows <= 0 || cols <= 0) return;
     try {
-      await ref.read(adbShellNativeProvider).resizeExec(sessionId, rows, cols);
+      await ref.read(terminalExecBackendProvider).resize(sessionId, rows, cols);
     } catch (_) {
       // 尺寸只影响远端排版，丢了也无害，不值得打扰用户。
     }
@@ -594,21 +596,19 @@ class ShellExecController extends Notifier<ShellTerminalState> {
   }
 
   Future<String?> _startSession() async {
-    final ExecStartResult started;
+    final TerminalStart started;
     try {
       // 0 = 不限时：这条会话本来就不该因为「活得久」被掐断。
       started = await ref
-          .read(adbShellNativeProvider)
-          .startExec(_shellCommand, 0);
+          .read(terminalExecBackendProvider)
+          .start(_shellCommand, 0);
     } catch (error) {
       state = ShellTerminalState(failure: '$error');
       return null;
     }
 
     if (!started.accepted || started.sessionId.isEmpty) {
-      state = ShellTerminalState(
-        failure: started.reasons.isEmpty ? 'unknown' : started.reasons.first,
-      );
+      state = ShellTerminalState(failure: started.failure);
       return null;
     }
 
@@ -626,9 +626,9 @@ class ShellExecController extends Notifier<ShellTerminalState> {
     if (sessionId == null || _polling) return;
     _polling = true;
 
-    final ExecChunk chunk;
+    final TerminalChunk chunk;
     try {
-      chunk = await ref.read(adbShellNativeProvider).pollExec(sessionId);
+      chunk = await ref.read(terminalExecBackendProvider).poll(sessionId);
     } catch (error) {
       _polling = false;
       // 会话已经换人或结束：这条结果属于旧会话，丢掉。
@@ -641,9 +641,7 @@ class ShellExecController extends Notifier<ShellTerminalState> {
     // 会话已经换人或结束：同上。
     if (_sessionId != sessionId) return;
 
-    // pty 下两路已在远端合并，stderr 恒为空；两条分支都留着，免得将来切回
-    // raw 时这里悄悄吞掉错误输出。
-    if (chunk.stderr.isNotEmpty) _sink?.call(chunk.stderr, true);
+    // pty 下两路已在远端合并，只有一路输出。
     if (chunk.stdout.isNotEmpty) _sink?.call(chunk.stdout, false);
 
     if (chunk.droppedBytes > state.droppedBytes) {
@@ -675,8 +673,8 @@ class ShellExecController extends Notifier<ShellTerminalState> {
     try {
       unawaited(
         ref
-            .read(adbShellNativeProvider)
-            .cancelExec(sessionId)
+            .read(terminalExecBackendProvider)
+            .cancel(sessionId)
             .then<void>((_) {}, onError: (Object _, StackTrace _) {}),
       );
     } catch (_) {

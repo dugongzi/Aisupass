@@ -1652,6 +1652,12 @@ abstract class AppLocalizations {
   /// **'查询 Stellar 服务状态'**
   String get chatToolReadStellarStatus;
 
+  /// 工具动作名-stellar_shell_exec
+  ///
+  /// In zh, this message translates to:
+  /// **'执行 Stellar 命令'**
+  String get chatToolExecStellarShell;
+
   /// 工具动作名-web_search
   ///
   /// In zh, this message translates to:
@@ -2287,6 +2293,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'读取 Stellar 特权服务的可用状态与运行身份'**
   String get chatToolDesc_stellar_service_status;
+
+  /// No description provided for @chatToolDesc_stellar_shell_exec.
+  ///
+  /// In zh, this message translates to:
+  /// **'通过 Stellar 特权服务执行一条 shell 命令，返回退出码与两路输出'**
+  String get chatToolDesc_stellar_shell_exec;
 
   /// No description provided for @chatToolDesc_web_search.
   ///
@@ -4925,8 +4937,38 @@ abstract class AppLocalizations {
   /// 首页 Stellar 卡片-服务不可用时的说明与下一步
   ///
   /// In zh, this message translates to:
-  /// **'Stellar 特权服务尚未就绪，这一通道暂时无法执行命令；可在「设置 → 通用 → 命令通道」切换。'**
+  /// **'服务尚未启动，命令与终端都不可用。点下方按钮启动服务；首次启动需要无线 ADB 处于可用状态。'**
   String get stellarNotReadyHint;
+
+  /// Stellar 状态-端口上有本协议进程但不认当前 token
+  ///
+  /// In zh, this message translates to:
+  /// **'服务凭据不匹配，无法确认它属于本应用。请断开后重新启动服务。'**
+  String get stellarStatusTokenMismatch;
+
+  /// Stellar 状态-端口上是 protocol 1 的旧服务
+  ///
+  /// In zh, this message translates to:
+  /// **'检测到旧版服务，重启服务后会被新版本替换。'**
+  String get stellarStatusProtocolMismatch;
+
+  /// Stellar 状态-端口被非本应用进程占用
+  ///
+  /// In zh, this message translates to:
+  /// **'端口 39187 被其它程序占用，服务无法应答。'**
+  String get stellarStatusPortTaken;
+
+  /// 拉起失败-端口被其它程序占用
+  ///
+  /// In zh, this message translates to:
+  /// **'端口 39187 被其它程序占用，服务没能启动。关闭占用该端口的程序后重试。'**
+  String get stellarLaunchPortTaken;
+
+  /// 拉起失败-旧版服务无法自动清场
+  ///
+  /// In zh, this message translates to:
+  /// **'检测到旧版服务且无法自动停止。重启设备后再启动服务。'**
+  String get stellarLaunchProtocolMismatch;
 
   /// 首页 Stellar 卡片-拉起特权服务的按钮
   ///
@@ -4987,6 +5029,24 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'没连上无线调试。'**
   String get escalationTerminalNeedsAdb;
+
+  /// 终端页-Stellar 通道下服务未启动时的提示
+  ///
+  /// In zh, this message translates to:
+  /// **'Stellar 服务未启动，终端不可用。请先在首页 Stellar 卡片启动服务。'**
+  String get terminalNeedsStellar;
+
+  /// 终端页通道标签的悬浮说明-Stellar
+  ///
+  /// In zh, this message translates to:
+  /// **'终端跑在本机 Stellar 特权服务上，不依赖无线调试连接'**
+  String get terminalChannelStellarHint;
+
+  /// 终端页通道标签的悬浮说明-无线 ADB
+  ///
+  /// In zh, this message translates to:
+  /// **'终端跑在无线 ADB 的 pty 上，断开无线调试后不可用'**
+  String get terminalChannelAdbHint;
 
   /// 首页标题栏右侧胶囊：点击弹出管理器选择
   ///

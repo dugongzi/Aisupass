@@ -13,6 +13,7 @@ String localizedChatToolDescription(AppLocalizations l10n, String name) {
     'adb_shell_exec' => l10n.chatToolDesc_adb_shell_exec,
     'adb_pairing_request' => l10n.chatToolDesc_adb_pairing_request,
     'stellar_service_status' => l10n.chatToolDesc_stellar_service_status,
+    'stellar_shell_exec' => l10n.chatToolDesc_stellar_shell_exec,
     'web_search' => l10n.chatToolDesc_web_search,
     'coolapk_search' => l10n.chatToolDesc_coolapk_search,
     'coolapk_login' => l10n.chatToolDesc_coolapk_login,

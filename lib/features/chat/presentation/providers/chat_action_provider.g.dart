@@ -440,7 +440,7 @@ final class ChatControllerProvider
   }
 }
 
-String _$chatControllerHash() => r'86be0904e91597af1ec6e56b4e572142de68d6bd';
+String _$chatControllerHash() => r'42344088b4a7a0088b1775594a1369eb9a1df3e0';
 
 /// 对话控制器。
 ///
@@ -512,7 +512,7 @@ final class ChatSessionsProvider
   }
 }
 
-String _$chatSessionsHash() => r'28c5a317d9f9bd6a513601516078b3b0e6c3c7f5';
+String _$chatSessionsHash() => r'3417be648616ac809390ed0bbff14c4616493de8';
 
 /// 会话列表控制器。
 ///

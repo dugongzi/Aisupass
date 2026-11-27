@@ -55,12 +55,13 @@ class AppStellarServiceCard extends ConsumerWidget {
           : l10n.stellarStatusNotReady;
     }
 
-    // 失败原因优先展示上一次动作的结果，其次才是通用的未就绪说明。
+    // 失败原因优先展示上一次动作的结果，其次才是当前探测结论与通用说明。
     final String? hint = showCodeInput
         ? (pairing.failed
               ? _pairingFailure(l10n, pairing.reason)
               : l10n.stellarLaunchAwaitingCode)
         : _launchHint(l10n, launch.reason) ??
+              _statusHint(l10n, value?.reason) ??
               (available ? null : l10n.stellarNotReadyHint);
 
     return AppStatusCard(
@@ -149,6 +150,27 @@ class AppStellarServiceCard extends ConsumerWidget {
         return l10n.stellarLaunchNotAnswering;
       case StellarLaunchState.reasonStopFailed:
         return l10n.stellarStopFailed;
+      case StellarLaunchState.reasonPortTaken:
+        return l10n.stellarLaunchPortTaken;
+      case StellarLaunchState.reasonProtocolMismatch:
+        return l10n.stellarLaunchProtocolMismatch;
+      default:
+        return null;
+    }
+  }
+
+  /// 探测结论 → 一句可读说明；无故障或未识别时返回 null。
+  ///
+  /// `serviceNotRunning` 不在这里映射：那是正常空闲态，由 [l10n.stellarNotReadyHint]
+  /// 承担，重复映射会让卡片在空闲时也显示成错误样式。
+  String? _statusHint(AppLocalizations l10n, String? reason) {
+    switch (reason) {
+      case StellarServiceStatus.reasonTokenMismatch:
+        return l10n.stellarStatusTokenMismatch;
+      case StellarServiceStatus.reasonProtocolMismatch:
+        return l10n.stellarStatusProtocolMismatch;
+      case StellarServiceStatus.reasonPortTaken:
+        return l10n.stellarStatusPortTaken;
       default:
         return null;
     }

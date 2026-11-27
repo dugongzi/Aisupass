@@ -844,6 +844,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatToolReadStellarStatus => '查询 Stellar 服务状态';
 
   @override
+  String get chatToolExecStellarShell => '执行 Stellar 命令';
+
+  @override
   String get chatToolWebSearch => '联网搜索';
 
   @override
@@ -1183,6 +1186,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get chatToolDesc_stellar_service_status => '读取 Stellar 特权服务的可用状态与运行身份';
+
+  @override
+  String get chatToolDesc_stellar_shell_exec =>
+      '通过 Stellar 特权服务执行一条 shell 命令，返回退出码与两路输出';
 
   @override
   String get chatToolDesc_web_search => '用 Bing 搜索公开网络，返回标题、链接与摘要';
@@ -2614,7 +2621,22 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get stellarNotReadyHint =>
-      'Stellar 特权服务尚未就绪，这一通道暂时无法执行命令；可在「设置 → 通用 → 命令通道」切换。';
+      '服务尚未启动，命令与终端都不可用。点下方按钮启动服务；首次启动需要无线 ADB 处于可用状态。';
+
+  @override
+  String get stellarStatusTokenMismatch => '服务凭据不匹配，无法确认它属于本应用。请断开后重新启动服务。';
+
+  @override
+  String get stellarStatusProtocolMismatch => '检测到旧版服务，重启服务后会被新版本替换。';
+
+  @override
+  String get stellarStatusPortTaken => '端口 39187 被其它程序占用，服务无法应答。';
+
+  @override
+  String get stellarLaunchPortTaken => '端口 39187 被其它程序占用，服务没能启动。关闭占用该端口的程序后重试。';
+
+  @override
+  String get stellarLaunchProtocolMismatch => '检测到旧版服务且无法自动停止。重启设备后再启动服务。';
 
   @override
   String get stellarStartService => '启动服务';
@@ -2645,6 +2667,16 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get escalationTerminalNeedsAdb => '没连上无线调试。';
+
+  @override
+  String get terminalNeedsStellar =>
+      'Stellar 服务未启动，终端不可用。请先在首页 Stellar 卡片启动服务。';
+
+  @override
+  String get terminalChannelStellarHint => '终端跑在本机 Stellar 特权服务上，不依赖无线调试连接';
+
+  @override
+  String get terminalChannelAdbHint => '终端跑在无线 ADB 的 pty 上，断开无线调试后不可用';
 
   @override
   String get rootManagerPillTooltip => '选择 root 管理器';

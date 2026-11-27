@@ -10,16 +10,16 @@ part of 'stellar_service_provider.dart';
 // ignore_for_file: type=lint, type=warning
 /// Stellar 特权服务的当前状态。
 ///
-/// 判定依据是回环端口能否完成一次 PING/PONG——只回答「在不在、以谁的身份在」，
-/// 不代表已经具备执行能力。
+/// 判定依据是「token 握手能否通过」——裸端口有人应答不代表是本应用的服务，
+/// 也不代表它认这把钥匙。详见任务文档 00 的 §5.4。
 
 @ProviderFor(stellarServiceStatus)
 const stellarServiceStatusProvider = StellarServiceStatusProvider._();
 
 /// Stellar 特权服务的当前状态。
 ///
-/// 判定依据是回环端口能否完成一次 PING/PONG——只回答「在不在、以谁的身份在」，
-/// 不代表已经具备执行能力。
+/// 判定依据是「token 握手能否通过」——裸端口有人应答不代表是本应用的服务，
+/// 也不代表它认这把钥匙。详见任务文档 00 的 §5.4。
 
 final class StellarServiceStatusProvider
     extends
@@ -33,8 +33,8 @@ final class StellarServiceStatusProvider
         $FutureProvider<StellarServiceStatus> {
   /// Stellar 特权服务的当前状态。
   ///
-  /// 判定依据是回环端口能否完成一次 PING/PONG——只回答「在不在、以谁的身份在」，
-  /// 不代表已经具备执行能力。
+  /// 判定依据是「token 握手能否通过」——裸端口有人应答不代表是本应用的服务，
+  /// 也不代表它认这把钥匙。详见任务文档 00 的 §5.4。
   const StellarServiceStatusProvider._()
     : super(
         from: null,
@@ -62,7 +62,7 @@ final class StellarServiceStatusProvider
 }
 
 String _$stellarServiceStatusHash() =>
-    r'294e6dd07a4559a70db73c3a4d91f64ff55e8117';
+    r'521e966d49cec3ddf3effe49765222b5a010db8a';
 
 /// 把服务拉起来。
 ///
@@ -109,7 +109,7 @@ final class StellarLaunchProvider
   }
 }
 
-String _$stellarLaunchHash() => r'798e21ada5df1b2207d235dec5f0d90c8f276e11';
+String _$stellarLaunchHash() => r'3ba06385881202428f88eeed5d1dd1b78f71510b';
 
 /// 把服务拉起来。
 ///

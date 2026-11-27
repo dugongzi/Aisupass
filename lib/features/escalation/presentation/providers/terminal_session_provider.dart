@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:Aisupass/core/models/command_channel.dart';
 import 'package:Aisupass/core/providers/adb_shell_provider.dart';
+import 'package:Aisupass/core/providers/command_channel_provider.dart';
 import 'package:Aisupass/core/utils/terminal_text_writer.dart';
 import 'package:Aisupass/features/escalation/domain/enums/terminal_modifier.dart';
 import 'package:Aisupass/features/escalation/presentation/providers/escalation_action_provider.dart';
@@ -35,6 +37,14 @@ TerminalSession terminalSession(Ref ref) {
     if (next?.connected == true && previous?.connected != true) {
       session.onLinkRestored();
     }
+  });
+  // 通道切换后旧后端已销毁，旧会话 id 在新后端上必然查不到：
+  // 收掉旧会话并按新通道重建，而不是让轮询一直报错。
+  ref.listen<CommandChannel>(commandChannelControllerProvider, (
+    CommandChannel? previous,
+    CommandChannel next,
+  ) {
+    if (previous != null && previous != next) session.onChannelSwitched();
   });
   return session;
 }
@@ -139,6 +149,18 @@ class TerminalSession {
   void onLinkRestored() {
     if (_acquires == 0) return;
     unawaited(_ref.read(shellExecProvider.notifier).open());
+  }
+
+  /// 通道切换：收掉旧会话，有人用着就立刻按新通道重建。
+  ///
+  /// 不重建的话，旧 sessionId 在新后端上查不到，轮询会每 60ms 报一次错。
+  void onChannelSwitched() {
+    final ShellExecController shell = _ref.read(shellExecProvider.notifier);
+    shell.close();
+    if (_acquires == 0) return;
+    // 新通道可能还没就绪（例如 Stellar 服务未启动），此时 open() 会失败并
+    // 由顶部提示条说明；这里不额外处理，避免和提示条重复。
+    unawaited(shell.open());
   }
 
   /// 画招牌，再补上为它暂存的输出。整个终端缓冲只跑一次。

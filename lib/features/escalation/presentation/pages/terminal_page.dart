@@ -27,6 +27,7 @@ import 'package:Aisupass/features/escalation/presentation/widgets/ghost_key_prog
 import 'package:Aisupass/features/escalation/presentation/widgets/ghost_lock_confirm_dialog.dart';
 import 'package:Aisupass/features/escalation/presentation/widgets/payload_catalog_dialog.dart';
 import 'package:Aisupass/features/escalation/presentation/widgets/payload_confirm_dialog.dart';
+import 'package:Aisupass/features/escalation/presentation/widgets/terminal_channel_chip.dart';
 import 'package:Aisupass/features/escalation/presentation/widgets/terminal_key_bar.dart';
 import 'package:Aisupass/features/escalation/presentation/widgets/terminal_link_notice.dart';
 import 'package:Aisupass/l10n/app_localizations.dart';
@@ -501,7 +502,16 @@ class TerminalPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.escalationTerminalTitle),
+        // 通道标在标题旁：两条通道都就绪时顶部提示条是空的，不标就分不清
+        // 屏幕上这条 shell 是 adb 的还是本机特权服务的。
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Flexible(child: Text(l10n.escalationTerminalTitle)),
+            SizedBox(width: 8.w),
+            const TerminalChannelChip(),
+          ],
+        ),
         actions: <Widget>[
           if (running)
             Padding(

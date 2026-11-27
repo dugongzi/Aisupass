@@ -44,4 +44,10 @@ class StellarLaunchState {
 
   /// 停止没成功：服务没有确认退出，或者端口仍在应答。
   static const String reasonStopFailed = 'stopFailed';
+
+  /// 端口被其它程序占用，服务没能启动。
+  static const String reasonPortTaken = 'portTaken';
+
+  /// 端口上是旧版服务且无法自动停止。
+  static const String reasonProtocolMismatch = 'protocolMismatch';
 }

@@ -863,6 +863,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatToolReadStellarStatus => 'Read Stellar service status';
 
   @override
+  String get chatToolExecStellarShell => 'Run Stellar command';
+
+  @override
   String get chatToolWebSearch => 'Search the web';
 
   @override
@@ -1225,6 +1228,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get chatToolDesc_stellar_service_status =>
       'Read whether the Stellar privileged service is available and which uid it runs as';
+
+  @override
+  String get chatToolDesc_stellar_shell_exec =>
+      'Run one shell command through the Stellar privileged service and return the exit code with both output streams';
 
   @override
   String get chatToolDesc_web_search =>
@@ -2810,7 +2817,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get stellarNotReadyHint =>
-      'The Stellar privileged service is not ready, so this channel cannot run commands right now. Switch channels in Settings → General → Command channel.';
+      'The service is not running, so commands and the terminal are unavailable. Tap the button below to start it; the first start still needs a working wireless ADB connection.';
+
+  @override
+  String get stellarStatusTokenMismatch =>
+      'The service credentials do not match this app. Stop and start the service again.';
+
+  @override
+  String get stellarStatusProtocolMismatch =>
+      'An older service version is running; restarting the service replaces it.';
+
+  @override
+  String get stellarStatusPortTaken =>
+      'Port 39187 is held by another program, so the service cannot answer.';
+
+  @override
+  String get stellarLaunchPortTaken =>
+      'Port 39187 is taken by another program, so the service could not start. Free the port and retry.';
+
+  @override
+  String get stellarLaunchProtocolMismatch =>
+      'An older service was found and could not be stopped automatically. Reboot the device, then start the service.';
 
   @override
   String get stellarStartService => 'Start service';
@@ -2847,6 +2874,18 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get escalationTerminalNeedsAdb =>
       'Not connected to wireless debugging.';
+
+  @override
+  String get terminalNeedsStellar =>
+      'The Stellar service is not running, so the terminal is unavailable. Start it from the Stellar card on the home screen.';
+
+  @override
+  String get terminalChannelStellarHint =>
+      'The terminal runs on the local Stellar privileged service and does not depend on the wireless debugging connection';
+
+  @override
+  String get terminalChannelAdbHint =>
+      'The terminal runs on the wireless ADB pty and stops working when wireless debugging is off';
 
   @override
   String get rootManagerPillTooltip => 'Choose root manager';
