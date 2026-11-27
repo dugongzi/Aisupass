@@ -361,6 +361,22 @@
       }
     }
   },
+  "aiKeyFormatTitle": "Key may be in the wrong format",
+  "@aiKeyFormatTitle": {
+    "description": "Dialog title when the API key does not start with sk-"
+  },
+  "aiKeyFormatBody": "The key you entered does not start with sk-, so it may not work. Get one in one tap with Muxue AI instead of finding a key yourself.",
+  "@aiKeyFormatBody": {
+    "description": "Dialog body when the API key does not start with sk-"
+  },
+  "aiKeyFormatGoBuiltin": "Open Muxue AI settings",
+  "@aiKeyFormatGoBuiltin": {
+    "description": "Primary action of the key format dialog: open the built-in Muxue AI config"
+  },
+  "aiKeyFormatSkip": "Not now",
+  "@aiKeyFormatSkip": {
+    "description": "Secondary action of the key format dialog: keep the user's own key"
+  },
   "aiConfigUse": "Use",
   "aiConfigSwitched": "Configuration switched",
   "aiConfigDelete": "Delete",

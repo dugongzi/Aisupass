@@ -434,6 +434,19 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get aiKeyFormatTitle => '密钥格式可能不对';
+
+  @override
+  String get aiKeyFormatBody =>
+      '填写的 Key 不是 sk- 开头，可能无法正常调用。建议用沐雪 AI 的一键获取，无需自己找密钥。';
+
+  @override
+  String get aiKeyFormatGoBuiltin => '前往沐雪AI配置页';
+
+  @override
+  String get aiKeyFormatSkip => '不需要';
+
+  @override
   String get aiConfigUse => '切换';
 
   @override

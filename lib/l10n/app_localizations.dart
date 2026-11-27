@@ -902,6 +902,30 @@ abstract class AppLocalizations {
   /// **'更换分组失败：{message}'**
   String aiBuiltinChangeGroupFailed(String message);
 
+  /// API Key 不以 sk- 开头时的提示弹窗标题
+  ///
+  /// In zh, this message translates to:
+  /// **'密钥格式可能不对'**
+  String get aiKeyFormatTitle;
+
+  /// API Key 不以 sk- 开头时的提示弹窗正文
+  ///
+  /// In zh, this message translates to:
+  /// **'填写的 Key 不是 sk- 开头，可能无法正常调用。建议用沐雪 AI 的一键获取，无需自己找密钥。'**
+  String get aiKeyFormatBody;
+
+  /// 密钥格式提示弹窗的主按钮：跳到内置沐雪 AI 配置页
+  ///
+  /// In zh, this message translates to:
+  /// **'前往沐雪AI配置页'**
+  String get aiKeyFormatGoBuiltin;
+
+  /// 密钥格式提示弹窗的次要按钮：忽略提示继续填自己的 Key
+  ///
+  /// In zh, this message translates to:
+  /// **'不需要'**
+  String get aiKeyFormatSkip;
+
   /// 切换到该 AI 配置
   ///
   /// In zh, this message translates to:

@@ -33,6 +33,9 @@ import 'package:uuid/uuid.dart';
 /// 连通性检测状态。
 enum _ConnState { idle, testing, ok, failed }
 
+/// 密钥的预期前缀；不以此开头时提示用户改用一键获取。
+const String _apiKeyPrefix = 'sk-';
+
 /// AI 配置编辑页。
 ///
 /// [configId] 传 [AppRoute.newConfigId] 表示新建，其余按 id 读取已有配置。
@@ -158,6 +161,61 @@ class AiConfigEditPage extends HookConsumerWidget {
       return l10n.aiErrorNetwork(error.message);
     }
 
+    /// 进入内置登录页；取到密钥即说明配置已写入，停留在本页并刷新额度。
+    ///
+    /// 不在这里回填输入框再触发拉模型：模型与分组已由登录页写进配置，
+    /// 再拉一次网关模型列表反而可能把已选模型清掉。
+    Future<void> openBuiltinLogin() async {
+      final String? issued = await context.push<String>(
+        AppRoute.aiBuiltinLogin,
+      );
+      if (!context.mounted) return;
+      if ((issued ?? '').trim().isEmpty) return;
+      ToastMessage.success(l10n.aiSaveSuccess);
+      ref.invalidate(builtinWalletProvider);
+    }
+
+    /// 密钥不像面板格式时确认一次。
+    ///
+    /// 返回 `true` 表示用户选择继续用自己的 Key，调用方可以往下走；
+    /// 返回 `false` 表示用户选择去内置配置 / 一键获取，调用方应中止本次请求。
+    Future<bool> confirmApiKeyFormat() async {
+      final bool? goBuiltin = await showDialog<bool>(
+        context: context,
+        builder: (BuildContext dialogContext) {
+          final AppLocalizations dialogL10n = dialogContext.l10n;
+          return AlertDialog(
+            title: Text(dialogL10n.aiKeyFormatTitle),
+            content: Text(dialogL10n.aiKeyFormatBody),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: Text(dialogL10n.aiKeyFormatSkip),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: Text(
+                  // 已在内置配置页时，同一个按钮直接走一键获取。
+                  isBuiltinEditing
+                      ? dialogL10n.aiBuiltinGetKey
+                      : dialogL10n.aiKeyFormatGoBuiltin,
+                ),
+              ),
+            ],
+          );
+        },
+      );
+      if (!context.mounted) return false;
+      if (goBuiltin != true) return true;
+
+      if (isBuiltinEditing) {
+        await openBuiltinLogin();
+        return false;
+      }
+      await context.push(AppRoute.aiConfigEditPath(builtinAiConfigId));
+      return false;
+    }
+
     /// 拉取模型列表，同时充当连通性检测。
     Future<bool> loadModels() async {
       final String url = urlController.text.trim();
@@ -181,6 +239,13 @@ class AiConfigEditPage extends HookConsumerWidget {
           'key': l10n.aiFieldRequired,
         };
         return false;
+      }
+
+      // 拉模型是用户第一次真正用到这把 Key 的地方：格式不像面板密钥时
+      // 先提醒一次，避免用户拿着错格式的 Key 反复试错。
+      if (!apiKeyController.text.trim().startsWith(_apiKeyPrefix)) {
+        final bool proceed = await confirmApiKeyFormat();
+        if (!context.mounted || !proceed) return false;
       }
 
       loadingModels.value = true;
@@ -216,20 +281,6 @@ class AiConfigEditPage extends HookConsumerWidget {
       } finally {
         loadingModels.value = false;
       }
-    }
-
-    /// 进入内置登录页；取到密钥即说明配置已写入，停留在本页并刷新额度。
-    ///
-    /// 不在这里回填输入框再触发拉模型：模型与分组已由登录页写进配置，
-    /// 再拉一次网关模型列表反而可能把已选模型清掉。
-    Future<void> openBuiltinLogin() async {
-      final String? issued = await context.push<String>(
-        AppRoute.aiBuiltinLogin,
-      );
-      if (!context.mounted) return;
-      if ((issued ?? '').trim().isEmpty) return;
-      ToastMessage.success(l10n.aiSaveSuccess);
-      ref.invalidate(builtinWalletProvider);
     }
 
     /// 把已绑定的密钥换到另一个分组：密钥不变，只改面板上的分组绑定。

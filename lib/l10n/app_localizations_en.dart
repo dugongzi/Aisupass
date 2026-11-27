@@ -446,6 +446,19 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get aiKeyFormatTitle => 'Key may be in the wrong format';
+
+  @override
+  String get aiKeyFormatBody =>
+      'The key you entered does not start with sk-, so it may not work. Get one in one tap with Muxue AI instead of finding a key yourself.';
+
+  @override
+  String get aiKeyFormatGoBuiltin => 'Open Muxue AI settings';
+
+  @override
+  String get aiKeyFormatSkip => 'Not now';
+
+  @override
   String get aiConfigUse => 'Use';
 
   @override
