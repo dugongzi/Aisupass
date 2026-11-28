@@ -1,38 +1,38 @@
-import 'dart:async';
-import 'dart:convert';
+导入 "dart:async"'dart:async';
+导入 '艺术：转换';
 
-import 'package:Aisupass/features/ai/data/models/ai_config_dto.dart';
-import 'package:Aisupass/features/ai/domain/enums/ai_api_type.dart';
-import 'package:Aisupass/features/ai/domain/models/ai_chat_probe_event.dart';
-import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
+导入 '包：Aisupass/features/ai/data/models/ai_config_dto。飞镖';
+导入 '包：Aisupass/features/ai/domain/enums/ai_api_type。飞镖';
+导入 '包：Aisupass/features/ai/domain/models/ai_chat_probe_event。飞镖';
+导入 "包:Dio/dio.dart" 在线播放;
+导入 '包：Floter/foundation.dart';
 
 /// 模型目录请求失败时抛出的异常。
 ///
-/// 由数据源抛出、presentation 层捕获，[message] 已尽量取服务端返回的可读文案。
-class AiRequestException implements Exception {
-  const AiRequestException(this.message, {this.statusCode});
+///由数据源抛出、展示层捕获，[消息]已尽量取服务端返回的可读文案。
+班级AiRequestException机器异常{ 没有
+  ConstAiRequestException(这.message，{这.statusCode})；
 
-  final String message;
-  final int? statusCode;
+  最终的字符串消息；
+  最终的int？statusCode；
 
   @override
-  String toString() => message;
+string toString()=>消息；
 }
 
 /// 模型目录的只读数据源：只做 `/models` 请求，不参与对话。
 ///
 /// 拿到模型列表即说明地址、API Key 与协议都可用，
 /// 因此它同时充当「连通性检测」，不需要额外发一条对话请求。
-class AiModelQueryDatasource {
+班级 AiModelQueryDatasource {
   AiModelQueryDatasource({Dio? dio})
     : _dio =
           dio ??
-          Dio(
-            BaseOptions(
-              connectTimeout: const Duration(seconds: 15),
-              receiveTimeout: const Duration(seconds: 20),
-              sendTimeout: const Duration(seconds: 15),
+Dio(
+基本选择
+connecttimeout：Const Duration(seconds: 15),
+receiveTimeout：ConstConst
+              sendTimeout: Const Duration(seconds: 15),
             ),
           );
 
@@ -318,11 +318,12 @@ class AiModelQueryDatasource {
   /// 兼容 `https://host`、`https://host/v1`、`https://host/v1/chat/completions`
   /// 以及已经写到 `/models` 的几种写法。
   static String resolveModelsUrl(String raw) {
-    final String base = _normalizeBase(raw);
-    if (base.isEmpty) return '';
-    if (base.endsWith('/models')) return base;
-    if (base.endsWith('/v1')) return '$base/models';
-    return '$base/v1/models';
+  final String base = _normalizeBase(raw);
+  if (base.isEmpty) return '';
+  if (base.endsWith('/models')) return base;
+  if (base.endsWith('/v4')) return '$base/models';
+  if (base.endsWith('/v1')) return '$base/models';
+  return '$base/v1/models';
   }
 
   /// 把用户填写的地址补全成对话地址，端点按协议区分。
